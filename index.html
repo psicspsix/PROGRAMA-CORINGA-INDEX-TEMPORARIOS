@@ -305,7 +305,9 @@
                 const task = snapshot.val();
                 const subtasks = task.subtasks || [];
                 subtasks[subtaskIndex].completed = !subtasks[subtaskIndex].completed;
-                update(taskRef, { subtasks });
+                update(taskRef, { subtasks }).then(() => {
+                    renderTasks(); // Força a re-renderização das tarefas
+                });
             }, { onlyOnce: true });
         }
 
