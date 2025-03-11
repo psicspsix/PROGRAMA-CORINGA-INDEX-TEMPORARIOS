@@ -306,7 +306,12 @@
                 const subtasks = task.subtasks || [];
                 subtasks[subtaskIndex].completed = !subtasks[subtaskIndex].completed;
                 update(taskRef, { subtasks }).then(() => {
-                    renderTasks(); // Força a re-renderização das tarefas
+                    // Atualiza apenas a subtarefa clicada, sem re-renderizar toda a lista
+                    const subtaskElement = document.querySelector(`li[data-key="${parentKey}"] .subtasks-container li:nth-child(${subtaskIndex + 1})`);
+                    if (subtaskElement) {
+                        subtaskElement.classList.toggle('completed');
+                        subtaskElement.querySelector('input[type="checkbox"]').checked = subtasks[subtaskIndex].completed;
+                    }
                 });
             }, { onlyOnce: true });
         }
