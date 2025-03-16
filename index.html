@@ -305,14 +305,7 @@
                 const task = snapshot.val();
                 const subtasks = task.subtasks || [];
                 subtasks[subtaskIndex].completed = !subtasks[subtaskIndex].completed;
-                update(taskRef, { subtasks }).then(() => {
-                    // Atualiza apenas a subtarefa clicada, sem re-renderizar toda a lista
-                    const subtaskElement = document.querySelector(`li[data-key="${parentKey}"] .subtasks-container li:nth-child(${subtaskIndex + 1})`);
-                    if (subtaskElement) {
-                        subtaskElement.classList.toggle('completed');
-                        subtaskElement.querySelector('input[type="checkbox"]').checked = subtasks[subtaskIndex].completed;
-                    }
-                });
+                update(taskRef, { subtasks });
             }, { onlyOnce: true });
         }
 
@@ -518,15 +511,17 @@
 
                     const subtasksContainer = li.querySelector('.subtasks-container');
                     if (hasSubtasks) {
-                        // Ordenar subtarefas
-                        const sortedSubtasks = task.subtasks.sort((a, b) => {
+                        // Ordenar subtarefas: primeiro por completadas, depois por data, depois por prioridade
+                        const sortedSubtasks = [...task.subtasks].sort((a, b) => {
                             if (a.completed !== b.completed) {
                                 return a.completed - b.completed; // Concluídas vão para o final
                             }
-                            if (a.dueDate !== b.dueDate) {
-                                return (a.dueDate || '9999-12-31').localeCompare(b.dueDate || '9999-12-31');
+                            const dateA = a.dueDate || '9999-12-31';
+                            const dateB = b.dueDate || '9999-12-31';
+                            if (dateA !== dateB) {
+                                return dateA.localeCompare(dateB); // Ordem crescente por data
                             }
-                            return b.priority - a.priority;
+                            return b.priority - a.priority; // Ordem decrescente por prioridade
                         });
 
                         sortedSubtasks.forEach((subtask, index) => {
@@ -550,15 +545,18 @@
 
                             subLi.querySelector('input[type="checkbox"]').addEventListener('click', (e) => {
                                 e.stopPropagation();
-                                toggleSubtask(key, index);
+                                const originalIndex = task.subtasks.findIndex(st => st.text === subtask.text && st.dueDate === subtask.dueDate && st.priority === subtask.priority);
+                                toggleSubtask(key, originalIndex);
                             });
                             subLi.querySelector('.edit-btn').addEventListener('click', (e) => {
                                 e.stopPropagation();
-                                editSubtask(key, index);
+                                const originalIndex = task.subtasks.findIndex(st => st.text === subtask.text && st.dueDate === subtask.dueDate && st.priority === subtask.priority);
+                                editSubtask(key, originalIndex);
                             });
                             subLi.querySelector('.delete-btn').addEventListener('click', (e) => {
                                 e.stopPropagation();
-                                deleteSubtask(key, index);
+                                const originalIndex = task.subtasks.findIndex(st => st.text === subtask.text && st.dueDate === subtask.dueDate && st.priority === subtask.priority);
+                                deleteSubtask(key, originalIndex);
                             });
                             subLi.querySelector('.task-text').addEventListener('click', () => toggleNotes(subLi));
                             const subNotesIndicator = subLi.querySelector('.has-notes');
@@ -568,7 +566,10 @@
                                     toggleNotes(subLi);
                                 });
                             }
-                            subLi.querySelector('textarea').addEventListener('change', (e) => updateSubtaskNotes(key, index, e.target));
+                            subLi.querySelector('textarea').addEventListener('change', (e) => {
+                                const originalIndex = task.subtasks.findIndex(st => st.text === subtask.text && st.dueDate === subtask.dueDate && st.priority === subtask.priority);
+                                updateSubtaskNotes(key, originalIndex, e.target);
+                            });
                             subLi.querySelector('textarea').addEventListener('click', (e) => e.stopPropagation());
                         });
                     }
