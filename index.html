@@ -339,7 +339,9 @@
             const taskRef = ref(db, `tasks/${key}`);
             onValue(taskRef, (snapshot) => {
                 const task = snapshot.val();
-                update(taskRef, { completed: !task.completed });
+                update(taskRef, { completed: !task.completed }).then(() => {
+                    renderTasks(); // Re-renderiza para garantir sincronia
+                });
             }, { onlyOnce: true });
         }
 
@@ -361,7 +363,9 @@
                 console.log("Subtarefas encontradas no nível correto:", current.subtasks);
                 if (current.subtasks && current.subtasks[finalIndex]) {
                     current.subtasks[finalIndex].completed = !current.subtasks[finalIndex].completed;
-                    update(taskRef, task);
+                    update(taskRef, task).then(() => {
+                        renderTasks(); // Re-renderiza para garantir sincronia
+                    });
                 } else {
                     console.error("Subtarefa não encontrada para:", { parentKey, path, subtaskIndex });
                 }
@@ -730,24 +734,12 @@
                         if (parts.length === 1) {
                             toggleTask(key);
                         } else {
-                            const path = parts.slice(1).join('/');
+                            const path = parts.slice(1, -1).join('/'); // Ajusta o path para excluir o índice final
                             const index = parseInt(parts[parts.length - 1]);
                             toggleSubtask(key, path, index);
                         }
 
-                        // Verifica quais checkboxes estão marcados após o clique
-                        const affectedCheckboxes = document.querySelectorAll('input[type="checkbox"]:checked');
-                        console.log(`Checkboxes marcados após o clique: ${affectedCheckboxes.length}`);
-                        affectedCheckboxes.forEach(cb => {
-                            const cbId = cb.getAttribute('data-id');
-                            const cbLevel = cb.closest('li').className.includes('subtask-level-') 
-                                ? parseInt(cb.closest('li').className.match(/subtask-level-(\d)/)?.[1] || 0) 
-                                : 0;
-                            console.log(`- Checkbox afetado: ID=${cbId}, Estado=${cb.checked}, Nível=${cbLevel}`);
-                        });
-
-                        // Separador para facilitar leitura
-                        console.log('---');
+                        // Os logs de estado pós-clique são movidos para após a atualização do Firebase
                     };
                     checkbox._clickHandler = handler;
                     checkbox.addEventListener('click', handler);
