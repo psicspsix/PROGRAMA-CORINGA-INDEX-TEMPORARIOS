@@ -99,7 +99,7 @@
             document.getElementById('success').textContent = '';
             element.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-            // Expandir todos os níveis até o path da subtarefa
+            // Expandir todos os níveis até o path completo, incluindo a nova subtarefa
             if (path) {
                 const parts = path.split('/').filter(p => p !== '');
                 let currentPath = key;
@@ -114,6 +114,7 @@
                         expandedTasks[currentPath] = true;
                     }
                     currentElement = subtasksContainer.querySelector(`li:nth-child(${parseInt(parts[i]) + 1})`);
+                    if (!currentElement) break; // Evitar erro se o elemento ainda não foi renderizado
                 }
             } else {
                 const subtasksContainer = element.querySelector('.subtasks-container');
@@ -213,8 +214,10 @@
                         subtasks: []
                     };
 
+                    let newIndex;
                     if (!path) {
                         task.subtasks = task.subtasks || [];
+                        newIndex = task.subtasks.length;
                         task.subtasks.push(newSubtask);
                     } else {
                         const parts = path.split('/').filter(p => p !== '');
@@ -224,6 +227,7 @@
                             if (!current.subtasks) current.subtasks = [];
                             if (i === parts.length - 1) {
                                 current.subtasks[index].subtasks = current.subtasks[index].subtasks || [];
+                                newIndex = current.subtasks[index].subtasks.length;
                                 current.subtasks[index].subtasks.push(newSubtask);
                             } else {
                                 current = current.subtasks[index];
@@ -237,8 +241,8 @@
                         resetForm();
                         document.getElementById('success').textContent = "Subtarefa adicionada com sucesso!";
                         console.log("Subtarefa adicionada com sucesso para:", key);
-                        const newPath = path ? `${path}/${task.subtasks.length - 1}` : `${task.subtasks.length - 1}`;
-                        scrollToTarget(key, path); // Expandir até o nível pai da nova subtarefa
+                        const newPath = path ? `${path}/${newIndex}` : `${newIndex}`;
+                        scrollToTarget(key, newPath); // Expandir até a nova subtarefa
                     }).catch((error) => {
                         document.getElementById('error').textContent = "Erro ao adicionar subtarefa: " + error.message;
                         console.error("Erro ao adicionar subtarefa:", error);
@@ -546,7 +550,7 @@
                 const fullPath = `${key}/${subPath}`;
                 const isSubtaskBoldItalic = isPastDue(subtask.dueDate, subtask.completed);
                 const hasSubtasks = subtask.subtasks && subtask.subtasks.length > 0;
-                const isExpanded = level < 2 || expandedTasks[fullPath]; // Níveis 1 e 2 expandidos por padrão, outros dependem de expandedTasks
+                const isExpanded = expandedTasks[fullPath]; // Expandido apenas se estiver em expandedTasks
 
                 subLi.innerHTML = `
                     <div class="task-row">
@@ -709,14 +713,15 @@
                     li.querySelector('textarea').addEventListener('click', (e) => e.stopPropagation());
                 });
 
-                // Limpar todos os handlers de checkbox antes de adicionar novos
+                // Adicionar handlers de checkbox
                 document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                    // Remover handler anterior, se existir
                     if (checkbox._clickHandler) {
                         checkbox.removeEventListener('click', checkbox._clickHandler);
                     }
+                    const id = checkbox.getAttribute('data-id');
                     const handler = (e) => {
                         e.stopPropagation();
-                        const id = checkbox.getAttribute('data-id');
                         const parts = id.split('/').filter(p => p !== '');
                         const key = parts[0];
                         console.log(`Checkbox clicado: ID=${id}, Estado antes do clique=${checkbox.checked}, Nível=${parts.length - 1}`);
@@ -727,6 +732,7 @@
                             const index = parseInt(parts[parts.length - 1]);
                             toggleSubtask(key, path, index);
                         }
+                        // Não alterar checkbox.checked aqui; o Firebase e o render atualizarão o DOM
                     };
                     checkbox._clickHandler = handler;
                     checkbox.addEventListener('click', handler);
