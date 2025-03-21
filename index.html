@@ -342,7 +342,6 @@
                 console.log(`Estado atual da tarefa ${key}:`, task);
                 update(taskRef, { completed: !task.completed }).then(() => {
                     console.log(`Tarefa ${key} atualizada no Firebase: completed=${!task.completed}`);
-                    renderTasks();
                 }).catch(error => {
                     console.error("Erro ao atualizar tarefa:", error);
                 });
@@ -373,12 +372,14 @@
                     const oldState = current.subtasks[subtaskIndex].completed;
                     current.subtasks[subtaskIndex].completed = !oldState;
                     console.log(`Subtarefa ${parentKey}/${path}/${subtaskIndex} atualizada: completed=${!oldState}`);
-                    update(taskRef, task).then(() => {
-                        console.log(`Atualização no Firebase concluída para ${parentKey}`);
-                        renderTasks();
-                    }).catch(error => {
-                        console.error("Erro ao atualizar subtarefa:", error);
-                    });
+                    update(taskRef, task)
+                        .then(() => {
+                            console.log(`Atualização no Firebase concluída para ${parentKey}`);
+                            // Não chamar renderTasks aqui, deixar o listener principal atualizar o DOM
+                        })
+                        .catch(error => {
+                            console.error("Erro ao atualizar subtarefa:", error);
+                        });
                 } else {
                     console.error("Subtarefa não encontrada:", { parentKey, path, subtaskIndex });
                 }
@@ -729,12 +730,12 @@
                     li.querySelector('textarea').addEventListener('click', (e) => e.stopPropagation());
                 });
 
-                // Adicionar eventos dos checkboxes com logs detalhados
+                // Adicionar eventos dos checkboxes com sincronização manual
                 document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
                     checkbox.removeEventListener('click', checkbox._clickHandler); // Remove handlers anteriores
                     const handler = (e) => {
                         e.stopPropagation();
-                        e.preventDefault(); // Evita comportamento padrão do checkbox até a atualização
+                        e.preventDefault(); // Evita comportamento padrão até confirmação do Firebase
                         const id = checkbox.getAttribute('data-id');
                         const isChecked = checkbox.checked;
                         const parentLi = checkbox.closest('li');
@@ -754,8 +755,12 @@
                             toggleSubtask(key, path, index);
                         }
 
-                        // Log do estado após o clique
+                        // Sincroniza o estado do checkbox após a atualização do Firebase
                         setTimeout(() => {
+                            const updatedCheckbox = document.querySelector(`input[data-id="${id}"]`);
+                            if (updatedCheckbox) {
+                                updatedCheckbox.checked = !isChecked; // Reflete o estado toggled
+                            }
                             console.log(`Estado dos checkboxes após o clique em ${id}:`);
                             document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
                                 const cbId = cb.getAttribute('data-id');
@@ -765,7 +770,7 @@
                                 console.log(`- Checkbox: ID=${cbId}, Estado=${cb.checked}, Nível=${cbLevel}`);
                             });
                             console.log('---');
-                        }, 500); // Atraso para garantir atualização do Firebase
+                        }, 500); // Atraso para garantir que o Firebase atualize
                     };
                     checkbox._clickHandler = handler;
                     checkbox.addEventListener('click', handler);
