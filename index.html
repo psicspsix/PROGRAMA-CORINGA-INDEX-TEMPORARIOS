@@ -126,14 +126,6 @@
             }
         }
 
-        function scrollToInput() {
-            const taskInput = document.getElementById('taskInput');
-            window.scrollTo({
-                top: taskInput.getBoundingClientRect().top + window.pageYOffset - 20,
-                behavior: 'smooth'
-            });
-        }
-
         function saveTask(taskKey = null) {
             const taskInput = document.getElementById('taskInput');
             const dueDateInput = document.getElementById('dueDate');
@@ -321,10 +313,8 @@
                 document.getElementById('priority').value = task.priority || '';
                 document.getElementById('actionButton').textContent = 'Salvar';
                 editingTaskKey = key;
-                setTimeout(() => {
-                    scrollToInput();
-                    document.getElementById('taskInput').focus();
-                }, 0);
+                document.getElementById('taskInput').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                document.getElementById('taskInput').focus();
             }, { onlyOnce: true });
         }
 
@@ -348,10 +338,8 @@
                 document.getElementById('priority').value = subtask.priority || '';
                 document.getElementById('actionButton').textContent = 'Salvar Subtarefa';
                 editingSubtask = { parentKey, path, index };
-                setTimeout(() => {
-                    scrollToInput();
-                    document.getElementById('taskInput').focus();
-                }, 0);
+                document.getElementById('taskInput').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                document.getElementById('taskInput').focus();
             }, { onlyOnce: true });
         }
 
@@ -378,9 +366,10 @@
                     const index = parseInt(parts[i]);
                     current = current.subtasks[index];
                 }
-                const newCompletedState = !current.subtasks[subtaskIndex].completed;
+                const currentCompleted = current.subtasks[subtaskIndex].completed;
+                const newCompletedState = !currentCompleted;
+                console.log(`Subtarefa ${parentKey}/${path}/${subtaskIndex} - Estado atual: ${currentCompleted}, Novo estado: ${newCompletedState}`);
                 current.subtasks[subtaskIndex].completed = newCompletedState;
-                console.log(`Subtarefa ${parentKey}/${path}/${subtaskIndex} atualizada: completed=${newCompletedState}`);
                 update(taskRef, task)
                     .then(() => console.log(`Atualização no Firebase concluída para ${parentKey}`))
                     .catch(error => console.error("Erro ao atualizar subtarefa:", error));
@@ -738,12 +727,12 @@
                         e.stopPropagation();
                         const parts = id.split('/').filter(p => p !== '');
                         const key = parts[0];
-                        console.log(`Checkbox clicado: ID=${id}, Estado antes do clique=${checkbox.checked}, Nível=${parts.length - 1}`);
                         if (parts.length === 1) {
                             toggleTask(key);
                         } else {
                             const path = parts.slice(1, -1).join('/');
                             const index = parseInt(parts[parts.length - 1]);
+                            console.log(`Checkbox clicado: ID=${id}, Nível=${parts.length - 1}`);
                             toggleSubtask(key, path, index);
                         }
                     };
