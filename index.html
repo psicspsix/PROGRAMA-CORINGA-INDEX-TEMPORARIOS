@@ -99,7 +99,6 @@
             document.getElementById('success').textContent = '';
             element.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-            // Expandir todos os níveis até o path completo, incluindo a nova subtarefa
             if (path) {
                 const parts = path.split('/').filter(p => p !== '');
                 let currentPath = key;
@@ -114,7 +113,7 @@
                         expandedTasks[currentPath] = true;
                     }
                     currentElement = subtasksContainer.querySelector(`li:nth-child(${parseInt(parts[i]) + 1})`);
-                    if (!currentElement) break; // Evitar erro se o elemento ainda não foi renderizado
+                    if (!currentElement) break;
                 }
             } else {
                 const subtasksContainer = element.querySelector('.subtasks-container');
@@ -242,7 +241,7 @@
                         document.getElementById('success').textContent = "Subtarefa adicionada com sucesso!";
                         console.log("Subtarefa adicionada com sucesso para:", key);
                         const newPath = path ? `${path}/${newIndex}` : `${newIndex}`;
-                        scrollToTarget(key, newPath); // Expandir até a nova subtarefa
+                        scrollToTarget(key, newPath);
                     }).catch((error) => {
                         document.getElementById('error').textContent = "Erro ao adicionar subtarefa: " + error.message;
                         console.error("Erro ao adicionar subtarefa:", error);
@@ -314,6 +313,8 @@
                 document.getElementById('priority').value = task.priority || '';
                 document.getElementById('actionButton').textContent = 'Salvar';
                 editingTaskKey = key;
+                document.getElementById('taskInput').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                document.getElementById('taskInput').focus();
             }, { onlyOnce: true });
         }
 
@@ -337,6 +338,8 @@
                 document.getElementById('priority').value = subtask.priority || '';
                 document.getElementById('actionButton').textContent = 'Salvar Subtarefa';
                 editingSubtask = { parentKey, path, index };
+                document.getElementById('taskInput').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                document.getElementById('taskInput').focus();
             }, { onlyOnce: true });
         }
 
@@ -550,7 +553,7 @@
                 const fullPath = `${key}/${subPath}`;
                 const isSubtaskBoldItalic = isPastDue(subtask.dueDate, subtask.completed);
                 const hasSubtasks = subtask.subtasks && subtask.subtasks.length > 0;
-                const isExpanded = expandedTasks[fullPath]; // Expandido apenas se estiver em expandedTasks
+                const isExpanded = expandedTasks[fullPath];
 
                 subLi.innerHTML = `
                     <div class="task-row">
@@ -713,9 +716,8 @@
                     li.querySelector('textarea').addEventListener('click', (e) => e.stopPropagation());
                 });
 
-                // Adicionar handlers de checkbox
+                // Adicionar handlers de checkbox de forma única
                 document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-                    // Remover handler anterior, se existir
                     if (checkbox._clickHandler) {
                         checkbox.removeEventListener('click', checkbox._clickHandler);
                     }
@@ -732,7 +734,6 @@
                             const index = parseInt(parts[parts.length - 1]);
                             toggleSubtask(key, path, index);
                         }
-                        // Não alterar checkbox.checked aqui; o Firebase e o render atualizarão o DOM
                     };
                     checkbox._clickHandler = handler;
                     checkbox.addEventListener('click', handler);
