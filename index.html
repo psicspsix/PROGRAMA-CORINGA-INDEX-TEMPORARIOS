@@ -126,6 +126,14 @@
             }
         }
 
+        function scrollToInput() {
+            const taskInput = document.getElementById('taskInput');
+            window.scrollTo({
+                top: taskInput.getBoundingClientRect().top + window.pageYOffset - 20,
+                behavior: 'smooth'
+            });
+        }
+
         function saveTask(taskKey = null) {
             const taskInput = document.getElementById('taskInput');
             const dueDateInput = document.getElementById('dueDate');
@@ -313,8 +321,10 @@
                 document.getElementById('priority').value = task.priority || '';
                 document.getElementById('actionButton').textContent = 'Salvar';
                 editingTaskKey = key;
-                document.getElementById('taskInput').scrollIntoView({ behavior: 'smooth', block: 'start' });
-                document.getElementById('taskInput').focus();
+                setTimeout(() => {
+                    scrollToInput();
+                    document.getElementById('taskInput').focus();
+                }, 0);
             }, { onlyOnce: true });
         }
 
@@ -338,8 +348,10 @@
                 document.getElementById('priority').value = subtask.priority || '';
                 document.getElementById('actionButton').textContent = 'Salvar Subtarefa';
                 editingSubtask = { parentKey, path, index };
-                document.getElementById('taskInput').scrollIntoView({ behavior: 'smooth', block: 'start' });
-                document.getElementById('taskInput').focus();
+                setTimeout(() => {
+                    scrollToInput();
+                    document.getElementById('taskInput').focus();
+                }, 0);
             }, { onlyOnce: true });
         }
 
@@ -716,7 +728,7 @@
                     li.querySelector('textarea').addEventListener('click', (e) => e.stopPropagation());
                 });
 
-                // Adicionar handlers de checkbox de forma única
+                // Adicionar handlers de checkbox
                 document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
                     if (checkbox._clickHandler) {
                         checkbox.removeEventListener('click', checkbox._clickHandler);
