@@ -126,6 +126,17 @@
             }
         }
 
+        function scrollToInput() {
+            const taskInput = document.getElementById('taskInput');
+            const scrollPosition = taskInput.getBoundingClientRect().top + window.pageYOffset - 20;
+            requestAnimationFrame(() => {
+                window.scrollTo({
+                    top: scrollPosition,
+                    behavior: 'smooth'
+                });
+            });
+        }
+
         function saveTask(taskKey = null) {
             const taskInput = document.getElementById('taskInput');
             const dueDateInput = document.getElementById('dueDate');
@@ -313,7 +324,7 @@
                 document.getElementById('priority').value = task.priority || '';
                 document.getElementById('actionButton').textContent = 'Salvar';
                 editingTaskKey = key;
-                document.getElementById('taskInput').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                scrollToInput();
                 document.getElementById('taskInput').focus();
             }, { onlyOnce: true });
         }
@@ -338,7 +349,7 @@
                 document.getElementById('priority').value = subtask.priority || '';
                 document.getElementById('actionButton').textContent = 'Salvar Subtarefa';
                 editingSubtask = { parentKey, path, index };
-                document.getElementById('taskInput').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                scrollToInput();
                 document.getElementById('taskInput').focus();
             }, { onlyOnce: true });
         }
@@ -614,6 +625,19 @@
                 }
                 subLi.querySelector('textarea').addEventListener('change', (e) => updateSubtaskNotes(key, path, index, e.target));
                 subLi.querySelector('textarea').addEventListener('click', (e) => e.stopPropagation());
+
+                // Adicionar handler de checkbox diretamente aqui
+                const checkbox = subLi.querySelector('input[type="checkbox"]');
+                checkbox.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const id = checkbox.getAttribute('data-id');
+                    console.log(`Checkbox clicado: ID=${id}, Nível=${id.split('/').length - 2}`);
+                    const parts = id.split('/').filter(p => p !== '');
+                    const key = parts[0];
+                    const path = parts.slice(1, -1).join('/');
+                    const index = parseInt(parts[parts.length - 1]);
+                    toggleSubtask(key, path, index);
+                });
             });
         }
 
@@ -715,29 +739,15 @@
                     }
                     li.querySelector('textarea').addEventListener('change', (e) => updateNotes(key, e.target));
                     li.querySelector('textarea').addEventListener('click', (e) => e.stopPropagation());
-                });
 
-                // Adicionar handlers de checkbox
-                document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-                    if (checkbox._clickHandler) {
-                        checkbox.removeEventListener('click', checkbox._clickHandler);
-                    }
-                    const id = checkbox.getAttribute('data-id');
-                    const handler = (e) => {
+                    // Adicionar handler de checkbox para tarefas principais
+                    const checkbox = li.querySelector('input[type="checkbox"]');
+                    checkbox.addEventListener('click', (e) => {
                         e.stopPropagation();
-                        const parts = id.split('/').filter(p => p !== '');
-                        const key = parts[0];
-                        if (parts.length === 1) {
-                            toggleTask(key);
-                        } else {
-                            const path = parts.slice(1, -1).join('/');
-                            const index = parseInt(parts[parts.length - 1]);
-                            console.log(`Checkbox clicado: ID=${id}, Nível=${parts.length - 1}`);
-                            toggleSubtask(key, path, index);
-                        }
-                    };
-                    checkbox._clickHandler = handler;
-                    checkbox.addEventListener('click', handler);
+                        const id = checkbox.getAttribute('data-id');
+                        console.log(`Checkbox clicado: ID=${id}, Nível=0`);
+                        toggleTask(id);
+                    });
                 });
 
                 document.addEventListener('click', (e) => {
