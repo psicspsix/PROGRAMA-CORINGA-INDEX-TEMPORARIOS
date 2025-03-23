@@ -112,7 +112,7 @@
                         expandBtn.textContent = '−';
                         expandedTasks[currentPath] = true;
                     }
-                    currentElement = subtasksContainer.querySelector(`li:nth-child(${parseInt(parts[i]) + 1})`);
+                    currentElement = subtasksContainer.querySelector(`li[data-subtask-index="${parts[i]}"]`);
                     if (!currentElement) break;
                 }
             } else {
@@ -126,15 +126,35 @@
             }
         }
 
+        function smoothScrollTo(top, duration) {
+            const start = window.pageYOffset;
+            const distance = top - start;
+            let startTime = null;
+
+            function animation(currentTime) {
+                if (startTime === null) startTime = currentTime;
+                const timeElapsed = currentTime - startTime;
+                const run = ease(timeElapsed, start, distance, duration);
+                window.scrollTo(0, run);
+                if (timeElapsed < duration) requestAnimationFrame(animation);
+            }
+
+            function ease(t, b, c, d) {
+                t /= d / 2;
+                if (t < 1) return c / 2 * t * t + b;
+                t--;
+                return -c / 2 * (t * (t - 2) - 1) + b;
+            }
+
+            requestAnimationFrame(animation);
+        }
+
         function scrollToInput() {
             const taskInput = document.getElementById('taskInput');
             const scrollPosition = taskInput.getBoundingClientRect().top + window.pageYOffset - 20;
             setTimeout(() => {
-                window.scrollTo({
-                    top: scrollPosition,
-                    behavior: 'smooth'
-                });
-            }, 50); // Pequeno atraso para garantir que o DOM esteja pronto
+                smoothScrollTo(scrollPosition, 500); // 500ms para uma animação suave
+            }, 100); // Atraso para garantir que o DOM esteja pronto
         }
 
         function saveTask(taskKey = null) {
@@ -551,21 +571,22 @@
             console.log(`Renderizando subtarefas para key: ${key}, path: ${path}, level: ${level}, subtasks:`, task.subtasks);
             if (!task.subtasks || task.subtasks.length === 0 || level > 4) return;
 
-            // Limpar container antes de adicionar novos elementos
-            container.innerHTML = '';
+            container.innerHTML = ''; // Limpar o container
 
-            const sortedSubtasks = [...task.subtasks].sort((a, b) => {
-                if (a.completed !== b.completed) return a.completed - b.completed;
-                const dateA = a.dueDate || '9999-12-31';
-                const dateB = b.dueDate || '9999-12-31';
-                if (dateA !== dateB) return dateA.localeCompare(dateB);
-                return b.priority - a.priority;
-            });
+            const sortedSubtasks = task.subtasks.map((subtask, originalIndex) => ({ subtask, originalIndex }))
+                .sort((a, b) => {
+                    if (a.subtask.completed !== b.subtask.completed) return a.subtask.completed - b.subtask.completed;
+                    const dateA = a.subtask.dueDate || '9999-12-31';
+                    const dateB = b.subtask.dueDate || '9999-12-31';
+                    if (dateA !== dateB) return dateA.localeCompare(dateB);
+                    return b.subtask.priority - a.subtask.priority;
+                });
 
-            sortedSubtasks.forEach((subtask, index) => {
+            sortedSubtasks.forEach(({ subtask, originalIndex }) => {
                 const subLi = document.createElement('li');
                 subLi.className = `subtask-level-${level} ${subtask.completed ? 'completed' : ''}`;
-                const subPath = path ? `${path}/${index}` : `${index}`;
+                subLi.setAttribute('data-subtask-index', originalIndex);
+                const subPath = path ? `${path}/${originalIndex}` : `${originalIndex}`;
                 const fullPath = `${key}/${subPath}`;
                 const isSubtaskBoldItalic = isPastDue(subtask.dueDate, subtask.completed);
                 const hasSubtasks = subtask.subtasks && subtask.subtasks.length > 0;
@@ -605,11 +626,11 @@
                 }
                 subLi.querySelector('.edit-btn').addEventListener('click', (e) => {
                     e.stopPropagation();
-                    editSubtask(key, path, index);
+                    editSubtask(key, path, originalIndex);
                 });
                 subLi.querySelector('.delete-btn').addEventListener('click', (e) => {
                     e.stopPropagation();
-                    deleteSubtask(key, path, index);
+                    deleteSubtask(key, path, originalIndex);
                 });
                 if (level < 4) {
                     const subtaskBtn = subLi.querySelector('.subtask-btn');
@@ -627,7 +648,7 @@
                         toggleNotes(subLi);
                     });
                 }
-                subLi.querySelector('textarea').addEventListener('change', (e) => updateSubtaskNotes(key, path, index, e.target));
+                subLi.querySelector('textarea').addEventListener('change', (e) => updateSubtaskNotes(key, path, originalIndex, e.target));
                 subLi.querySelector('textarea').addEventListener('click', (e) => e.stopPropagation());
 
                 const checkbox = subLi.querySelector('input[type="checkbox"]');
