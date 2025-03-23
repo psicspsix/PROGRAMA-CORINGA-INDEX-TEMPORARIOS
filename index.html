@@ -129,12 +129,12 @@
         function scrollToInput() {
             const taskInput = document.getElementById('taskInput');
             const scrollPosition = taskInput.getBoundingClientRect().top + window.pageYOffset - 20;
-            requestAnimationFrame(() => {
+            setTimeout(() => {
                 window.scrollTo({
                     top: scrollPosition,
                     behavior: 'smooth'
                 });
-            });
+            }, 50); // Pequeno atraso para garantir que o DOM esteja pronto
         }
 
         function saveTask(taskKey = null) {
@@ -550,6 +550,10 @@
         function renderSubtasks(key, task, container, path = '', level = 1) {
             console.log(`Renderizando subtarefas para key: ${key}, path: ${path}, level: ${level}, subtasks:`, task.subtasks);
             if (!task.subtasks || task.subtasks.length === 0 || level > 4) return;
+
+            // Limpar container antes de adicionar novos elementos
+            container.innerHTML = '';
+
             const sortedSubtasks = [...task.subtasks].sort((a, b) => {
                 if (a.completed !== b.completed) return a.completed - b.completed;
                 const dateA = a.dueDate || '9999-12-31';
@@ -626,7 +630,6 @@
                 subLi.querySelector('textarea').addEventListener('change', (e) => updateSubtaskNotes(key, path, index, e.target));
                 subLi.querySelector('textarea').addEventListener('click', (e) => e.stopPropagation());
 
-                // Adicionar handler de checkbox diretamente aqui
                 const checkbox = subLi.querySelector('input[type="checkbox"]');
                 checkbox.addEventListener('click', (e) => {
                     e.stopPropagation();
@@ -740,7 +743,6 @@
                     li.querySelector('textarea').addEventListener('change', (e) => updateNotes(key, e.target));
                     li.querySelector('textarea').addEventListener('click', (e) => e.stopPropagation());
 
-                    // Adicionar handler de checkbox para tarefas principais
                     const checkbox = li.querySelector('input[type="checkbox"]');
                     checkbox.addEventListener('click', (e) => {
                         e.stopPropagation();
