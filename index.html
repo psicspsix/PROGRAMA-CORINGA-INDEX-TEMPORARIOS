@@ -222,82 +222,40 @@
                 const { parentKey, path, index } = editingSubtask;
                 const taskRef = ref(db, `tasks/${parentKey}`);
                 console.log("Editando subtarefa:", { parentKey, path, index });
-// Rolagem para o alvo com verificação robusta de DOM
-async function scrollToTarget(key, path = '', subtaskText = '') {
-    console.log(`Tentando rolar para: ${key}, path: ${path}, subtaskText: "${subtaskText}"`);
-    
-    // Forçar renderização e esperar o DOM atualizar
-    renderTasks();
-    
-    // Função para verificar se o elemento está disponível
-    const waitForElement = (selector, timeout = 5000) => {
-        return new Promise((resolve) => {
-            const start = Date.now();
-            const check = () => {
-                const element = document.querySelector(selector);
-                if (element) {
-                    resolve(element);
-                } else if (Date.now() - start < timeout) {
-                    requestAnimationFrame(check);
-                } else {
-                    resolve(null);
-                }
-            };
-            check();
-        });
-    };
+                onValue(taskRef, (snapshot) => {
+                    const task = snapshot.val();
+                    const subtasks = path ? getNestedSubtasks(task, path) : task.subtasks;
+                    const parentTask = path ? getParentTask(task, path) : task;
+                    if (!validateSubtaskConstraints(parentTask, dueDate, priority)) return;
 
-    // Construir o seletor do elemento alvo
-    const fullPath = path ? `${key}/${path}` : key;
-    const selector = path 
-        ? `[data-key="${key}"] [data-subtask-index="${path.split('/').pop()}"]`
-        : `[data-key="${key}"]`;
-    
-    // Esperar o elemento aparecer no DOM
-    let targetElement = await waitForElement(selector);
-    if (!targetElement) {
-        console.log(`Elemento não encontrado: ${fullPath}, tentando elemento raiz`);
-        targetElement = document.querySelector(`[data-key="${key}"]`);
-        if (!targetElement) {
-            console.error(`Elemento raiz não encontrado: ${key}`);
-            return;
-        }
-    }
-
-    // Expandir todos os níveis necessários
-    let currentElement = document.querySelector(`[data-key="${key}"]`);
-    if (path) {
-        const parts = path.split('/').filter(p => p !== '');
-        for (const part of parts) {
-            const subtasksContainer = currentElement.querySelector('.subtasks-container');
-            const expandBtn = currentElement.querySelector('.expand-btn');
-            if (subtasksContainer && expandBtn && !subtasksContainer.classList.contains('visible')) {
-                subtasksContainer.classList.add('visible');
-                expandBtn.textContent = '−';
-                expandedTasks[`${key}/${parts.slice(0, parts.indexOf(part) + 1).join('/')}`] = true;
-                console.log(`Expandido: ${key}/${parts.slice(0, parts.indexOf(part) + 1).join('/')}`);
-            }
-            currentElement = subtasksContainer.querySelector(`[data-subtask-index="${part}"]`);
-            if (!currentElement) {
-                console.log(`Subtarefa não encontrada no path: ${part}`);
-                break;
-            }
-        }
-        targetElement = currentElement || targetElement;
-    }
-
-    // Calcular posição e rolar
-    const rect = targetElement.getBoundingClientRect();
-    const scrollPosition = rect.top + window.pageYOffset - 50; // Offset para melhor visibilidade
-    console.log(`Calculando rolagem: top=${rect.top}, pageYOffset=${window.pageYOffset}, scrollPosition=${scrollPosition}`);
-    
-    window.scrollTo({
-        top: scrollPosition,
-        behavior: 'smooth'
-    });
-    
-    console.log(`Rolagem concluída para ${fullPath}`);
-}
+                    subtasks[index] = {
+                        text: taskText,
+                        dueDate: dueDate,
+                        priority: Math.min(Math.max(priority, 1), 1000),
+                        notes: subtasks[index].notes || "",
+                        completed: subtasks[index].completed || false,
+                        subtasks: subtasks[index].subtasks || []
+                    };
+                    console.log("Atualizando subtarefa:", subtasks[index]);
+                    update(taskRef, task).then(() => {
+                        resetForm();
+                        document.getElementById('success').textContent = "Subtarefa atualizada com sucesso!";
+                        const fullPath = path ? `${path}/${index}` : `${index}`;
+                        scrollToTarget(parentKey, fullPath, taskText);
+                    }).catch((error) => {
+                        document.getElementById('error').textContent = "Erro ao atualizar subtarefa: " + error.message;
+                        console.error("Erro ao atualizar subtarefa:", error);
+                    });
+                }, { onlyOnce: true });
+            } else if (addingSubtaskToKey) {
+                const { key, path } = addingSubtaskToKey;
+                const taskRef = ref(db, `tasks/${key}`);
+                console.log("Adicionando subtarefa para:", { key, path });
+                onValue(taskRef, (snapshot) => {
+                    const task = snapshot.val();
+                    console.log("Tarefa atual:", task);
+                    if (!task) {
+                        document.getElementById('error').textContent = "Tarefa pai não encontrada!";
                         console.error("Tarefa pai não encontrada para key:", key);
                         return;
                     }
