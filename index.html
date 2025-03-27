@@ -192,168 +192,168 @@
             }
         }
 
-        function saveTask(taskKey = null) {
-            const taskInput = document.getElementById('taskInput');
-            const dueDateInput = document.getElementById('dueDate');
-            const priorityInput = document.getElementById('priority');
-            const taskText = taskInput.value.trim();
-            let dueDate = dueDateInput.value || null;
-            const priority = parseInt(priorityInput.value) || 1;
+       function saveTask(taskKey = null) {
+    const taskInput = document.getElementById('taskInput');
+    const dueDateInput = document.getElementById('dueDate');
+    const priorityInput = document.getElementById('priority');
+    const taskText = taskInput.value.trim();
+    let dueDate = dueDateInput.value || null;
+    const priority = parseInt(priorityInput.value) || 1;
 
-            log(`saveTask chamado: taskText="${taskText}", editingTaskKey=${editingTaskKey}, editingSubtask=${JSON.stringify(editingSubtask)}, addingSubtaskToKey=${JSON.stringify(addingSubtaskToKey)}`);
+    log(`saveTask chamado: taskText="${taskText}", editingTaskKey=${editingTaskKey}, editingSubtask=${JSON.stringify(editingSubtask)}, addingSubtaskToKey=${JSON.stringify(addingSubtaskToKey)}`);
 
-            if (taskText === '') {
-                document.getElementById('error').textContent = "Preencha a tarefa!";
-                log("Erro: Tarefa vazia");
+    if (taskText === '') {
+        document.getElementById('error').textContent = "Preencha a tarefa!";
+        log("Erro: Tarefa vazia");
+        return;
+    }
+
+    const validateSubtaskConstraints = (parentTask, newDueDate, newPriority) => {
+        if (!parentTask) {
+            log("Erro: parentTask é undefined");
+            return true;
+        }
+        if (newDueDate && parentTask.dueDate && newDueDate > parentTask.dueDate) {
+            document.getElementById('error').textContent = "Data da subtarefa não pode ser posterior à da tarefa!";
+            log("Erro: Data da subtarefa posterior à tarefa");
+            return false;
+        }
+        if (parentTask.priority !== undefined && newPriority > parentTask.priority) {
+            document.getElementById('error').textContent = "Prioridade da subtarefa não pode ser maior que a da tarefa!";
+            log("Erro: Prioridade da subtarefa maior que a tarefa");
+            return false;
+        }
+        return true;
+    };
+
+    if (editingSubtask) {
+        const { parentKey, path, index } = editingSubtask;
+        const taskRef = ref(db, `tasks/${parentKey}`);
+        log(`Editando subtarefa: parentKey=${parentKey}, path=${path}, index=${index}`);
+        onValue(taskRef, (snapshot) => {
+            const task = snapshot.val();
+            const subtasks = path ? getNestedSubtasks(task, path) : task.subtasks;
+            const parentTask = path ? getParentTask(task, path) : task;
+            if (!validateSubtaskConstraints(parentTask, dueDate, priority)) return;
+
+            subtasks[index] = {
+                text: taskText,
+                dueDate: dueDate,
+                priority: Math.min(Math.max(priority, 1), 1000),
+                notes: subtasks[index].notes || "",
+                completed: subtasks[index].completed || false,
+                subtasks: subtasks[index].subtasks || []
+            };
+            log(`Subtarefa atualizada: ${JSON.stringify(subtasks[index])}`);
+            update(taskRef, task).then(() => {
+                document.getElementById('success').textContent = "Subtarefa atualizada com sucesso!";
+                const fullPath = path ? `${path}/${index}` : `${index}`;
+                scrollToTarget(parentKey, fullPath);
+                resetForm(); // Reset após rolagem
+            }).catch((error) => {
+                document.getElementById('error').textContent = "Erro ao atualizar subtarefa: " + error.message;
+                log(`Erro ao atualizar subtarefa: ${error.message}`);
+            });
+        }, { onlyOnce: true });
+    } else if (addingSubtaskToKey) {
+        const { key, path } = addingSubtaskToKey;
+        const taskRef = ref(db, `tasks/${key}`);
+        log(`Adicionando subtarefa: key=${key}, path=${path}`);
+        onValue(taskRef, (snapshot) => {
+            const task = snapshot.val();
+            if (!task) {
+                document.getElementById('error').textContent = "Tarefa pai não encontrada!";
+                log(`Erro: Tarefa pai não encontrada para key=${key}`);
                 return;
             }
 
-            const validateSubtaskConstraints = (parentTask, newDueDate, newPriority) => {
-                if (!parentTask) {
-                    log("Erro: parentTask é undefined");
-                    return true;
-                }
-                if (newDueDate && parentTask.dueDate && newDueDate > parentTask.dueDate) {
-                    document.getElementById('error').textContent = "Data da subtarefa não pode ser posterior à da tarefa!";
-                    log("Erro: Data da subtarefa posterior à tarefa");
-                    return false;
-                }
-                if (parentTask.priority !== undefined && newPriority > parentTask.priority) {
-                    document.getElementById('error').textContent = "Prioridade da subtarefa não pode ser maior que a da tarefa!";
-                    log("Erro: Prioridade da subtarefa maior que a tarefa");
-                    return false;
-                }
-                return true;
+            const parentTask = path ? getParentTask(task, path) : task;
+            if (!validateSubtaskConstraints(parentTask, dueDate, priority)) return;
+
+            const newSubtask = {
+                text: taskText,
+                dueDate: dueDate,
+                priority: Math.min(Math.max(priority, 1), 1000),
+                notes: "",
+                completed: false,
+                subtasks: []
             };
 
-            if (editingSubtask) {
-                const { parentKey, path, index } = editingSubtask;
-                const taskRef = ref(db, `tasks/${parentKey}`);
-                log(`Editando subtarefa: parentKey=${parentKey}, path=${path}, index=${index}`);
-                onValue(taskRef, (snapshot) => {
-                    const task = snapshot.val();
-                    const subtasks = path ? getNestedSubtasks(task, path) : task.subtasks;
-                    const parentTask = path ? getParentTask(task, path) : task;
-                    if (!validateSubtaskConstraints(parentTask, dueDate, priority)) return;
-
-                    subtasks[index] = {
-                        text: taskText,
-                        dueDate: dueDate,
-                        priority: Math.min(Math.max(priority, 1), 1000),
-                        notes: subtasks[index].notes || "",
-                        completed: subtasks[index].completed || false,
-                        subtasks: subtasks[index].subtasks || []
-                    };
-                    log(`Subtarefa atualizada: ${JSON.stringify(subtasks[index])}`);
-                    update(taskRef, task).then(() => {
-                        resetForm();
-                        document.getElementById('success').textContent = "Subtarefa atualizada com sucesso!";
-                        const fullPath = path ? `${path}/${index}` : `${index}`;
-                        scrollToTarget(parentKey, fullPath);
-                    }).catch((error) => {
-                        document.getElementById('error').textContent = "Erro ao atualizar subtarefa: " + error.message;
-                        log(`Erro ao atualizar subtarefa: ${error.message}`);
-                    });
-                }, { onlyOnce: true });
-            } else if (addingSubtaskToKey) {
-                const { key, path } = addingSubtaskToKey;
-                const taskRef = ref(db, `tasks/${key}`);
-                log(`Adicionando subtarefa: key=${key}, path=${path}`);
-                onValue(taskRef, (snapshot) => {
-                    const task = snapshot.val();
-                    if (!task) {
-                        document.getElementById('error').textContent = "Tarefa pai não encontrada!";
-                        log(`Erro: Tarefa pai não encontrada para key=${key}`);
-                        return;
-                    }
-
-                    const parentTask = path ? getParentTask(task, path) : task;
-                    if (!validateSubtaskConstraints(parentTask, dueDate, priority)) return;
-
-                    const newSubtask = {
-                        text: taskText,
-                        dueDate: dueDate,
-                        priority: Math.min(Math.max(priority, 1), 1000),
-                        notes: "",
-                        completed: false,
-                        subtasks: []
-                    };
-
-                    let newIndex;
-                    if (!path) {
-                        task.subtasks = task.subtasks || [];
-                        newIndex = task.subtasks.length;
-                        task.subtasks.push(newSubtask);
-                    } else {
-                        const parts = path.split('/').filter(p => p !== '');
-                        let current = task;
-                        for (let i = 0; i < parts.length; i++) {
-                            const index = parseInt(parts[i]);
-                            if (!current.subtasks) current.subtasks = [];
-                            if (i === parts.length - 1) {
-                                current.subtasks[index].subtasks = current.subtasks[index].subtasks || [];
-                                newIndex = current.subtasks[index].subtasks.length;
-                                current.subtasks[index].subtasks.push(newSubtask);
-                            } else {
-                                current = current.subtasks[index];
-                            }
-                        }
-                    }
-
-                    log(`Nova subtarefa adicionada: ${JSON.stringify(newSubtask)}`);
-                    update(taskRef, task).then(() => {
-                        resetForm();
-                        document.getElementById('success').textContent = "Subtarefa adicionada com sucesso!";
-                        const newPath = path ? `${path}/${newIndex}` : `${newIndex}`;
-                        scrollToTarget(key, newPath);
-                    }).catch((error) => {
-                        document.getElementById('error').textContent = "Erro ao adicionar subtarefa: " + error.message;
-                        log(`Erro ao adicionar subtarefa: ${error.message}`);
-                    });
-                }, { onlyOnce: true });
-            } else if (editingTaskKey) {
-                const taskRef = ref(db, `tasks/${editingTaskKey}`);
-                log(`Editando tarefa: key=${editingTaskKey}`);
-                onValue(taskRef, (snapshot) => {
-                    const currentTask = snapshot.val();
-                    const updatedTask = {
-                        text: taskText,
-                        dueDate: dueDate,
-                        priority: Math.min(Math.max(priority, 1), 1000),
-                        notes: currentTask.notes || "",
-                        completed: currentTask.completed || false,
-                        category: currentCategory,
-                        subtasks: currentTask.subtasks || []
-                    };
-                    set(taskRef, updatedTask).then(() => {
-                        resetForm();
-                        document.getElementById('success').textContent = "Tarefa atualizada com sucesso!";
-                        scrollToTarget(editingTaskKey);
-                    }).catch((error) => {
-                        document.getElementById('error').textContent = "Erro ao atualizar: " + error.message;
-                        log(`Erro ao atualizar tarefa: ${error.message}`);
-                    });
-                }, { onlyOnce: true });
+            let newIndex;
+            if (!path) {
+                task.subtasks = task.subtasks || [];
+                newIndex = task.subtasks.length;
+                task.subtasks.push(newSubtask);
             } else {
-                log("Adicionando nova tarefa");
-                push(tasksRef, {
-                    text: taskText,
-                    dueDate: dueDate,
-                    priority: Math.min(Math.max(priority, 1), 1000),
-                    notes: "",
-                    completed: false,
-                    category: currentCategory,
-                    subtasks: []
-                }).then((newTaskRef) => {
-                    resetForm();
-                    document.getElementById('success').textContent = "Tarefa adicionada com sucesso!";
-                    scrollToTarget(newTaskRef.key);
-                }).catch((error) => {
-                    document.getElementById('error').textContent = "Erro ao adicionar: " + error.message;
-                    log(`Erro ao adicionar tarefa: ${error.message}`);
-                });
+                const parts = path.split('/').filter(p => p !== '');
+                let current = task;
+                for (let i = 0; i < parts.length; i++) {
+                    const index = parseInt(parts[i]);
+                    if (!current.subtasks) current.subtasks = [];
+                    if (i === parts.length - 1) {
+                        current.subtasks[index].subtasks = current.subtasks[index].subtasks || [];
+                        newIndex = current.subtasks[index].subtasks.length;
+                        current.subtasks[index].subtasks.push(newSubtask);
+                    } else {
+                        current = current.subtasks[index];
+                    }
+                }
             }
-        }
+
+            log(`Nova subtarefa adicionada: ${JSON.stringify(newSubtask)}`);
+            update(taskRef, task).then(() => {
+                document.getElementById('success').textContent = "Subtarefa adicionada com sucesso!";
+                const newPath = path ? `${path}/${newIndex}` : `${newIndex}`;
+                scrollToTarget(key, newPath);
+                resetForm(); // Reset após rolagem
+            }).catch((error) => {
+                document.getElementById('error').textContent = "Erro ao adicionar subtarefa: " + error.message;
+                log(`Erro ao adicionar subtarefa: ${error.message}`);
+            });
+        }, { onlyOnce: true });
+    } else if (editingTaskKey) {
+        const taskRef = ref(db, `tasks/${editingTaskKey}`);
+        log(`Editando tarefa: key=${editingTaskKey}`);
+        onValue(taskRef, (snapshot) => {
+            const currentTask = snapshot.val();
+            const updatedTask = {
+                text: taskText,
+                dueDate: dueDate,
+                priority: Math.min(Math.max(priority, 1), 1000),
+                notes: currentTask.notes || "",
+                completed: currentTask.completed || false,
+                category: currentCategory,
+                subtasks: currentTask.subtasks || []
+            };
+            set(taskRef, updatedTask).then(() => {
+                document.getElementById('success').textContent = "Tarefa atualizada com sucesso!";
+                scrollToTarget(editingTaskKey); // Rolagem antes do reset
+                resetForm(); // Reset após a rolagem
+            }).catch((error) => {
+                document.getElementById('error').textContent = "Erro ao atualizar: " + error.message;
+                log(`Erro ao atualizar tarefa: ${error.message}`);
+            });
+        }, { onlyOnce: true });
+    } else {
+        log("Adicionando nova tarefa");
+        push(tasksRef, {
+            text: taskText,
+            dueDate: dueDate,
+            priority: Math.min(Math.max(priority, 1), 1000),
+            notes: "",
+            completed: false,
+            category: currentCategory,
+            subtasks: []
+        }).then((newTaskRef) => {
+            document.getElementById('success').textContent = "Tarefa adicionada com sucesso!";
+            scrollToTarget(newTaskRef.key); // Rolagem antes do reset
+            resetForm(); // Reset após a rolagem
+        }).catch((error) => {
+            document.getElementById('error').textContent = "Erro ao adicionar: " + error.message;
+            log(`Erro ao adicionar tarefa: ${error.message}`);
+        });
+    }
+}
 
         function resetForm() {
             document.getElementById('taskInput').value = '';
