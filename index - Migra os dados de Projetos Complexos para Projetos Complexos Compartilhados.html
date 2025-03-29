@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Migração de Dados - Projetos Complexos</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f0f0f0; }
+        #log { white-space: pre-wrap; font-family: monospace; background: #fff; padding: 10px; border: 1px solid #ccc; max-height: 500px; overflow-y: auto; }
+        button { padding: 10px 20px; font-size: 16px; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Migração de Dados</h1>
+    <p>Este programa migrará os dados do banco "projetos-complexos" para "projetos-compartilhados".</p>
+    <button id="startMigration">Iniciar Migração</button>
+    <h2>Log de Execução</h2>
+    <div id="log"></div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        // Configuração do banco de dados atual (origem)
+        const oldFirebaseConfig = {
+            apiKey: "AIzaSyA7EFA0dC1ZPikyJSHuqnhmul-4dnugfp0",
+            authDomain: "projetos-complexos.firebaseapp.com",
+            databaseURL: "https://projetos-complexos-default-rtdb.firebaseio.com",
+            projectId: "projetos-complexos",
+            storageBucket: "projetos-complexos.firebasestorage.app",
+            messagingSenderId: "473821406890",
+            appId: "1:473821406890:web:2b271ae806ecdac18892d3",
+            measurementId: "G-L5Z04Z3HG3"
+        };
+
+        // Configuração do novo banco de dados (destino)
+        const newFirebaseConfig = {
+            apiKey: "AIzaSyDMRrgMcEvUaiI7sNbmLwy-9Eim13979LY",
+            authDomain: "projetos-compartilhados.firebaseapp.com",
+            databaseURL: "https://projetos-compartilhados-default-rtdb.firebaseio.com",
+            projectId: "projetos-compartilhados",
+            storageBucket: "projetos-compartilhados.firebasestorage.app",
+            messagingSenderId: "517091337770",
+            appId: "1:517091337770:web:596b8c0da2b7c3e45b4553",
+            measurementId: "G-2DSZ3QKRB2"
+        };
+
+        // Inicializar os dois apps Firebase
+        const oldApp = initializeApp(oldFirebaseConfig, "oldApp");
+        const newApp = initializeApp(newFirebaseConfig, "newApp");
+
+        const oldDb = getDatabase(oldApp);
+        const newDb = getDatabase(newApp);
+
+        const oldTasksRef = ref(oldDb, 'tasks');
+        const newTasksRef = ref(newDb, 'tasks');
+
+        // Função de log
+        function log(message) {
+            const logDiv = document.getElementById('log');
+            logDiv.textContent += `[${new Date().toLocaleTimeString()}] ${message}\n`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(`[LOG ${new Date().toLocaleTimeString()}]: ${message}`);
+        }
+
+        // Função para migrar os dados
+        async function migrateData() {
+            log("Iniciando migração de dados...");
+
+            try {
+                // Ler os dados do banco antigo
+                onValue(oldTasksRef, (snapshot) => {
+                    const tasks = snapshot.val();
+                    if (!tasks) {
+                        log("Nenhuma tarefa encontrada no banco antigo.");
+                        return;
+                    }
+
+                    log(`Encontradas ${Object.keys(tasks).length} tarefas no banco antigo.`);
+
+                    // Migrar cada tarefa para o novo banco
+                    Object.entries(tasks).forEach(([key, task]) => {
+                        const newTaskRef = ref(newDb, `tasks/${key}`);
+                        set(newTaskRef, task)
+                            .then(() => {
+                                log(`Tarefa migrada com sucesso: ${key} - ${task.text}`);
+                            })
+                            .catch((error) => {
+                                log(`Erro ao migrar tarefa ${key}: ${error.message}`);
+                            });
+                    });
+
+                    log("Migração concluída!");
+                }, { onlyOnce: true });
+            } catch (error) {
+                log(`Erro durante a migração: ${error.message}`);
+            }
+        }
+
+        // Evento do botão
+        document.getElementById('startMigration').addEventListener('click', () => {
+            if (confirm("Tem certeza que deseja iniciar a migração? Isso sobrescreverá quaisquer dados existentes no caminho 'tasks' do novo banco.")) {
+                migrateData();
+            }
+        });
+    </script>
+</body>
+</html>
