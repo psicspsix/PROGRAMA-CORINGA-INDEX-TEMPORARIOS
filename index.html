@@ -61,7 +61,7 @@
         }
         .report-title { margin: 0; padding: 0; }
         .report-period-buttons { display: flex; margin: 0; padding: 0; }
-        .report-order-chrono, .report-order-type, .report-user-registry {
+        .report-order-chrono, .report-order-type, .report-user-registry, .report-txt {
             margin: 0 10px 0 0;
             padding: 15px;
         }
@@ -114,7 +114,7 @@
         [id$="Success"] { color: #55ff55; }
         .user-name, .has-note { cursor: pointer; }
         .has-note { font-style: italic; color: #aaa; margin-left: 10px; }
-        .user-note, .delete-note {
+        .user-note, .delete-note, .report-note {
             display: none;
             font-size: 20px;
             margin-top: 10px;
@@ -130,7 +130,6 @@
             box-sizing: border-box;
         }
         .status-text { font-size: 24px; margin-left: 10px; }
-        .prescription-label { margin-right: 10px; font-size: 24px; }
     </style>
 </head>
 <body>
@@ -193,7 +192,6 @@
             <input type="text" id="addNameInput" placeholder="Nome do item">
             <input type="number" id="addPeriodInput" placeholder="Periodicidade (horas)">
             <button id="saveAdd">Salvar</button>
-            <button id="uploadAddPrescription">Upload</button>
             <button id="backFromAdd">Voltar</button>
             <div id="addError"></div>
             <div id="addSuccess"></div>
@@ -229,9 +227,11 @@
                         <button id="yearlyReport">Anual</button>
                     </div>
                     <button id="userRegistryReport" class="report-user-registry">Registro de Usuários</button>
+                    <button id="txtReport" class="report-txt">TXT</button>
                     <button id="typeOrder" class="report-order-type">Ordenamento por Tipo de Item</button>
                 </div>
             </div>
+            <textarea id="reportNote" class="report-note" placeholder="Registros em texto aparecerão aqui ao clicar em TXT"></textarea>
             <ul id="reportList"></ul>
             <button id="backFromReport">Voltar</button>
             <div id="reportError"></div>
@@ -243,7 +243,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
         import { getDatabase, ref, onValue, push, update, remove, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-        import { getStorage, ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDan0hha-AIKJ2onO-u79Yf480uyR9DroQ",
@@ -259,7 +258,6 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const auth = getAuth(app);
-        const storage = getStorage(app);
         const usersRef = ref(db, 'users');
         const lastUserRef = ref(db, 'lastUser');
         const authUsersRef = ref(db, 'authUsers');
@@ -269,7 +267,6 @@
         let currentAuthUserName = null;
         let loggedInUserName = null;
         let isRegisterClicked = false;
-        let lastAddedMedKey = null; // Para rastrear o último item adicionado na tela de cadastro
 
         function getMedsRef() {
             return currentUserId ? ref(db, `users/${currentUserId}/medications`) : ref(db, 'medications');
@@ -299,7 +296,6 @@
         const userNameInput = document.getElementById('userNameInput');
         const addNameInput = document.getElementById('addNameInput');
         const addPeriodInput = document.getElementById('addPeriodInput');
-        const uploadAddPrescriptionButton = document.getElementById('uploadAddPrescription');
 
         // Função de log
         function log(message) {
@@ -312,7 +308,7 @@
             return emailRegex.test(email);
         }
 
-        // Função para obter o nome ou e-mail do usuário autenticado por UID (mantida como fallback)
+        // Função para obter o nome ou e-mail do usuário autenticado por UID
         function getAuthUserNameByUid(uid) {
             return new Promise((resolve) => {
                 onValue(ref(db, `authUsers/${uid}`), (snapshot) => {
@@ -329,8 +325,8 @@
             if (user) {
                 log(`Usuário autenticado detectado: ${user.email}`);
                 currentAuthUser = user;
-                currentAuthUserName = await getAuthUserNameByUid(user.uid); // Mantido como fallback
-                loggedInUserName = user.email; // Usa o e-mail do usuário autenticado diretamente
+                currentAuthUserName = await getAuthUserNameByUid(user.uid);
+                loggedInUserName = user.email;
                 log(`currentAuthUser definido como: ${currentAuthUser.email}, loggedInUserName: ${loggedInUserName}`);
             } else {
                 log("Nenhum usuário autenticado detectado.");
@@ -436,7 +432,6 @@
                 return;
             }
 
-            // Criar uma instância de autenticação secundária para evitar afetar o auth principal
             const secondaryApp = initializeApp(firebaseConfig, "SecondaryApp");
             const secondaryAuth = getAuth(secondaryApp);
 
@@ -445,7 +440,6 @@
                     const user = userCredential.user;
                     log(`Novo usuário autenticado ${name} criado com e-mail: ${email}`);
 
-                    // Salvar os dados no banco usando o UID do novo usuário
                     return set(ref(db, `authUsers/${user.uid}`), {
                         name: name,
                         email: email,
@@ -859,10 +853,8 @@
                 lastTaken: null,
                 enabled: true,
                 history: [],
-                note: "",
-                prescriptionUrl: null // Campo para armazenar a URL da prescrição
-            }).then((newMedRef) => {
-                lastAddedMedKey = newMedRef.key; // Armazena a chave do último item adicionado
+                note: ""
+            }).then(() => {
                 nameInput.value = '';
                 periodInput.value = '';
                 document.getElementById('addError').textContent = '';
@@ -875,118 +867,6 @@
                 log(`Erro ao cadastrar medicamento: ${error.message}`);
             });
         }
-
-        // Função para upload de prescrição
-        function uploadPrescription(medKey, source = 'edit') {
-            if (!currentUserId || !medKey) {
-                const errorElement = source === 'edit' ? document.getElementById('editError') : document.getElementById('addError');
-                errorElement.textContent = "Erro: Paciente ou item não selecionado!";
-                return;
-            }
-
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = 'image/*';
-            input.onchange = (e) => {
-                const file = e.target.files[0];
-                if (!file) return;
-
-                const storagePath = `prescriptions/${currentUserId}/${medKey}/${file.name}`;
-                const fileRef = storageRef(storage, storagePath);
-
-                uploadBytes(fileRef, file).then((snapshot) => {
-                    return getDownloadURL(fileRef).then((downloadURL) => {
-                        update(ref(db, `users/${currentUserId}/medications/${medKey}`), { prescriptionUrl: downloadURL })
-                            .then(() => {
-                                const successElement = source === 'edit' ? document.getElementById('editSuccess') : document.getElementById('addSuccess');
-                                successElement.textContent = "Prescrição carregada com sucesso!";
-                                log(`Prescrição carregada para o item ${medKey} em ${downloadURL}`);
-                                setTimeout(() => successElement.textContent = '', 2000);
-                                if (source === 'edit') renderEditScreen();
-                            })
-                            .catch((error) => {
-                                const errorElement = source === 'edit' ? document.getElementById('editError') : document.getElementById('addError');
-                                errorElement.textContent = "Erro ao salvar URL da prescrição: " + error.message;
-                                log(`Erro ao salvar URL da prescrição: ${error.message}`);
-                            });
-                    });
-                }).catch((error) => {
-                    const errorElement = source === 'edit' ? document.getElementById('editError') : document.getElementById('addError');
-                    errorElement.textContent = "Erro ao carregar prescrição: " + error.message;
-                    log(`Erro ao carregar prescrição: ${error.message}`);
-                });
-            };
-            input.click();
-        }
-
-        // Função para mostrar prescrição
-        function showPrescription(medKey) {
-            if (!currentUserId || !medKey) {
-                document.getElementById('editError').textContent = "Erro: Paciente ou item não selecionado!";
-                return;
-            }
-
-            onValue(ref(db, `users/${currentUserId}/medications/${medKey}`), (snapshot) => {
-                const med = snapshot.val();
-                if (med && med.prescriptionUrl) {
-                    window.open(med.prescriptionUrl, '_blank');
-                    log(`Prescrição exibida para o item ${medKey}: ${med.prescriptionUrl}`);
-                } else {
-                    document.getElementById('editError').textContent = "Nenhuma prescrição disponível!";
-                    log(`Nenhuma prescrição encontrada para o item ${medKey}`);
-                }
-            }, { onlyOnce: true });
-        }
-
-        // Função para apagar prescrição
-        function deletePrescription(medKey) {
-            if (!currentUserId || !medKey) {
-                document.getElementById('editError').textContent = "Erro: Paciente ou item não selecionado!";
-                return;
-            }
-
-            if (!confirm("Tem certeza que deseja apagar a prescrição deste item?")) {
-                return;
-            }
-
-            onValue(ref(db, `users/${currentUserId}/medications/${medKey}`), (snapshot) => {
-                const med = snapshot.val();
-                if (med && med.prescriptionUrl) {
-                    const storagePath = `prescriptions/${currentUserId}/${medKey}/`;
-                    const fileRef = storageRef(storage, storagePath + med.prescriptionUrl.split('/').pop().split('?')[0]);
-                    
-                    deleteObject(fileRef).then(() => {
-                        update(ref(db, `users/${currentUserId}/medications/${medKey}`), { prescriptionUrl: null })
-                            .then(() => {
-                                document.getElementById('editSuccess').textContent = "Prescrição apagada com sucesso!";
-                                log(`Prescrição apagada para o item ${medKey}`);
-                                setTimeout(() => document.getElementById('editSuccess').textContent = '', 2000);
-                                renderEditScreen();
-                            })
-                            .catch((error) => {
-                                document.getElementById('editError').textContent = "Erro ao remover URL da prescrição: " + error.message;
-                                log(`Erro ao remover URL da prescrição: ${error.message}`);
-                            });
-                    }).catch((error) => {
-                        document.getElementById('editError').textContent = "Erro ao apagar prescrição: " + error.message;
-                        log(`Erro ao apagar prescrição: ${error.message}`);
-                    });
-                } else {
-                    document.getElementById('editError').textContent = "Nenhuma prescrição para apagar!";
-                    log(`Nenhuma prescrição encontrada para apagar no item ${medKey}`);
-                }
-            }, { onlyOnce: true });
-        }
-
-        // Upload de prescrição na tela de cadastro
-        uploadAddPrescriptionButton.addEventListener('click', () => {
-            if (lastAddedMedKey) {
-                uploadPrescription(lastAddedMedKey, 'add');
-            } else {
-                document.getElementById('addError').textContent = "Salve o item primeiro antes de carregar a prescrição!";
-                log("Tentativa de upload de prescrição sem item salvo.");
-            }
-        });
 
         function renderEditScreen() {
             const medsRef = getMedsRef();
@@ -1004,10 +884,6 @@
                             <input type="text" id="editName-${key}" value="${med.name}">
                             <input type="number" id="editPeriod-${key}" value="${med.periodicity}">
                             <button id="saveEdit-${key}">Salvar</button>
-                            <span class="prescription-label">Prescrição:</span>
-                            <button id="uploadPrescription-${key}">Upload</button>
-                            <button id="showPrescription-${key}">Mostrar</button>
-                            <button id="deletePrescription-${key}">Apagar</button>
                         </div>
                     `;
                     editList.appendChild(li);
@@ -1015,14 +891,8 @@
                     const editNameInput = document.getElementById(`editName-${key}`);
                     const editPeriodInput = document.getElementById(`editPeriod-${key}`);
                     const saveButton = document.getElementById(`saveEdit-${key}`);
-                    const uploadButton = document.getElementById(`uploadPrescription-${key}`);
-                    const showButton = document.getElementById(`showPrescription-${key}`);
-                    const deleteButton = document.getElementById(`deletePrescription-${key}`);
 
                     saveButton.addEventListener('click', () => saveEdit(key));
-                    uploadButton.addEventListener('click', () => uploadPrescription(key));
-                    showButton.addEventListener('click', () => showPrescription(key));
-                    deleteButton.addEventListener('click', () => deletePrescription(key));
 
                     editNameInput.addEventListener('keydown', (e) => {
                         if (e.key === 'Enter') {
@@ -1497,6 +1367,44 @@
             log("Relatório de registro de usuários renderizado.");
         }
 
+        function generateTxtReport() {
+            const reportList = document.getElementById('reportList');
+            const reportNote = document.getElementById('reportNote');
+            let textContent = "";
+
+            if (currentReportType === 'userRegistry') {
+                const userItems = reportList.querySelectorAll('li');
+                if (userItems.length === 0) {
+                    textContent = "Nenhum usuário autenticado encontrado!";
+                } else {
+                    textContent = "Registro de Usuários:\n";
+                    userItems.forEach((item) => {
+                        const text = item.querySelector('.report-row span').textContent;
+                        textContent += `${text}\n`;
+                    });
+                }
+            } else {
+                const medItems = reportList.querySelectorAll('li');
+                if (medItems.length === 0) {
+                    textContent = "Nenhum registro encontrado!";
+                } else {
+                    textContent = `Relatório ${currentReportType === 'daily' ? 'Diário' : currentReportType === 'weekly' ? 'Semanal' : currentReportType === 'monthly' ? 'Mensal' : 'Anual'}:\n`;
+                    medItems.forEach((item) => {
+                        const row = item.querySelector('.report-row');
+                        const nameAndTime = row.childNodes[0].textContent.trim() + " " + row.querySelector('span').textContent;
+                        const expected = row.childNodes[2].textContent.trim();
+                        const loggedBy = row.childNodes[4].textContent.trim();
+                        const notes = item.querySelector('.user-note').value ? `Notas: ${item.querySelector('.user-note').value}` : "";
+                        textContent += `${nameAndTime} | ${expected} | ${loggedBy}${notes ? ' | ' + notes : ''}\n`;
+                    });
+                }
+            }
+
+            reportNote.value = textContent;
+            reportNote.style.display = 'block';
+            log("Relatório TXT gerado com base nos registros exibidos.");
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('goToUser').addEventListener('click', () => showScreen('userScreen'));
             document.getElementById('goToAdd').addEventListener('click', () => showScreen('addScreen'));
@@ -1538,6 +1446,7 @@
                 currentReportType = 'userRegistry';
                 renderUserRegistryReport();
             });
+            document.getElementById('txtReport').addEventListener('click', generateTxtReport);
 
             userNameInput.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter') {
