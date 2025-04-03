@@ -1,0 +1,1564 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciador de Medicamentos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #e0e0e0;
+            text-align: center;
+            margin: 0;
+        }
+        #loginScreen, #registerScreen {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        #appScreen {
+            width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        #loginScreen { display: block; }
+        #registerScreen, #appScreen { display: none; }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+        h1 {
+            color: #ffffff;
+            font-size: 36px;
+            margin: 0;
+        }
+        #currentTime {
+            font-size: 28px;
+            color: #e0e0e0;
+        }
+        .nav-buttons {
+            margin: 20px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+        .report-container {
+            width: 100%;
+            text-align: left;
+        }
+        .report-line1, .report-line2 {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 0;
+            padding: 0;
+        }
+        .report-title { margin: 0; padding: 0; }
+        .report-period-buttons { display: flex; margin: 0; padding: 0; }
+        .report-order-chrono, .report-order-type, .report-user-registry {
+            margin: 0 10px 0 0;
+            padding: 15px;
+        }
+        button, input {
+            font-size: 24px;
+            padding: 15px;
+            margin: 10px 10px 0 0;
+            background: #333;
+            color: #e0e0e0;
+            border: 1px solid #555;
+        }
+        button:hover { background: #555; }
+        .screen { display: none; width: 100%; }
+        .screen.active { display: block; }
+        ul { list-style-type: none; padding: 0; width: 100%; }
+        #medList li, #userList li, #editMedList li, #deleteMedList li, #reportList li {
+            font-size: 28px;
+            margin: 15px 0;
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        #medList li { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+        #userList li, #editMedList li, #deleteMedList li, #reportList li {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .user-row, .report-row, .edit-row, .delete-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            cursor: pointer;
+        }
+        .edit-row input[type="text"] { flex: 1; margin-right: 10px; }
+        .edit-row input[type="number"] { width: 150px; margin-right: 10px; }
+        .delete-name { cursor: pointer; flex: 1; text-align: left; }
+        .next-time { font-size: 36px; font-weight: bold; }
+        .same-day { color: #ffff00; }
+        .future-day { color: #1e90ff; }
+        .on-time { color: #00ff00; }
+        .late { color: #ff5555; }
+        #loginError, #registerError, #mainError, #addError, #editError, #deleteError, #reportError, #userError,
+        #loginSuccess, #registerSuccess, #mainSuccess, #addSuccess, #editSuccess, #deleteSuccess, #reportSuccess, #userSuccess {
+            font-size: 24px;
+            margin: 10px 0;
+        }
+        [id$="Error"] { color: #ff5555; }
+        [id$="Success"] { color: #55ff55; }
+        .user-name, .has-note { cursor: pointer; }
+        .has-note { font-style: italic; color: #aaa; margin-left: 10px; }
+        .user-note, .delete-note {
+            display: none;
+            font-size: 20px;
+            margin-top: 10px;
+            color: #e0e0e0;
+            width: 100%;
+            text-align: left;
+            word-wrap: break-word;
+            min-height: 60px;
+            background: #333;
+            border: 1px solid #555;
+            padding: 10px;
+            resize: none;
+            box-sizing: border-box;
+        }
+        .status-text { font-size: 24px; margin-left: 10px; }
+        .prescription-label { margin-right: 10px; font-size: 24px; }
+    </style>
+</head>
+<body>
+    <!-- Tela de Login -->
+    <div id="loginScreen">
+        <h1>Gerenciador de Medicamentos</h1>
+        <input type="email" id="emailInput" placeholder="E-mail" autocomplete="off" autocapitalize="none">
+        <input type="password" id="passwordInput" placeholder="Senha" autocomplete="new-password">
+        <button id="loginButton">Entrar</button>
+        <button id="registerButton">Cadastrar</button>
+        <button id="resetPasswordButton">Recuperar Senha</button>
+        <div id="loginError"></div>
+        <div id="loginSuccess"></div>
+    </div>
+
+    <!-- Tela de Cadastro de Usuário Autenticado -->
+    <div id="registerScreen">
+        <h1>Cadastrar Novo Usuário</h1>
+        <input type="text" id="registerNameInput" placeholder="Nome do Usuário" autocomplete="off">
+        <input type="email" id="registerEmailInput" placeholder="E-mail" autocomplete="off">
+        <input type="password" id="registerPasswordInput" placeholder="Senha" autocomplete="new-password">
+        <button id="saveRegisterButton">Salvar</button>
+        <button id="backFromRegisterButton">Voltar</button>
+        <div id="registerError"></div>
+        <div id="registerSuccess"></div>
+    </div>
+
+    <!-- Tela Principal -->
+    <div id="appScreen">
+        <div id="mainScreen" class="screen active">
+            <div class="header">
+                <h1>Gerenciador de Medicamentos</h1>
+                <span id="currentTime"></span>
+            </div>
+            <div class="nav-buttons">
+                <button id="goToUser">Pacientes</button>
+                <button id="goToAdd">Cadastrar Item</button>
+                <button id="goToEdit">Alterar Item</button>
+                <button id="goToDelete">Excluir ou Mudar Status do Item</button>
+                <button id="goToReport">Relatórios</button>
+                <button id="logoutButton">Sair</button>
+            </div>
+            <ul id="medList"></ul>
+            <div id="mainError"></div>
+            <div id="mainSuccess"></div>
+        </div>
+
+        <div id="userScreen" class="screen">
+            <h1>Pacientes</h1>
+            <input type="text" id="userNameInput" placeholder="Nome do paciente">
+            <button id="saveUser">Salvar</button>
+            <button id="backFromUser">Voltar</button>
+            <ul id="userList"></ul>
+            <div id="userError"></div>
+            <div id="userSuccess"></div>
+        </div>
+
+        <div id="addScreen" class="screen">
+            <h1>Cadastrar Item</h1>
+            <input type="text" id="addNameInput" placeholder="Nome do item">
+            <input type="number" id="addPeriodInput" placeholder="Periodicidade (horas)">
+            <button id="saveAdd">Salvar</button>
+            <button id="uploadAddPrescription">Upload</button>
+            <button id="backFromAdd">Voltar</button>
+            <div id="addError"></div>
+            <div id="addSuccess"></div>
+        </div>
+
+        <div id="editScreen" class="screen">
+            <h1>Alterar Item</h1>
+            <ul id="editMedList"></ul>
+            <button id="backFromEdit">Voltar</button>
+            <div id="editError"></div>
+            <div id="editSuccess"></div>
+        </div>
+
+        <div id="deleteScreen" class="screen">
+            <h1>Excluir ou Mudar Status do Item</h1>
+            <ul id="deleteMedList"></ul>
+            <button id="backFromDelete">Voltar</button>
+            <div id="deleteError"></div>
+            <div id="deleteSuccess"></div>
+        </div>
+
+        <div id="reportScreen" class="screen">
+            <div class="report-container">
+                <div class="report-line1">
+                    <h1 class="report-title">RELATÓRIOS</h1>
+                    <button id="chronoOrder" class="report-order-chrono">Ordenamento Cronológico</button>
+                </div>
+                <div class="report-line2">
+                    <div class="report-period-buttons">
+                        <button id="dailyReport">Diário</button>
+                        <button id="weeklyReport">Semanal</button>
+                        <button id="monthlyReport">Mensal</button>
+                        <button id="yearlyReport">Anual</button>
+                    </div>
+                    <button id="userRegistryReport" class="report-user-registry">Registro de Usuários</button>
+                    <button id="typeOrder" class="report-order-type">Ordenamento por Tipo de Item</button>
+                </div>
+            </div>
+            <ul id="reportList"></ul>
+            <button id="backFromReport">Voltar</button>
+            <div id="reportError"></div>
+            <div id="reportSuccess"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getDatabase, ref, onValue, push, update, remove, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+        import { getStorage, ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDan0hha-AIKJ2onO-u79Yf480uyR9DroQ",
+            authDomain: "medicamentos-enf-patricia.firebaseapp.com",
+            projectId: "medicamentos-enf-patricia",
+            storageBucket: "medicamentos-enf-patricia.firebasestorage.app",
+            messagingSenderId: "893304740405",
+            appId: "1:893304740405:web:9ef46f7b6ad808504c2f7c",
+            measurementId: "G-FMTFKEBNN7",
+            databaseURL: "https://medicamentos-enf-patricia-default-rtdb.firebaseio.com"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const auth = getAuth(app);
+        const storage = getStorage(app);
+        const usersRef = ref(db, 'users');
+        const lastUserRef = ref(db, 'lastUser');
+        const authUsersRef = ref(db, 'authUsers');
+        let currentUserId = null;
+        let currentReportType = 'daily';
+        let currentAuthUser = null;
+        let currentAuthUserName = null;
+        let loggedInUserName = null;
+        let isRegisterClicked = false;
+        let lastAddedMedKey = null; // Para rastrear o último item adicionado na tela de cadastro
+
+        function getMedsRef() {
+            return currentUserId ? ref(db, `users/${currentUserId}/medications`) : ref(db, 'medications');
+        }
+
+        // Elementos DOM para autenticação e cadastro
+        const loginScreen = document.getElementById('loginScreen');
+        const registerScreen = document.getElementById('registerScreen');
+        const appScreen = document.getElementById('appScreen');
+        const emailInput = document.getElementById('emailInput');
+        const passwordInput = document.getElementById('passwordInput');
+        const loginButton = document.getElementById('loginButton');
+        const registerButton = document.getElementById('registerButton');
+        const resetPasswordButton = document.getElementById('resetPasswordButton');
+        const logoutButton = document.getElementById('logoutButton');
+        const loginError = document.getElementById('loginError');
+        const loginSuccess = document.getElementById('loginSuccess');
+        const registerNameInput = document.getElementById('registerNameInput');
+        const registerEmailInput = document.getElementById('registerEmailInput');
+        const registerPasswordInput = document.getElementById('registerPasswordInput');
+        const saveRegisterButton = document.getElementById('saveRegisterButton');
+        const backFromRegisterButton = document.getElementById('backFromRegisterButton');
+        const registerError = document.getElementById('registerError');
+        const registerSuccess = document.getElementById('registerSuccess');
+
+        // Elementos DOM para as telas de pacientes e medicamentos
+        const userNameInput = document.getElementById('userNameInput');
+        const addNameInput = document.getElementById('addNameInput');
+        const addPeriodInput = document.getElementById('addPeriodInput');
+        const uploadAddPrescriptionButton = document.getElementById('uploadAddPrescription');
+
+        // Função de log
+        function log(message) {
+            console.log(`[LOG ${new Date().toLocaleTimeString()}]: ${message}`);
+        }
+
+        // Função para validar e-mail
+        function isValidEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+
+        // Função para obter o nome ou e-mail do usuário autenticado por UID (mantida como fallback)
+        function getAuthUserNameByUid(uid) {
+            return new Promise((resolve) => {
+                onValue(ref(db, `authUsers/${uid}`), (snapshot) => {
+                    const user = snapshot.val();
+                    const name = user ? (user.name || user.email) : "Usuário Desconhecido";
+                    log(`Resolvendo UID ${uid} para nome: ${name}`);
+                    resolve(name);
+                }, { onlyOnce: true });
+            });
+        }
+
+        // Listener persistente para estado de autenticação
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                log(`Usuário autenticado detectado: ${user.email}`);
+                currentAuthUser = user;
+                currentAuthUserName = await getAuthUserNameByUid(user.uid); // Mantido como fallback
+                loggedInUserName = user.email; // Usa o e-mail do usuário autenticado diretamente
+                log(`currentAuthUser definido como: ${currentAuthUser.email}, loggedInUserName: ${loggedInUserName}`);
+            } else {
+                log("Nenhum usuário autenticado detectado.");
+                currentAuthUser = null;
+                currentAuthUserName = null;
+                loggedInUserName = null;
+                loginScreen.style.display = 'block';
+                appScreen.style.display = 'none';
+                registerScreen.style.display = 'none';
+            }
+        });
+
+        // Forçar logout ao carregar a página
+        document.addEventListener('DOMContentLoaded', () => {
+            signOut(auth).then(() => {
+                log("Sessão encerrada ao carregar a página.");
+                loginScreen.style.display = 'block';
+                appScreen.style.display = 'none';
+                registerScreen.style.display = 'none';
+            }).catch((error) => {
+                log(`Erro ao forçar logout inicial: ${error.message}`);
+            });
+        });
+
+        // Login
+        loginButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            const email = emailInput.value.trim();
+            const password = passwordInput.value.trim();
+            if (!email || !password) {
+                loginError.textContent = "Preencha e-mail e senha!";
+                return;
+            }
+            if (!isValidEmail(email)) {
+                loginError.textContent = "Digite um e-mail válido (ex.: usuario@dominio.com)!";
+                return;
+            }
+            signInWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    log(`Login bem-sucedido: ${userCredential.user.email}`);
+                    loginError.textContent = '';
+                    loginSuccess.textContent = "Login realizado com sucesso!";
+                    setTimeout(() => {
+                        if (!isRegisterClicked) {
+                            loginSuccess.textContent = '';
+                            loginScreen.style.display = 'none';
+                            appScreen.style.display = 'block';
+                            renderMainScreen();
+                        }
+                    }, 3000);
+                })
+                .catch((error) => {
+                    loginError.textContent = `Erro ao fazer login: ${error.message}`;
+                    log(`Erro ao fazer login: ${error.message}`);
+                });
+        });
+
+        // Mostrar tela de cadastro apenas se autenticado
+        registerButton.addEventListener('click', () => {
+            log(`Botão 'Cadastrar' clicado. currentAuthUser: ${currentAuthUser ? currentAuthUser.email : 'null'}`);
+            if (currentAuthUser) {
+                isRegisterClicked = true;
+                loginScreen.style.display = 'none';
+                appScreen.style.display = 'none';
+                registerScreen.style.display = 'block';
+                registerNameInput.value = '';
+                registerEmailInput.value = '';
+                registerPasswordInput.value = '';
+                registerError.textContent = '';
+                registerSuccess.textContent = '';
+                log("Tela de cadastro exibida para usuário autenticado: " + currentAuthUser.email);
+            } else {
+                loginError.textContent = "Faça login primeiro para cadastrar um novo usuário!";
+                log("Tentativa de acessar cadastro sem usuário autenticado.");
+            }
+        });
+
+        // Salvar novo usuário autenticado sem alterar o usuário logado
+        saveRegisterButton.addEventListener('click', () => {
+            const name = registerNameInput.value.trim();
+            const email = registerEmailInput.value.trim();
+            const password = registerPasswordInput.value.trim();
+
+            log(`Tentativa de salvar novo usuário: ${email}. currentAuthUser: ${currentAuthUser ? currentAuthUser.email : 'null'}, loggedInUserName: ${loggedInUserName}`);
+
+            if (!name || !email || !password) {
+                registerError.textContent = "Preencha todos os campos!";
+                return;
+            }
+            if (!isValidEmail(email)) {
+                registerError.textContent = "Digite um e-mail válido (ex.: usuario@dominio.com)!";
+                return;
+            }
+            if (password.length < 6) {
+                registerError.textContent = "A senha deve ter pelo menos 6 caracteres!";
+                return;
+            }
+            if (!currentAuthUser || !loggedInUserName) {
+                registerError.textContent = "Nenhum usuário autenticado! Faça login novamente.";
+                log("Tentativa de cadastro sem usuário autenticado.");
+                registerScreen.style.display = 'none';
+                loginScreen.style.display = 'block';
+                return;
+            }
+
+            // Criar uma instância de autenticação secundária para evitar afetar o auth principal
+            const secondaryApp = initializeApp(firebaseConfig, "SecondaryApp");
+            const secondaryAuth = getAuth(secondaryApp);
+
+            createUserWithEmailAndPassword(secondaryAuth, email, password)
+                .then((userCredential) => {
+                    const user = userCredential.user;
+                    log(`Novo usuário autenticado ${name} criado com e-mail: ${email}`);
+
+                    // Salvar os dados no banco usando o UID do novo usuário
+                    return set(ref(db, `authUsers/${user.uid}`), {
+                        name: name,
+                        email: email,
+                        registeredById: currentAuthUser.uid
+                    }).then(() => {
+                        return update(ref(db, `authUsers/${user.uid}`), {
+                            registeredBy: loggedInUserName
+                        }).then(() => {
+                            registerError.textContent = '';
+                            registerSuccess.textContent = `Usuário ${name} cadastrado com sucesso! Use as credenciais (${email}) para fazer login.`;
+                            
+                            signOut(secondaryAuth).then(() => {
+                                log(`Sessão do novo usuário ${email} encerrada na instância secundária.`);
+                                setTimeout(() => {
+                                    registerSuccess.textContent = '';
+                                    registerScreen.style.display = 'none';
+                                    appScreen.style.display = 'block';
+                                    isRegisterClicked = false;
+                                }, 3000);
+                            }).catch((error) => {
+                                log(`Erro ao deslogar da instância secundária: ${error.message}`);
+                            });
+                        });
+                    }).catch((error) => {
+                        registerError.textContent = "Erro ao salvar dados do usuário: " + error.message;
+                        log(`Erro ao salvar no Realtime Database: ${error.message}`);
+                    });
+                })
+                .catch((error) => {
+                    if (error.code === 'auth/email-already-in-use') {
+                        registerError.textContent = "Este e-mail já está em uso. Tente outro ou faça login.";
+                    } else if (error.code === 'auth/invalid-email') {
+                        registerError.textContent = "E-mail inválido! Use o formato correto (ex.: usuario@dominio.com).";
+                    } else {
+                        registerError.textContent = `Erro ao cadastrar: ${error.message}`;
+                    }
+                    log(`Erro ao cadastrar usuário: ${error.message}`);
+                })
+                .finally(() => {
+                    secondaryApp.delete().catch((error) => {
+                        log(`Erro ao destruir instância secundária: ${error.message}`);
+                    });
+                });
+        });
+
+        backFromRegisterButton.addEventListener('click', () => {
+            registerScreen.style.display = 'none';
+            loginScreen.style.display = 'block';
+            isRegisterClicked = false;
+            log("Voltando da tela de cadastro para a tela de login.");
+        });
+
+        // Recuperação de senha
+        resetPasswordButton.addEventListener('click', () => {
+            const email = emailInput.value.trim();
+            if (!email) {
+                loginError.textContent = "Digite seu e-mail para recuperar a senha!";
+                return;
+            }
+            if (!isValidEmail(email)) {
+                loginError.textContent = "Digite um e-mail válido (ex.: usuario@dominio.com)!";
+                return;
+            }
+            sendPasswordResetEmail(auth, email)
+                .then(() => {
+                    loginError.textContent = '';
+                    loginSuccess.textContent = "E-mail de recuperação enviado! Verifique sua caixa de entrada.";
+                    setTimeout(() => loginSuccess.textContent = '', 5000);
+                })
+                .catch((error) => {
+                    loginError.textContent = `Erro ao enviar e-mail de recuperação: ${error.message}`;
+                    log(`Erro ao enviar e-mail de recuperação: ${error.message}`);
+                });
+        });
+
+        // Logout
+        logoutButton.addEventListener('click', () => {
+            signOut(auth)
+                .then(() => {
+                    log("Logout realizado com sucesso.");
+                    loginError.textContent = '';
+                    loginSuccess.textContent = "Logout realizado com sucesso!";
+                    setTimeout(() => {
+                        loginSuccess.textContent = '';
+                        appScreen.style.display = 'none';
+                        loginScreen.style.display = 'block';
+                    }, 2000);
+                })
+                .catch((error) => {
+                    loginError.textContent = `Erro ao fazer logout: ${error.message}`;
+                    log(`Erro ao fazer logout: ${error.message}`);
+                });
+        });
+
+        function updateCurrentTime() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            document.getElementById('currentTime').textContent = `${hours}:${minutes}`;
+        }
+        setInterval(updateCurrentTime, 60000);
+        updateCurrentTime();
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => screen.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+            if (screenId === 'userScreen') renderUserScreen();
+            if (screenId === 'editScreen') renderEditScreen();
+            if (screenId === 'deleteScreen') renderDeleteScreen();
+            if (screenId === 'reportScreen') {
+                if (currentReportType === 'daily') renderDailyReport('chrono');
+                else renderReportScreen(currentReportType);
+            }
+            if (screenId === 'mainScreen') renderMainScreen();
+        }
+
+        function formatDateTime(dateTime) {
+            if (!dateTime) return '<span>Aguardando!</span>';
+            const date = new Date(dateTime);
+            const dateLocal = new Date(date.getTime() - 3 * 60 * 60 * 1000);
+            const day = String(dateLocal.getDate()).padStart(2, '0');
+            const month = String(dateLocal.getMonth() + 1).padStart(2, '0');
+            const year = dateLocal.getFullYear();
+            const hours = String(dateLocal.getHours()).padStart(2, '0');
+            const minutes = String(dateLocal.getMinutes()).padStart(2, '0');
+            let className = '';
+
+            const now = new Date();
+            const today = new Date(now);
+            today.setHours(0, 0, 0, 0);
+            const due = new Date(dateLocal);
+            due.setHours(0, 0, 0, 0);
+            const diffDays = Math.floor((due - today) / (24 * 60 * 60 * 1000));
+
+            if (diffDays < 0) {
+                className = 'late';
+            } else if (diffDays === 0) {
+                const nowTime = now.getTime();
+                const dueTime = dateLocal.getTime();
+                const diffMinutes = (nowTime - dueTime) / (60 * 1000);
+                if (diffMinutes > 30) {
+                    className = 'late';
+                } else {
+                    className = 'same-day';
+                }
+            } else if (diffDays === 1) {
+                className = 'future-day';
+            }
+
+            return `<span class="${className}">${hours}:${minutes}</span>`;
+        }
+
+        function getNextTime(lastTaken, periodicity) {
+            if (!lastTaken) return null;
+            const last = new Date(lastTaken);
+            const periodMs = periodicity * 60 * 60 * 1000;
+            const nextTimeMs = last.getTime() + periodMs;
+            const next = new Date(nextTimeMs);
+            return next.toISOString();
+        }
+
+        onValue(lastUserRef, (snapshot) => {
+            const lastUser = snapshot.val();
+            if (lastUser && lastUser.id) {
+                currentUserId = lastUser.id;
+                onValue(ref(db, `users/${currentUserId}`), (userSnapshot) => {
+                    const user = userSnapshot.val();
+                    if (user && user.name) {
+                        const firstName = user.name.split(' ')[0];
+                        document.getElementById('goToUser').textContent = firstName;
+                    }
+                }, { onlyOnce: true });
+                renderMainScreen();
+            }
+        });
+
+        function renderMainScreen() {
+            if (!currentAuthUser) {
+                appScreen.style.display = 'none';
+                loginScreen.style.display = 'block';
+                return;
+            }
+            const medsRef = getMedsRef();
+            onValue(medsRef, (snapshot) => {
+                const meds = snapshot.val() || {};
+                const medList = document.getElementById('medList');
+                medList.innerHTML = meds ? '' : '<li>Nenhum medicamento, alimento ou líquido cadastrado!</li>';
+
+                const medArray = Object.entries(meds)
+                    .filter(([_, med]) => med.enabled !== false)
+                    .map(([key, med]) => ({
+                        key,
+                        med,
+                        nextTime: getNextTime(med.lastTaken, med.periodicity)
+                    }));
+
+                medArray.sort((a, b) => {
+                    if (a.nextTime === null && b.nextTime === null) return 0;
+                    if (a.nextTime === null) return 1;
+                    if (b.nextTime === null) return -1;
+                    return new Date(a.nextTime) - new Date(b.nextTime);
+                });
+
+                medArray.forEach(({ key, med, nextTime }) => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `
+                        ${med.name} | Próximo: <span class="next-time">${formatDateTime(nextTime)}</span>
+                        | Tomado às: <input type="text" id="taken-${key}" value="" placeholder="hhmm" maxlength="4">
+                        <button id="currentTime-${key}">Hora Atual</button>
+                    `;
+                    medList.appendChild(li);
+
+                    li.querySelector(`#taken-${key}`).addEventListener('change', (e) => {
+                        const value = e.target.value;
+                        if (/^\d{4}$/.test(value)) {
+                            const hours = parseInt(value.slice(0, 2));
+                            const minutes = parseInt(value.slice(2, 4));
+                            if (hours >= 0 && hours < 24 && minutes >= 0 && minutes < 60) {
+                                const localDate = new Date();
+                                localDate.setHours(hours, minutes, 0, 0);
+                                const utcDate = new Date(localDate.getTime() + 3 * 60 * 60 * 1000);
+                                const newLastTaken = utcDate.toISOString();
+                                update(ref(db, `users/${currentUserId}/medications/${key}`), { 
+                                    lastTaken: newLastTaken,
+                                    history: med.history ? [...med.history, { taken: newLastTaken, notes: "", loggedBy: loggedInUserName || currentAuthUser.email }] : [{ taken: newLastTaken, notes: "", loggedBy: loggedInUserName || currentAuthUser.email }]
+                                }).then(() => {
+                                    e.target.value = '';
+                                }).catch((error) => {
+                                    document.getElementById('mainError').textContent = "Erro ao registrar: " + error.message;
+                                    log(`Erro ao registrar medicamento: ${error.message}`);
+                                });
+                            } else {
+                                document.getElementById('mainError').textContent = "Horário inválido!";
+                            }
+                        } else {
+                            document.getElementById('mainError').textContent = "Digite hhmm (ex.: 1556)!";
+                        }
+                    });
+
+                    li.querySelector(`#currentTime-${key}`).addEventListener('click', () => {
+                        const now = new Date();
+                        const hours = String(now.getHours()).padStart(2, '0');
+                        const minutes = String(now.getMinutes()).padStart(2, '0');
+                        const value = `${hours}${minutes}`;
+                        const localDate = new Date();
+                        localDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+                        const utcDate = new Date(localDate.getTime() + 3 * 60 * 60 * 1000);
+                        const newLastTaken = utcDate.toISOString();
+                        update(ref(db, `users/${currentUserId}/medications/${key}`), { 
+                            lastTaken: newLastTaken,
+                            history: med.history ? [...med.history, { taken: newLastTaken, notes: "", loggedBy: loggedInUserName || currentAuthUser.email }] : [{ taken: newLastTaken, notes: "", loggedBy: loggedInUserName || currentAuthUser.email }]
+                        }).then(() => {
+                            document.getElementById(`taken-${key}`).value = '';
+                        }).catch((error) => {
+                            document.getElementById('mainError').textContent = "Erro ao registrar: " + error.message;
+                            log(`Erro ao registrar medicamento com hora atual: ${error.message}`);
+                        });
+                    });
+                });
+            });
+        }
+
+        function addUser() {
+            const nameInput = document.getElementById('userNameInput');
+            const name = nameInput.value.trim();
+
+            log("Iniciando addUser para: " + name);
+
+            if (!name) {
+                document.getElementById('userError').textContent = "Preencha o nome do paciente!";
+                log("Tentativa de adicionar paciente sem nome.");
+                return;
+            }
+
+            if (!currentAuthUser) {
+                document.getElementById('userError').textContent = "Usuário não autenticado! Faça login novamente.";
+                log("Tentativa de adicionar paciente sem autenticação.");
+                return;
+            }
+
+            log("Usuário autenticado: " + currentAuthUser.email + ". Tentando adicionar paciente: " + name);
+
+            log("Executando push para /users...");
+            push(usersRef, {
+                name: name,
+                note: "",
+                registeredBy: loggedInUserName || currentAuthUser.email,
+                registeredById: currentAuthUser.uid
+            }).then((newUserRef) => {
+                const userId = newUserRef.key;
+                log(`Novo paciente criado com ID: ${userId}`);
+
+                log("Executando set para /lastUser...");
+                return set(lastUserRef, { id: userId }).then(() => {
+                    log("lastUser atualizado com sucesso para ID: " + userId);
+                    currentUserId = userId;
+                    nameInput.value = '';
+                    document.getElementById('userError').textContent = '';
+                    document.getElementById('userSuccess').textContent = "Paciente cadastrado com sucesso!";
+                    setTimeout(() => document.getElementById('userSuccess').textContent = '', 2000);
+                    showScreen('mainScreen');
+                });
+            }).catch((error) => {
+                log("Erro durante a operação no Firebase: " + error.message);
+                document.getElementById('userError').textContent = "Erro ao cadastrar paciente: " + error.message;
+            });
+        }
+
+        function renderUserScreen() {
+            onValue(usersRef, (snapshot) => {
+                const users = snapshot.val() || {};
+                const userList = document.getElementById('userList');
+                userList.innerHTML = '';
+
+                const userArray = Object.entries(users).sort((a, b) => 
+                    a[1].name.localeCompare(b[1].name)
+                );
+
+                userArray.forEach(([key, user]) => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `
+                        <div class="user-row">
+                            <span class="user-name">${user.name}</span>
+                            <div>
+                                <button id="editUser-${key}">Editar</button>
+                                <button id="deleteUser-${key}">Excluir</button>
+                                ${user.note ? '<span class="has-note">(Contém Nota)</span>' : ''}
+                            </div>
+                        </div>
+                        <textarea id="note-${key}" class="user-note" placeholder="Digite uma nota aqui">${user.note || ''}</textarea>
+                    `;
+                    userList.appendChild(li);
+
+                    const userNameSpan = li.querySelector('.user-name');
+                    const hasNoteSpan = li.querySelector('.has-note');
+                    const noteTextarea = document.getElementById(`note-${key}`);
+
+                    function toggleNote() {
+                        noteTextarea.style.display = noteTextarea.style.display === 'block' ? 'none' : 'block';
+                        set(lastUserRef, { id: key }).then(() => {
+                            const firstName = user.name.split(' ')[0];
+                            document.getElementById('goToUser').textContent = firstName;
+                            currentUserId = key;
+                            renderMainScreen();
+                        });
+                        noteTextarea.focus();
+                    }
+
+                    userNameSpan.addEventListener('click', toggleNote);
+                    if (hasNoteSpan) hasNoteSpan.addEventListener('click', toggleNote);
+
+                    noteTextarea.addEventListener('blur', () => {
+                        update(ref(db, `users/${key}`), { note: noteTextarea.value });
+                    });
+                    noteTextarea.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            update(ref(db, `users/${key}`), { note: noteTextarea.value });
+                            noteTextarea.blur();
+                        }
+                    });
+
+                    document.getElementById(`editUser-${key}`).addEventListener('click', () => {
+                        const newName = prompt("Digite o novo nome:", user.name);
+                        if (newName) {
+                            const newNote = prompt("Digite uma nova nota (opcional):", user.note || "");
+                            update(ref(db, `users/${key}`), { 
+                                name: newName,
+                                note: newNote || ""
+                            });
+                        }
+                    });
+
+                    document.getElementById(`deleteUser-${key}`).addEventListener('click', () => {
+                        if (confirm("Tem certeza que deseja excluir este paciente? Isso excluirá todos os medicamentos associados!")) {
+                            remove(ref(db, `users/${key}`)).then(() => {
+                                if (currentUserId === key) {
+                                    set(lastUserRef, null);
+                                    document.getElementById('goToUser').textContent = "Pacientes";
+                                    currentUserId = null;
+                                    renderMainScreen();
+                                }
+                            });
+                        }
+                    });
+                });
+            });
+        }
+
+        function addMedication() {
+            if (!currentUserId) {
+                document.getElementById('addError').textContent = "Selecione um paciente primeiro!";
+                log("Tentativa de adicionar medicamento sem paciente selecionado.");
+                return;
+            }
+            const nameInput = document.getElementById('addNameInput');
+            const periodInput = document.getElementById('addPeriodInput');
+            const name = nameInput.value.trim();
+            const periodicity = parseInt(periodInput.value);
+
+            if (!name || isNaN(periodicity) || periodicity <= 0) {
+                document.getElementById('addError').textContent = "Preencha nome e periodicidade válida!";
+                log("Tentativa de adicionar medicamento com dados inválidos.");
+                return;
+            }
+
+            const medsRef = getMedsRef();
+            push(medsRef, {
+                name,
+                periodicity,
+                lastTaken: null,
+                enabled: true,
+                history: [],
+                note: "",
+                prescriptionUrl: null // Campo para armazenar a URL da prescrição
+            }).then((newMedRef) => {
+                lastAddedMedKey = newMedRef.key; // Armazena a chave do último item adicionado
+                nameInput.value = '';
+                periodInput.value = '';
+                document.getElementById('addError').textContent = '';
+                document.getElementById('addSuccess').textContent = "Item cadastrado com sucesso!";
+                log(`Medicamento ${name} cadastrado para o paciente ${currentUserId}.`);
+                setTimeout(() => document.getElementById('addSuccess').textContent = '', 2000);
+                showScreen('mainScreen');
+            }).catch((error) => {
+                document.getElementById('addError').textContent = "Erro ao cadastrar: " + error.message;
+                log(`Erro ao cadastrar medicamento: ${error.message}`);
+            });
+        }
+
+        // Função para upload de prescrição
+        function uploadPrescription(medKey, source = 'edit') {
+            if (!currentUserId || !medKey) {
+                const errorElement = source === 'edit' ? document.getElementById('editError') : document.getElementById('addError');
+                errorElement.textContent = "Erro: Paciente ou item não selecionado!";
+                return;
+            }
+
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                const storagePath = `prescriptions/${currentUserId}/${medKey}/${file.name}`;
+                const fileRef = storageRef(storage, storagePath);
+
+                uploadBytes(fileRef, file).then((snapshot) => {
+                    return getDownloadURL(fileRef).then((downloadURL) => {
+                        update(ref(db, `users/${currentUserId}/medications/${medKey}`), { prescriptionUrl: downloadURL })
+                            .then(() => {
+                                const successElement = source === 'edit' ? document.getElementById('editSuccess') : document.getElementById('addSuccess');
+                                successElement.textContent = "Prescrição carregada com sucesso!";
+                                log(`Prescrição carregada para o item ${medKey} em ${downloadURL}`);
+                                setTimeout(() => successElement.textContent = '', 2000);
+                                if (source === 'edit') renderEditScreen();
+                            })
+                            .catch((error) => {
+                                const errorElement = source === 'edit' ? document.getElementById('editError') : document.getElementById('addError');
+                                errorElement.textContent = "Erro ao salvar URL da prescrição: " + error.message;
+                                log(`Erro ao salvar URL da prescrição: ${error.message}`);
+                            });
+                    });
+                }).catch((error) => {
+                    const errorElement = source === 'edit' ? document.getElementById('editError') : document.getElementById('addError');
+                    errorElement.textContent = "Erro ao carregar prescrição: " + error.message;
+                    log(`Erro ao carregar prescrição: ${error.message}`);
+                });
+            };
+            input.click();
+        }
+
+        // Função para mostrar prescrição
+        function showPrescription(medKey) {
+            if (!currentUserId || !medKey) {
+                document.getElementById('editError').textContent = "Erro: Paciente ou item não selecionado!";
+                return;
+            }
+
+            onValue(ref(db, `users/${currentUserId}/medications/${medKey}`), (snapshot) => {
+                const med = snapshot.val();
+                if (med && med.prescriptionUrl) {
+                    window.open(med.prescriptionUrl, '_blank');
+                    log(`Prescrição exibida para o item ${medKey}: ${med.prescriptionUrl}`);
+                } else {
+                    document.getElementById('editError').textContent = "Nenhuma prescrição disponível!";
+                    log(`Nenhuma prescrição encontrada para o item ${medKey}`);
+                }
+            }, { onlyOnce: true });
+        }
+
+        // Função para apagar prescrição
+        function deletePrescription(medKey) {
+            if (!currentUserId || !medKey) {
+                document.getElementById('editError').textContent = "Erro: Paciente ou item não selecionado!";
+                return;
+            }
+
+            if (!confirm("Tem certeza que deseja apagar a prescrição deste item?")) {
+                return;
+            }
+
+            onValue(ref(db, `users/${currentUserId}/medications/${medKey}`), (snapshot) => {
+                const med = snapshot.val();
+                if (med && med.prescriptionUrl) {
+                    const storagePath = `prescriptions/${currentUserId}/${medKey}/`;
+                    const fileRef = storageRef(storage, storagePath + med.prescriptionUrl.split('/').pop().split('?')[0]);
+                    
+                    deleteObject(fileRef).then(() => {
+                        update(ref(db, `users/${currentUserId}/medications/${medKey}`), { prescriptionUrl: null })
+                            .then(() => {
+                                document.getElementById('editSuccess').textContent = "Prescrição apagada com sucesso!";
+                                log(`Prescrição apagada para o item ${medKey}`);
+                                setTimeout(() => document.getElementById('editSuccess').textContent = '', 2000);
+                                renderEditScreen();
+                            })
+                            .catch((error) => {
+                                document.getElementById('editError').textContent = "Erro ao remover URL da prescrição: " + error.message;
+                                log(`Erro ao remover URL da prescrição: ${error.message}`);
+                            });
+                    }).catch((error) => {
+                        document.getElementById('editError').textContent = "Erro ao apagar prescrição: " + error.message;
+                        log(`Erro ao apagar prescrição: ${error.message}`);
+                    });
+                } else {
+                    document.getElementById('editError').textContent = "Nenhuma prescrição para apagar!";
+                    log(`Nenhuma prescrição encontrada para apagar no item ${medKey}`);
+                }
+            }, { onlyOnce: true });
+        }
+
+        // Upload de prescrição na tela de cadastro
+        uploadAddPrescriptionButton.addEventListener('click', () => {
+            if (lastAddedMedKey) {
+                uploadPrescription(lastAddedMedKey, 'add');
+            } else {
+                document.getElementById('addError').textContent = "Salve o item primeiro antes de carregar a prescrição!";
+                log("Tentativa de upload de prescrição sem item salvo.");
+            }
+        });
+
+        function renderEditScreen() {
+            const medsRef = getMedsRef();
+            onValue(medsRef, (snapshot) => {
+                const meds = snapshot.val() || {};
+                const editList = document.getElementById('editMedList');
+                editList.innerHTML = '';
+
+                const medArray = Object.entries(meds).sort((a, b) => a[1].name.localeCompare(b[1].name));
+
+                medArray.forEach(([key, med]) => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `
+                        <div class="edit-row">
+                            <input type="text" id="editName-${key}" value="${med.name}">
+                            <input type="number" id="editPeriod-${key}" value="${med.periodicity}">
+                            <button id="saveEdit-${key}">Salvar</button>
+                            <span class="prescription-label">Prescrição:</span>
+                            <button id="uploadPrescription-${key}">Upload</button>
+                            <button id="showPrescription-${key}">Mostrar</button>
+                            <button id="deletePrescription-${key}">Apagar</button>
+                        </div>
+                    `;
+                    editList.appendChild(li);
+
+                    const editNameInput = document.getElementById(`editName-${key}`);
+                    const editPeriodInput = document.getElementById(`editPeriod-${key}`);
+                    const saveButton = document.getElementById(`saveEdit-${key}`);
+                    const uploadButton = document.getElementById(`uploadPrescription-${key}`);
+                    const showButton = document.getElementById(`showPrescription-${key}`);
+                    const deleteButton = document.getElementById(`deletePrescription-${key}`);
+
+                    saveButton.addEventListener('click', () => saveEdit(key));
+                    uploadButton.addEventListener('click', () => uploadPrescription(key));
+                    showButton.addEventListener('click', () => showPrescription(key));
+                    deleteButton.addEventListener('click', () => deletePrescription(key));
+
+                    editNameInput.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            saveEdit(key);
+                        }
+                    });
+                    editPeriodInput.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            saveEdit(key);
+                        }
+                    });
+                });
+            });
+        }
+
+        function saveEdit(key) {
+            const name = document.getElementById(`editName-${key}`).value.trim();
+            const periodicity = parseInt(document.getElementById(`editPeriod-${key}`).value);
+            if (!name || isNaN(periodicity) || periodicity <= 0) {
+                document.getElementById('editError').textContent = "Preencha nome e periodicidade válida!";
+                return;
+            }
+            update(ref(db, `users/${currentUserId}/medications/${key}`), { name, periodicity })
+                .then(() => {
+                    document.getElementById('editError').textContent = '';
+                    document.getElementById('editSuccess').textContent = "Item atualizado com sucesso!";
+                    setTimeout(() => document.getElementById('editSuccess').textContent = '', 2000);
+                    showScreen('mainScreen');
+                })
+                .catch((error) => {
+                    document.getElementById('editError').textContent = "Erro ao atualizar: " + error.message;
+                    log(`Erro ao atualizar medicamento: ${error.message}`);
+                });
+        }
+
+        function renderDeleteScreen() {
+            const medsRef = getMedsRef();
+            onValue(medsRef, (snapshot) => {
+                const meds = snapshot.val() || {};
+                const deleteList = document.getElementById('deleteMedList');
+                deleteList.innerHTML = '';
+
+                const medArray = Object.entries(meds).sort((a, b) => a[1].name.localeCompare(b[1].name));
+
+                medArray.forEach(([key, med]) => {
+                    const status = med.enabled !== false ? "Habilitado" : "Desabilitado";
+                    const li = document.createElement('li');
+                    li.innerHTML = `
+                        <div class="delete-row">
+                            <span class="delete-name">${med.name} | Periodicidade: ${med.periodicity}h</span>
+                            <div>
+                                <button id="enable-${key}">Habilitar</button>
+                                <button id="disable-${key}">Desabilitar</button>
+                                <button id="delete-${key}">Excluir</button>
+                                <span class="status-text">(${status})</span>
+                                ${med.note ? '<span class="has-note">(Contém Nota)</span>' : ''}
+                            </div>
+                        </div>
+                        <textarea id="note-${key}" class="delete-note" placeholder="Digite uma nota aqui">${med.note || ''}</textarea>
+                    `;
+                    deleteList.appendChild(li);
+
+                    const deleteNameSpan = li.querySelector('.delete-name');
+                    const hasNoteSpan = li.querySelector('.has-note');
+                    const noteTextarea = document.getElementById(`note-${key}`);
+
+                    function toggleNote(e) {
+                        e.stopPropagation();
+                        noteTextarea.style.display = noteTextarea.style.display === 'block' ? 'none' : 'block';
+                        noteTextarea.focus();
+                    }
+
+                    deleteNameSpan.addEventListener('click', toggleNote);
+                    if (hasNoteSpan) hasNoteSpan.addEventListener('click', toggleNote);
+
+                    noteTextarea.addEventListener('blur', () => {
+                        update(ref(db, `users/${currentUserId}/medications/${key}`), { note: noteTextarea.value });
+                    });
+                    noteTextarea.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            update(ref(db, `users/${currentUserId}/medications/${key}`), { note: noteTextarea.value });
+                            noteTextarea.blur();
+                        }
+                    });
+
+                    document.getElementById(`enable-${key}`).addEventListener('click', () => enableItem(key));
+                    document.getElementById(`disable-${key}`).addEventListener('click', () => disableItem(key));
+                    document.getElementById(`delete-${key}`).addEventListener('click', () => deleteItem(key));
+                });
+            });
+        }
+
+        function enableItem(key) {
+            update(ref(db, `users/${currentUserId}/medications/${key}`), { enabled: true });
+            document.getElementById('deleteSuccess').textContent = "Item habilitado com sucesso!";
+            setTimeout(() => document.getElementById('deleteSuccess').textContent = '', 2000);
+            showScreen('mainScreen');
+        }
+
+        function disableItem(key) {
+            update(ref(db, `users/${currentUserId}/medications/${key}`), { enabled: false });
+            document.getElementById('deleteSuccess').textContent = "Item desabilitado com sucesso!";
+            setTimeout(() => document.getElementById('deleteSuccess').textContent = '', 2000);
+            renderDeleteScreen();
+        }
+
+        function deleteItem(key) {
+            remove(ref(db, `users/${currentUserId}/medications/${key}`));
+            document.getElementById('deleteSuccess').textContent = "Item excluído com sucesso!";
+            setTimeout(() => document.getElementById('deleteSuccess').textContent = '', 2000);
+            renderDeleteScreen();
+        }
+
+        function editHistory(key, index, sortedHistory, currentTaken) {
+            const takenLocal = new Date(new Date(currentTaken).getTime() - 3 * 60 * 60 * 1000);
+            const day = String(takenLocal.getDate()).padStart(2, '0');
+            const month = String(takenLocal.getMonth() + 1).padStart(2, '0');
+            const year = takenLocal.getFullYear();
+            const hours = String(takenLocal.getHours()).padStart(2, '0');
+            const minutes = String(takenLocal.getMinutes()).padStart(2, '0');
+            const currentValue = `${day}${month}${year}${hours}${minutes}`;
+
+            const newTime = prompt("Digite a nova data e horário (ddmmyyyyhhmm):", currentValue);
+            if (newTime && /^\d{12}$/.test(newTime)) {
+                const day = parseInt(newTime.slice(0, 2));
+                const month = parseInt(newTime.slice(2, 4)) - 1;
+                const year = parseInt(newTime.slice(4, 8));
+                const hours = parseInt(newTime.slice(8, 10));
+                const minutes = parseInt(newTime.slice(10, 12));
+
+                if (day >= 1 && day <= 31 && month >= 0 && month <= 11 && 
+                    year >= 2000 && year <= 9999 && 
+                    hours >= 0 && hours < 24 && minutes >= 0 && minutes < 60) {
+                    const localDate = new Date(year, month, day, hours, minutes, 0, 0);
+                    const utcDate = new Date(localDate.getTime() + 3 * 60 * 60 * 1000);
+                    const newTaken = utcDate.toISOString();
+
+                    onValue(ref(db, `users/${currentUserId}/medications/${key}`), (snapshot) => {
+                        const med = snapshot.val();
+                        if (med.history) {
+                            const updatedHistory = [...med.history];
+                            const historyIndex = updatedHistory.findIndex(item => item.taken === currentTaken);
+                            if (historyIndex !== -1) {
+                                const currentNotes = updatedHistory[historyIndex].notes || "";
+                                const currentLoggedBy = updatedHistory[historyIndex].loggedBy || (loggedInUserName || currentAuthUser.email);
+                                updatedHistory[historyIndex] = { taken: newTaken, notes: currentNotes, loggedBy: currentLoggedBy };
+                                const isLastEntry = historyIndex === updatedHistory.length - 1;
+                                const updates = { history: updatedHistory };
+                                if (isLastEntry) {
+                                    updates.lastTaken = newTaken;
+                                }
+                                update(ref(db, `users/${currentUserId}/medications/${key}`), updates).then(() => {
+                                    if (currentReportType === 'daily') renderDailyReport('chrono');
+                                    else renderReportScreen(currentReportType);
+                                    if (isLastEntry) {
+                                        renderMainScreen();
+                                        document.getElementById('reportSuccess').textContent = "Registro editado e tela inicial atualizada!";
+                                    } else {
+                                        document.getElementById('reportSuccess').textContent = "Registro editado com sucesso!";
+                                    }
+                                    setTimeout(() => document.getElementById('reportSuccess').textContent = '', 2000);
+                                }).catch((error) => {
+                                    document.getElementById('reportError').textContent = "Erro ao atualizar: " + error.message;
+                                    log(`Erro ao atualizar histórico: ${error.message}`);
+                                });
+                            }
+                        }
+                    }, { onlyOnce: true });
+                } else {
+                    document.getElementById('reportError').textContent = "Data ou horário inválido! Use ddmmyyyyhhmm.";
+                }
+            } else {
+                document.getElementById('reportError').textContent = "Digite ddmmyyyyhhmm (ex.: 260220250122)!";
+            }
+        }
+
+        function deleteHistory(key, index) {
+            onValue(ref(db, `users/${currentUserId}/medications/${key}`), (snapshot) => {
+                const med = snapshot.val();
+                if (med.history && med.history[index]) {
+                    const updatedHistory = [...med.history];
+                    updatedHistory.splice(index, 1);
+                    const newLastTaken = updatedHistory.length > 0 ? updatedHistory[updatedHistory.length - 1].taken : null;
+                    update(ref(db, `users/${currentUserId}/medications/${key}`), { 
+                        history: updatedHistory,
+                        lastTaken: newLastTaken
+                    }).then(() => {
+                        if (currentReportType === 'daily') renderDailyReport('chrono');
+                        else renderReportScreen(currentReportType);
+                        document.getElementById('reportSuccess').textContent = "Registro excluído com sucesso!";
+                        setTimeout(() => document.getElementById('reportSuccess').textContent = '', 2000);
+                        renderMainScreen();
+                    }).catch((error) => {
+                        document.getElementById('reportError').textContent = "Erro ao excluir: " + error.message;
+                        log(`Erro ao excluir histórico: ${error.message}`);
+                    });
+                }
+            }, { onlyOnce: true });
+        }
+
+        function renderReportScreen(type, order = 'chrono') {
+            const medsRef = getMedsRef();
+            onValue(medsRef, (snapshot) => {
+                const meds = snapshot.val() || {};
+                const reportList = document.getElementById('reportList');
+                reportList.innerHTML = '';
+                const now = new Date();
+                const today = new Date(now.getTime() - 3 * 60 * 60 * 1000);
+                today.setHours(0, 0, 0, 0);
+
+                let allEntries = [];
+                Object.entries(meds).forEach(([key, med]) => {
+                    if (med.history && med.history.length > 0) {
+                        med.history.forEach((entry, index) => {
+                            const takenDate = new Date(entry.taken);
+                            const takenLocal = new Date(takenDate.getTime() - 3 * 60 * 60 * 1000);
+                            const takenLocalDate = new Date(takenLocal);
+                            takenLocalDate.setHours(0, 0, 0, 0);
+                            let shouldInclude = false;
+                            if (type === 'daily') {
+                                shouldInclude = takenLocalDate.getTime() === today.getTime();
+                            } else if (type === 'weekly') {
+                                const weekAgo = new Date(now - 7 * 24 * 60 * 60 * 1000);
+                                shouldInclude = takenLocal >= weekAgo;
+                            } else if (type === 'monthly') {
+                                const monthAgo = new Date(now - 30 * 24 * 60 * 60 * 1000);
+                                shouldInclude = takenLocal >= monthAgo;
+                            } else if (type === 'yearly') {
+                                const yearAgo = new Date(now - 365 * 24 * 60 * 60 * 1000);
+                                shouldInclude = takenLocal >= yearAgo;
+                            }
+                            if (shouldInclude) {
+                                allEntries.push({ key, med, taken: entry.taken, notes: entry.notes || "", loggedBy: entry.loggedBy || (loggedInUserName || currentAuthUser.email), index });
+                            }
+                        });
+                    }
+                });
+
+                if (order === 'chrono') {
+                    allEntries.sort((a, b) => new Date(a.taken) - new Date(b.taken));
+                } else if (order === 'type') {
+                    allEntries.sort((a, b) => {
+                        const nameCompare = a.med.name.localeCompare(b.med.name);
+                        if (nameCompare !== 0) return nameCompare;
+                        return new Date(a.taken) - new Date(b.taken);
+                    });
+                }
+
+                allEntries.forEach(({ key, med, taken, notes, loggedBy, index }) => {
+                    const li = document.createElement('li');
+                    const takenLocal = new Date(new Date(taken).getTime() - 3 * 60 * 60 * 1000);
+                    const periodMs = med.periodicity * 60 * 60 * 1000;
+                    let expectedLocal;
+                    if (index === 0) {
+                        expectedLocal = null;
+                    } else {
+                        const previousEntry = med.history[index - 1];
+                        const previousTaken = new Date(previousEntry.taken);
+                        const expected = new Date(previousTaken.getTime() + periodMs);
+                        expectedLocal = new Date(expected.getTime() - 3 * 60 * 60 * 1000);
+                    }
+                    const diff = index === 0 ? 0 : Math.abs(takenLocal - expectedLocal);
+                    const onTime = index === 0 || diff <= 30 * 60 * 1000;
+                    li.innerHTML = `
+                        <div class="report-row">
+                            ${med.name} | Tomado: <span class="${onTime ? 'on-time' : 'late'}">${takenLocal.toLocaleString('pt-BR', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
+                            | Esperado: ${index === 0 ? 'N/A' : expectedLocal.toLocaleString('pt-BR', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' })}
+                            | Registrado por: ${loggedBy}
+                            <div>
+                                <button id="editHist-${key}-${index}">Editar</button>
+                                <button id="delHist-${key}-${index}">Excluir</button>
+                                ${notes ? '<span class="has-note">(Contém Nota)</span>' : ''}
+                            </div>
+                        </div>
+                        <textarea id="note-${key}-${index}" class="user-note" placeholder="Digite uma nota aqui">${notes}</textarea>
+                    `;
+                    reportList.appendChild(li);
+
+                    const reportRow = li.querySelector('.report-row');
+                    const hasNoteSpan = li.querySelector('.has-note');
+                    const noteTextarea = document.getElementById(`note-${key}-${index}`);
+
+                    function toggleNote(e) {
+                        e.stopPropagation();
+                        noteTextarea.style.display = noteTextarea.style.display === 'block' ? 'none' : 'block';
+                        noteTextarea.focus();
+                    }
+
+                    reportRow.addEventListener('click', toggleNote);
+                    if (hasNoteSpan) hasNoteSpan.addEventListener('click', toggleNote);
+
+                    noteTextarea.addEventListener('blur', () => {
+                        const updatedHistory = [...med.history];
+                        updatedHistory[index] = { taken: taken, notes: noteTextarea.value, loggedBy: loggedBy };
+                        update(ref(db, `users/${currentUserId}/medications/${key}`), { history: updatedHistory });
+                    });
+                    noteTextarea.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            const updatedHistory = [...med.history];
+                            updatedHistory[index] = { taken: taken, notes: noteTextarea.value, loggedBy: loggedBy };
+                            update(ref(db, `users/${currentUserId}/medications/${key}`), { history: updatedHistory });
+                            noteTextarea.blur();
+                        }
+                    });
+
+                    document.getElementById(`editHist-${key}-${index}`).addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        editHistory(key, index, allEntries.map(e => e.taken), taken);
+                    });
+                    document.getElementById(`delHist-${key}-${index}`).addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        deleteHistory(key, index);
+                    });
+                });
+
+                if (!reportList.children.length) {
+                    reportList.innerHTML = '<li>Nenhum registro encontrado!</li>';
+                }
+            });
+        }
+
+        function renderDailyReport(order = 'chrono') {
+            const medsRef = getMedsRef();
+            onValue(medsRef, (snapshot) => {
+                const meds = snapshot.val() || {};
+                const reportList = document.getElementById('reportList');
+                reportList.innerHTML = '';
+                const now = new Date();
+                const today = new Date(now);
+                today.setHours(0, 0, 0, 0);
+
+                let allEntries = [];
+                Object.entries(meds).forEach(([key, med]) => {
+                    if (med.history && med.history.length > 0) {
+                        med.history.forEach((entry, index) => {
+                            const takenDate = new Date(entry.taken);
+                            const takenLocal = new Date(takenDate.getTime() - 3 * 60 * 60 * 1000);
+                            const takenLocalDate = new Date(takenLocal);
+                            takenLocalDate.setHours(0, 0, 0, 0);
+                            if (takenLocalDate.getTime() === today.getTime()) {
+                                allEntries.push({ key, med, taken: entry.taken, notes: entry.notes || "", loggedBy: entry.loggedBy || (loggedInUserName || currentAuthUser.email), index });
+                            }
+                        });
+                    }
+                });
+
+                if (order === 'chrono') {
+                    allEntries.sort((a, b) => new Date(a.taken) - new Date(b.taken));
+                } else if (order === 'type') {
+                    allEntries.sort((a, b) => {
+                        const nameCompare = a.med.name.localeCompare(b.med.name);
+                        if (nameCompare !== 0) return nameCompare;
+                        return new Date(a.taken) - new Date(b.taken);
+                    });
+                }
+
+                allEntries.forEach(({ key, med, taken, notes, loggedBy, index }) => {
+                    const li = document.createElement('li');
+                    const takenLocal = new Date(new Date(taken).getTime() - 3 * 60 * 60 * 1000);
+                    const periodMs = med.periodicity * 60 * 60 * 1000;
+                    let expectedLocal;
+                    if (index === 0) {
+                        expectedLocal = null;
+                    } else {
+                        const previousEntry = med.history[index - 1];
+                        const previousTaken = new Date(previousEntry.taken);
+                        expectedLocal = new Date(previousTaken.getTime() + periodMs - 3 * 60 * 60 * 1000);
+                    }
+                    const diff = index === 0 || !expectedLocal ? 0 : Math.abs(takenLocal - expectedLocal);
+                    const onTime = index === 0 || diff <= 30 * 60 * 1000;
+                    li.innerHTML = `
+                        <div class="report-row">
+                            ${med.name} | Tomado: <span class="${onTime ? 'on-time' : 'late'}">${takenLocal.toLocaleString('pt-BR', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
+                            | Esperado: ${index === 0 || !expectedLocal ? 'N/A' : expectedLocal.toLocaleString('pt-BR', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' })}
+                            | Registrado por: ${loggedBy}
+                            <div>
+                                <button id="editHist-${key}-${index}">Editar</button>
+                                <button id="delHist-${key}-${index}">Excluir</button>
+                                ${notes ? '<span class="has-note">(Contém Nota)</span>' : ''}
+                            </div>
+                        </div>
+                        <textarea id="note-${key}-${index}" class="user-note" placeholder="Digite uma nota aqui">${notes}</textarea>
+                    `;
+                    reportList.appendChild(li);
+
+                    const reportRow = li.querySelector('.report-row');
+                    const hasNoteSpan = li.querySelector('.has-note');
+                    const noteTextarea = document.getElementById(`note-${key}-${index}`);
+
+                    function toggleNote(e) {
+                        e.stopPropagation();
+                        noteTextarea.style.display = noteTextarea.style.display === 'block' ? 'none' : 'block';
+                        noteTextarea.focus();
+                    }
+
+                    reportRow.addEventListener('click', toggleNote);
+                    if (hasNoteSpan) hasNoteSpan.addEventListener('click', toggleNote);
+
+                    noteTextarea.addEventListener('blur', () => {
+                        const updatedHistory = [...med.history];
+                        updatedHistory[index] = { taken: taken, notes: noteTextarea.value, loggedBy: loggedBy };
+                        update(ref(db, `users/${currentUserId}/medications/${key}`), { history: updatedHistory });
+                    });
+                    noteTextarea.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            const updatedHistory = [...med.history];
+                            updatedHistory[index] = { taken: taken, notes: noteTextarea.value, loggedBy: loggedBy };
+                            update(ref(db, `users/${currentUserId}/medications/${key}`), { history: updatedHistory });
+                            noteTextarea.blur();
+                        }
+                    });
+
+                    document.getElementById(`editHist-${key}-${index}`).addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        editHistory(key, index, allEntries.map(e => e.taken), taken);
+                    });
+                    document.getElementById(`delHist-${key}-${index}`).addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        deleteHistory(key, index);
+                    });
+                });
+
+                if (!reportList.children.length) {
+                    reportList.innerHTML = '<li>Nenhum registro encontrado!</li>';
+                }
+            });
+        }
+
+        function renderUserRegistryReport() {
+            const reportList = document.getElementById('reportList');
+            reportList.innerHTML = '';
+
+            onValue(authUsersRef, (snapshot) => {
+                const authUsers = snapshot.val() || {};
+                log(`Dados brutos de authUsers: ${JSON.stringify(authUsers)}`);
+                
+                if (!authUsers) {
+                    reportList.innerHTML = '<li>Nenhum usuário autenticado encontrado!</li>';
+                    return;
+                }
+
+                const userArray = Object.entries(authUsers).map(([uid, user]) => ({
+                    uid,
+                    name: user.name || user.email,
+                    email: user.email,
+                    registeredBy: user.registeredBy || "Usuário Desconhecido"
+                }));
+
+                log(`Array de usuários para o relatório: ${JSON.stringify(userArray)}`);
+
+                userArray.sort((a, b) => a.name.localeCompare(b.name));
+
+                userArray.forEach(({ name, email, registeredBy }) => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `
+                        <div class="report-row">
+                            <span>${name} | E-mail: ${email} | Cadastrado por: ${registeredBy}</span>
+                        </div>
+                    `;
+                    reportList.appendChild(li);
+                });
+
+                if (!reportList.children.length) {
+                    reportList.innerHTML = '<li>Nenhum usuário autenticado encontrado!</li>';
+                }
+            }, { onlyOnce: true });
+            log("Relatório de registro de usuários renderizado.");
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('goToUser').addEventListener('click', () => showScreen('userScreen'));
+            document.getElementById('goToAdd').addEventListener('click', () => showScreen('addScreen'));
+            document.getElementById('goToEdit').addEventListener('click', () => showScreen('editScreen'));
+            document.getElementById('goToDelete').addEventListener('click', () => showScreen('deleteScreen'));
+            document.getElementById('goToReport').addEventListener('click', () => showScreen('reportScreen'));
+            document.getElementById('saveUser').addEventListener('click', addUser);
+            document.getElementById('backFromUser').addEventListener('click', () => showScreen('mainScreen'));
+            document.getElementById('saveAdd').addEventListener('click', addMedication);
+            document.getElementById('backFromAdd').addEventListener('click', () => showScreen('mainScreen'));
+            document.getElementById('backFromEdit').addEventListener('click', () => showScreen('mainScreen'));
+            document.getElementById('backFromDelete').addEventListener('click', () => showScreen('mainScreen'));
+            document.getElementById('backFromReport').addEventListener('click', () => showScreen('mainScreen'));
+            document.getElementById('dailyReport').addEventListener('click', () => {
+                currentReportType = 'daily';
+                renderDailyReport('chrono');
+            });
+            document.getElementById('weeklyReport').addEventListener('click', () => {
+                currentReportType = 'weekly';
+                renderReportScreen('weekly');
+            });
+            document.getElementById('monthlyReport').addEventListener('click', () => {
+                currentReportType = 'monthly';
+                renderReportScreen('monthly');
+            });
+            document.getElementById('yearlyReport').addEventListener('click', () => {
+                currentReportType = 'yearly';
+                renderReportScreen('yearly');
+            });
+            document.getElementById('chronoOrder').addEventListener('click', () => {
+                if (currentReportType === 'daily') renderDailyReport('chrono');
+                else renderReportScreen(currentReportType, 'chrono');
+            });
+            document.getElementById('typeOrder').addEventListener('click', () => {
+                if (currentReportType === 'daily') renderDailyReport('type');
+                else renderReportScreen(currentReportType, 'type');
+            });
+            document.getElementById('userRegistryReport').addEventListener('click', () => {
+                currentReportType = 'userRegistry';
+                renderUserRegistryReport();
+            });
+
+            userNameInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addUser();
+                }
+            });
+
+            addNameInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addMedication();
+                }
+            });
+            addPeriodInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addMedication();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
