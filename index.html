@@ -561,7 +561,6 @@
                 const subtaskToMove = currentSubtasks[subtaskIndex];
 
                 if (level === 1) {
-                    // Promover a subtarefa nível 1 para tarefa principal
                     currentSubtasks.splice(subtaskIndex, 1);
                     push(tasksRef, { ...subtaskToMove, category: task.category })
                         .then((newTaskRef) => {
@@ -571,7 +570,6 @@
                         })
                         .catch(error => log(`Erro ao promover subtarefa: ${error.message}`));
                 } else {
-                    // Subir a subtarefa para o nível superior
                     const parentPath = parts.slice(0, -2).join('/');
                     const parentSubtasks = parentPath ? getNestedSubtasks(task, parentPath) : task.subtasks;
                     
@@ -606,39 +604,50 @@
                 const level = parts.length;
 
                 if (level === 0) {
-                    // Descer tarefa principal para subtarefa de outra tarefa
                     onValue(tasksRef, (tasksSnapshot) => {
                         const allTasks = tasksSnapshot.val();
                         if (!allTasks) {
                             log(`Erro: Nenhuma tarefa encontrada no banco de dados`);
                             return;
                         }
-                        const otherTaskKey = Object.keys(allTasks).find(k => k !== key);
-                        if (!otherTaskKey) {
-                            log(`Nenhuma outra tarefa disponível para receber ${key} como subtarefa`);
+                        const taskArray = Object.entries(allTasks)
+                            .filter(([_, t]) => currentCategory === 'all' || t.category === currentCategory)
+                            .sort((a, b) => {
+                                if (a[1].completed !== b[1].completed) return a[1].completed - b[1].completed;
+                                const dateA = a[1].dueDate || '9999-12-31';
+                                const dateB = b[1].dueDate || '9999-12-31';
+                                if (dateA !== dateB) return dateA.localeCompare(dateB);
+                                return b[1].priority - a[1].priority;
+                            });
+                        const taskIndex = taskArray.findIndex(([k]) => k === key);
+                        if (taskArray.length === 1) {
+                            log(`Tarefa ${key} é a única, botão deve estar desabilitado`);
                             return;
                         }
-                        const otherTaskRef = ref(db, `tasks/${otherTaskKey}`);
-                        onValue(otherTaskRef, (otherSnapshot) => {
-                            const otherTask = otherSnapshot.val();
-                            if (!otherTask) {
-                                log(`Erro: Tarefa alvo ${otherTaskKey} não encontrada`);
-                                return;
-                            }
-                            otherTask.subtasks = otherTask.subtasks || [];
-                            const newIndex = otherTask.subtasks.length;
-                            otherTask.subtasks.push({ ...task });
-                            update(otherTaskRef, otherTask)
+                        let targetKey, newIndex;
+                        if (taskIndex > 0) {
+                            targetKey = taskArray[taskIndex - 1][0];
+                            log(`Tarefa ${key} será subordinada à tarefa acima: ${targetKey}`);
+                        } else {
+                            targetKey = taskArray[taskIndex + 1][0];
+                            log(`Tarefa ${key} é a primeira, será subordinada à tarefa abaixo: ${targetKey}`);
+                        }
+                        const targetRef = ref(db, `tasks/${targetKey}`);
+                        onValue(targetRef, (targetSnapshot) => {
+                            const targetTask = targetSnapshot.val();
+                            targetTask.subtasks = targetTask.subtasks || [];
+                            newIndex = targetTask.subtasks.length;
+                            targetTask.subtasks.push({ ...task });
+                            update(targetRef, targetTask)
                                 .then(() => {
                                     remove(taskRef);
-                                    log(`Tarefa ${key} desceu para subtarefa de ${otherTaskKey}`);
-                                    scrollToTarget(otherTaskKey, `${newIndex}`);
+                                    log(`Tarefa ${key} desceu para subtarefa de ${targetKey} no índice ${newIndex}`);
+                                    scrollToTarget(targetKey, `${newIndex}`);
                                 })
                                 .catch(error => log(`Erro ao descer tarefa: ${error.message}`));
                         }, { onlyOnce: true });
                     }, { onlyOnce: true });
                 } else {
-                    // Descer subtarefa para nível inferior
                     const parentSubtasks = level === 1 ? task.subtasks : getNestedSubtasks(task, parts.slice(0, -1).join('/'));
                     const subtaskIndex = parseInt(parts[parts.length - 1]);
 
@@ -647,22 +656,29 @@
                         return;
                     }
 
-                    const subtaskToMove = parentSubtasks[subtaskIndex];
-                    const siblingIndex = subtaskIndex > 0 ? subtaskIndex - 1 : (parentSubtasks.length > 1 ? subtaskIndex + 1 : -1);
-
-                    if (siblingIndex === -1) {
-                        log(`Nenhuma subtarefa irmã disponível para ${key}/${path}`);
+                    if (parentSubtasks.length === 1) {
+                        log(`Subtarefa ${key}/${path} é a única no nível ${level}, botão deve estar desabilitado`);
                         return;
                     }
 
-                    parentSubtasks[siblingIndex].subtasks = parentSubtasks[siblingIndex].subtasks || [];
-                    const newIndex = parentSubtasks[siblingIndex].subtasks.length;
-                    parentSubtasks[siblingIndex].subtasks.push(subtaskToMove);
+                    const subtaskToMove = parentSubtasks[subtaskIndex];
+                    let targetIndex;
+                    if (subtaskIndex > 0) {
+                        targetIndex = subtaskIndex - 1;
+                        log(`Subtarefa ${key}/${path} será subordinada à subtarefa acima: índice ${targetIndex}`);
+                    } else {
+                        targetIndex = subtaskIndex + 1;
+                        log(`Subtarefa ${key}/${path} é a primeira, será subordinada à subtarefa abaixo: índice ${targetIndex}`);
+                    }
+
+                    parentSubtasks[targetIndex].subtasks = parentSubtasks[targetIndex].subtasks || [];
+                    const newIndex = parentSubtasks[targetIndex].subtasks.length;
+                    parentSubtasks[targetIndex].subtasks.push(subtaskToMove);
                     parentSubtasks.splice(subtaskIndex, 1);
                     update(taskRef, task)
                         .then(() => {
                             log(`Subtarefa ${key}/${path} desceu de nível ${level} para ${level + 1}`);
-                            const newPath = `${parts.slice(0, -1).join('/')}/${siblingIndex}/${newIndex}`;
+                            const newPath = `${parts.slice(0, -1).join('/')}/${targetIndex}/${newIndex}`;
                             scrollToTarget(key, newPath);
                         })
                         .catch(error => log(`Erro ao descer nível: ${error.message}`));
@@ -750,6 +766,7 @@
                 const isSubtaskBoldItalic = isPastDue(subtask.dueDate, subtask.completed);
                 const hasSubtasks = subtask.subtasks && subtask.subtasks.length > 0;
                 const isExpanded = subtask.expanded || false;
+                const isOnlySubtask = task.subtasks.length === 1;
 
                 subLi.innerHTML = `
                     <div class="task-row">
@@ -757,7 +774,7 @@
                         <input type="checkbox" ${subtask.completed ? 'checked' : ''} data-id="${fullPath}">
                         <span class="task-text ${isSubtaskBoldItalic ? 'bold-italic' : ''}">${subtask.text} | Data: ${formatDate(subtask.dueDate)} | Prioridade: ${subtask.priority}</span>
                         <button class="level-btn up-btn" data-id="${fullPath}">↑</button>
-                        <button class="level-btn down-btn" data-id="${fullPath}">↓</button>
+                        <button class="level-btn down-btn" ${isOnlySubtask ? 'disabled' : ''} data-id="${fullPath}">↓</button>
                         <div class="category-dropdown">
                             <button class="category-btn">Categoria</button>
                             <div class="dropdown-content">
@@ -858,6 +875,8 @@
                         return b[1].priority - a[1].priority;
                     });
 
+                const isSingleTask = taskArray.length === 1;
+
                 taskArray.forEach(([key, task]) => {
                     const li = document.createElement('li');
                     li.setAttribute('data-key', key);
@@ -872,7 +891,7 @@
                             <input type="checkbox" ${task.completed ? 'checked' : ''} data-id="${key}">
                             <span class="task-text ${isTaskBoldItalic ? 'bold-italic' : ''}">${task.text} | Data: ${formatDate(task.dueDate)} | Prioridade: ${task.priority}</span>
                             <button class="level-btn up-btn" disabled data-id="${key}">↑</button>
-                            <button class="level-btn down-btn" data-id="${key}">↓</button>
+                            <button class="level-btn down-btn" ${isSingleTask ? 'disabled' : ''} data-id="${key}">↓</button>
                             <div class="category-dropdown">
                                 <button class="category-btn">Categoria</button>
                                 <div class="dropdown-content">
