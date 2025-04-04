@@ -567,6 +567,7 @@
                         .then((newTaskRef) => {
                             log(`Subtarefa ${key}/${path} promovida a tarefa principal com key ${newTaskRef.key}`);
                             update(taskRef, task);
+                            scrollToTarget(newTaskRef.key);
                         })
                         .catch(error => log(`Erro ao promover subtarefa: ${error.message}`));
                 } else {
@@ -582,7 +583,11 @@
                     currentSubtasks.splice(subtaskIndex, 1);
                     parentSubtasks.push(subtaskToMove);
                     update(taskRef, task)
-                        .then(() => log(`Subtarefa ${key}/${path} subiu de nível ${level} para ${level - 1}`))
+                        .then(() => {
+                            log(`Subtarefa ${key}/${path} subiu de nível ${level} para ${level - 1}`);
+                            const newPath = parentPath ? `${parentPath}/${parentSubtasks.length - 1}` : `${parentSubtasks.length - 1}`;
+                            scrollToTarget(key, newPath);
+                        })
                         .catch(error => log(`Erro ao subir nível: ${error.message}`));
                 }
             }, { onlyOnce: true });
@@ -599,11 +604,6 @@
                 }
                 const parts = path.split('/').filter(p => p !== '');
                 const level = parts.length;
-
-                if (level >= 4) {
-                    log(`Subtarefa ${key}/${path} já está no nível máximo (4)`);
-                    return;
-                }
 
                 if (level === 0) {
                     // Descer tarefa principal para subtarefa de outra tarefa
@@ -626,38 +626,45 @@
                                 return;
                             }
                             otherTask.subtasks = otherTask.subtasks || [];
+                            const newIndex = otherTask.subtasks.length;
                             otherTask.subtasks.push({ ...task });
                             update(otherTaskRef, otherTask)
                                 .then(() => {
                                     remove(taskRef);
                                     log(`Tarefa ${key} desceu para subtarefa de ${otherTaskKey}`);
+                                    scrollToTarget(otherTaskKey, `${newIndex}`);
                                 })
                                 .catch(error => log(`Erro ao descer tarefa: ${error.message}`));
                         }, { onlyOnce: true });
                     }, { onlyOnce: true });
                 } else {
                     // Descer subtarefa para nível inferior
-                    const currentSubtasks = getNestedSubtasks(task, path);
+                    const parentSubtasks = level === 1 ? task.subtasks : getNestedSubtasks(task, parts.slice(0, -1).join('/'));
                     const subtaskIndex = parseInt(parts[parts.length - 1]);
 
-                    if (!currentSubtasks || !Array.isArray(currentSubtasks) || subtaskIndex >= currentSubtasks.length) {
+                    if (!parentSubtasks || !Array.isArray(parentSubtasks) || subtaskIndex >= parentSubtasks.length) {
                         log(`Erro: Subtarefas inválidas ou índice fora do intervalo em ${key}/${path}`);
                         return;
                     }
 
-                    const subtaskToMove = currentSubtasks[subtaskIndex];
-                    const siblingIndex = subtaskIndex > 0 ? subtaskIndex - 1 : (currentSubtasks.length > 1 ? subtaskIndex + 1 : -1);
+                    const subtaskToMove = parentSubtasks[subtaskIndex];
+                    const siblingIndex = subtaskIndex > 0 ? subtaskIndex - 1 : (parentSubtasks.length > 1 ? subtaskIndex + 1 : -1);
 
                     if (siblingIndex === -1) {
                         log(`Nenhuma subtarefa irmã disponível para ${key}/${path}`);
                         return;
                     }
 
-                    currentSubtasks[siblingIndex].subtasks = currentSubtasks[siblingIndex].subtasks || [];
-                    currentSubtasks[siblingIndex].subtasks.push(subtaskToMove);
-                    currentSubtasks.splice(subtaskIndex, 1);
+                    parentSubtasks[siblingIndex].subtasks = parentSubtasks[siblingIndex].subtasks || [];
+                    const newIndex = parentSubtasks[siblingIndex].subtasks.length;
+                    parentSubtasks[siblingIndex].subtasks.push(subtaskToMove);
+                    parentSubtasks.splice(subtaskIndex, 1);
                     update(taskRef, task)
-                        .then(() => log(`Subtarefa ${key}/${path} desceu de nível ${level} para ${level + 1}`))
+                        .then(() => {
+                            log(`Subtarefa ${key}/${path} desceu de nível ${level} para ${level + 1}`);
+                            const newPath = `${parts.slice(0, -1).join('/')}/${siblingIndex}/${newIndex}`;
+                            scrollToTarget(key, newPath);
+                        })
                         .catch(error => log(`Erro ao descer nível: ${error.message}`));
                 }
             }, { onlyOnce: true });
@@ -721,7 +728,7 @@
 
         function renderSubtasks(key, task, container, path = '', level = 1) {
             log(`Renderizando subtarefas: key=${key}, path=${path}, level=${level}`);
-            if (!task.subtasks || task.subtasks.length === 0 || level > 4) return;
+            if (!task.subtasks || task.subtasks.length === 0) return;
 
             container.innerHTML = '';
 
@@ -749,8 +756,8 @@
                         ${hasSubtasks ? `<button class="expand-btn">${isExpanded ? '−' : '+'}</button>` : '<span class="expand-placeholder"></span>'}
                         <input type="checkbox" ${subtask.completed ? 'checked' : ''} data-id="${fullPath}">
                         <span class="task-text ${isSubtaskBoldItalic ? 'bold-italic' : ''}">${subtask.text} | Data: ${formatDate(subtask.dueDate)} | Prioridade: ${subtask.priority}</span>
-                        <button class="level-btn up-btn" ${level === 1 ? 'disabled' : ''} data-id="${fullPath}">↑</button>
-                        <button class="level-btn down-btn" ${level === 4 ? 'disabled' : ''} data-id="${fullPath}">↓</button>
+                        <button class="level-btn up-btn" data-id="${fullPath}">↑</button>
+                        <button class="level-btn down-btn" data-id="${fullPath}">↓</button>
                         <div class="category-dropdown">
                             <button class="category-btn">Categoria</button>
                             <div class="dropdown-content">
