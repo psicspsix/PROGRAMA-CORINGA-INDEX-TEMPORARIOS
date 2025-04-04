@@ -538,6 +538,10 @@
             const taskRef = ref(db, `tasks/${key}`);
             onValue(taskRef, (snapshot) => {
                 const task = snapshot.val();
+                if (!task) {
+                    log(`Erro: Tarefa ${key} não encontrada`);
+                    return;
+                }
                 const parts = path.split('/').filter(p => p !== '');
                 const level = parts.length;
 
@@ -548,6 +552,12 @@
 
                 const subtaskIndex = parseInt(parts[parts.length - 1]);
                 let currentSubtasks = level === 1 ? task.subtasks : getNestedSubtasks(task, parts.slice(0, -1).join('/'));
+                
+                if (!currentSubtasks || !Array.isArray(currentSubtasks) || subtaskIndex >= currentSubtasks.length) {
+                    log(`Erro: Subtarefas inválidas ou índice fora do intervalo em ${key}/${path}`);
+                    return;
+                }
+
                 const subtaskToMove = currentSubtasks[subtaskIndex];
 
                 if (level === 1) {
@@ -563,7 +573,12 @@
                     // Subir a subtarefa para o nível superior
                     const parentPath = parts.slice(0, -2).join('/');
                     const parentSubtasks = parentPath ? getNestedSubtasks(task, parentPath) : task.subtasks;
-                    const parentIndex = parseInt(parts[parts.length - 2]);
+                    
+                    if (!parentSubtasks || !Array.isArray(parentSubtasks)) {
+                        log(`Erro: ParentSubtasks inválido em ${key}/${parentPath}`);
+                        return;
+                    }
+
                     currentSubtasks.splice(subtaskIndex, 1);
                     parentSubtasks.push(subtaskToMove);
                     update(taskRef, task)
@@ -578,6 +593,10 @@
             const taskRef = ref(db, `tasks/${key}`);
             onValue(taskRef, (snapshot) => {
                 const task = snapshot.val();
+                if (!task) {
+                    log(`Erro: Tarefa ${key} não encontrada`);
+                    return;
+                }
                 const parts = path.split('/').filter(p => p !== '');
                 const level = parts.length;
 
@@ -590,7 +609,11 @@
                     // Descer tarefa principal para subtarefa de outra tarefa
                     onValue(tasksRef, (tasksSnapshot) => {
                         const allTasks = tasksSnapshot.val();
-                        const otherTaskKey = Object.keys(allTasks).find(k => k !== key && allTasks[k].subtasks);
+                        if (!allTasks) {
+                            log(`Erro: Nenhuma tarefa encontrada no banco de dados`);
+                            return;
+                        }
+                        const otherTaskKey = Object.keys(allTasks).find(k => k !== key);
                         if (!otherTaskKey) {
                             log(`Nenhuma outra tarefa disponível para receber ${key} como subtarefa`);
                             return;
@@ -598,6 +621,10 @@
                         const otherTaskRef = ref(db, `tasks/${otherTaskKey}`);
                         onValue(otherTaskRef, (otherSnapshot) => {
                             const otherTask = otherSnapshot.val();
+                            if (!otherTask) {
+                                log(`Erro: Tarefa alvo ${otherTaskKey} não encontrada`);
+                                return;
+                            }
                             otherTask.subtasks = otherTask.subtasks || [];
                             otherTask.subtasks.push({ ...task });
                             update(otherTaskRef, otherTask)
@@ -612,10 +639,16 @@
                     // Descer subtarefa para nível inferior
                     const currentSubtasks = getNestedSubtasks(task, path);
                     const subtaskIndex = parseInt(parts[parts.length - 1]);
-                    const subtaskToMove = currentSubtasks[subtaskIndex];
-                    const siblingIndex = subtaskIndex > 0 ? subtaskIndex - 1 : subtaskIndex + 1;
 
-                    if (!currentSubtasks[siblingIndex]) {
+                    if (!currentSubtasks || !Array.isArray(currentSubtasks) || subtaskIndex >= currentSubtasks.length) {
+                        log(`Erro: Subtarefas inválidas ou índice fora do intervalo em ${key}/${path}`);
+                        return;
+                    }
+
+                    const subtaskToMove = currentSubtasks[subtaskIndex];
+                    const siblingIndex = subtaskIndex > 0 ? subtaskIndex - 1 : (currentSubtasks.length > 1 ? subtaskIndex + 1 : -1);
+
+                    if (siblingIndex === -1) {
                         log(`Nenhuma subtarefa irmã disponível para ${key}/${path}`);
                         return;
                     }
@@ -664,12 +697,17 @@
         }
 
         function getNestedSubtasks(task, path) {
+            if (!path) return task.subtasks || [];
             const parts = path.split('/').filter(p => p !== '');
             let current = task;
             for (const index of parts) {
+                if (!current.subtasks || !Array.isArray(current.subtasks) || parseInt(index) >= current.subtasks.length) {
+                    log(`Erro: Caminho inválido em getNestedSubtasks para path=${path}`);
+                    return [];
+                }
                 current = current.subtasks[parseInt(index)];
             }
-            return current.subtasks;
+            return current.subtasks || [];
         }
 
         function getParentTask(task, path) {
