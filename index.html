@@ -853,33 +853,39 @@
             });
         }
 
-        // Função para gerar o conteúdo do campo de notas TXT
-        function generateTxtNote() {
-            const taskList = document.getElementById('taskList');
-            const txtNote = document.getElementById('txtNote');
-            let content = '';
+// Função para gerar o conteúdo do campo de notas TXT
+function generateTxtNote() {
+    const taskList = document.getElementById('taskList');
+    const txtNote = document.getElementById('txtNote');
+    let content = '';
 
-            const items = taskList.querySelectorAll('li');
-            if (items.length === 0) {
-                content = 'Sem tarefas exibidas.';
-            } else {
-                items.forEach(item => {
-                    const level = item.className.includes('subtask-level-') ? parseInt(item.className.match(/subtask-level-(\d)/)?.[1] || 0) : 0;
-                    const indent = '    '.repeat(level); // 4 espaços por nível
-                    const taskText = item.querySelector('.task-text').textContent;
-                    const notes = item.querySelector('.notes textarea')?.value.trim();
-
-                    content += `${indent}${taskText}\n`;
-                    if (notes) {
-                        content += `${indent}    Notas: ${notes}\n`;
-                    }
-                });
+    const items = taskList.querySelectorAll('li');
+    if (items.length === 0) {
+        content = 'Sem tarefas exibidas.';
+    } else {
+        items.forEach(item => {
+            // Verifica se o item está completado (tachado)
+            const isCompleted = item.classList.contains('completed');
+            if (isCompleted) {
+                // Se a tarefa ou subtarefa está completada, ignora ela e suas subtarefas
+                return;
             }
 
-            txtNote.value = content;
-            txtNote.style.display = 'block';
-        }
+            const level = item.className.includes('subtask-level-') ? parseInt(item.className.match(/subtask-level-(\d)/)?.[1] || 0) : 0;
+            const indent = '    '.repeat(level); // 4 espaços por nível
+            const taskText = item.querySelector('.task-text').textContent;
+            const notes = item.querySelector('.notes textarea')?.value.trim();
 
+            content += `${indent}${taskText}\n`;
+            if (notes) {
+                content += `${indent}    Notas: ${notes}\n`;
+            }
+        });
+    }
+
+    txtNote.value = content || 'Nenhuma tarefa ou subtarefa não completada visível.';
+    txtNote.style.display = 'block';
+}
         setCategory('mainProjects');
         document.getElementById('mainProjectsBtn').addEventListener('click', () => setCategory('mainProjects'));
         document.getElementById('proposedBtn').addEventListener('click', () => setCategory('proposed'));
