@@ -42,6 +42,7 @@
         .subtasks-container.visible { display: block; }
         .input-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
         #txtNote { display: none; margin: 10px 0; padding: 10px; background: #333; border-radius: 5px; width: 100%; min-height: 100px; resize: vertical; }
+        .level-btn { font-size: 14px; padding: 5px; width: 20px; height: 20px; line-height: 10px; text-align: center; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -135,10 +136,8 @@
         async function scrollToTarget(key, path = '') {
             log(`Iniciando scrollToTarget para key=${key}, path=${path}`);
 
-            // Aguardar atualização do Firebase e renderização (aumentado para 1000ms)
             await wait(1000);
 
-            // Função para encontrar e expandir o elemento
             const expandAndFindElement = async () => {
                 const rootElement = document.querySelector(`li[data-key="${key}"]`);
                 if (!rootElement) {
@@ -163,19 +162,19 @@
                         if (!subtasksContainer.classList.contains('visible')) {
                             subtasksContainer.classList.add('visible');
                             expandBtn.textContent = '−';
-                            updateExpansionState(key, currentPath, true); // Persistir expansão
+                            updateExpansionState(key, currentPath, true);
                             log(`Expandido: ${currentPath}`);
-                            await wait(200); // Atraso maior para cada nível
+                            await wait(200);
                         }
                     } else {
                         log(`Erro: Container ou botão de expansão não encontrado em ${currentPath}`);
-                        return rootElement; // Fallback para a raiz
+                        return rootElement;
                     }
 
                     currentElement = subtasksContainer.querySelector(`li[data-subtask-index="${part}"]`);
                     if (!currentElement) {
                         log(`Erro: Subtarefa não encontrada no path=${currentPath}/${part}`);
-                        return rootElement; // Fallback para a raiz
+                        return rootElement;
                     }
                     currentPath += `/${part}`;
                 }
@@ -186,7 +185,7 @@
             const targetElement = await expandAndFindElement();
             if (targetElement) {
                 const rect = targetElement.getBoundingClientRect();
-                const scrollPosition = rect.top + window.pageYOffset - 50; // Offset para visibilidade
+                const scrollPosition = rect.top + window.pageYOffset - 50;
                 log(`Calculando rolagem: top=${rect.top}, pageYOffset=${window.pageYOffset}, scrollPosition=${scrollPosition}`);
 
                 window.scrollTo({
@@ -194,7 +193,6 @@
                     behavior: 'smooth'
                 });
 
-                // Aguardar a rolagem terminar
                 await wait(1000);
                 log(`Rolagem concluída para ${path ? `subtarefa em ${key}/${path}` : `tarefa em ${key}`}`);
             } else {
@@ -210,7 +208,7 @@
                 if (!path) {
                     task.expanded = isExpanded;
                 } else {
-                    const parts = path.split('/').filter(p => p !== '').slice(1); // Remove a chave raiz
+                    const parts = path.split('/').filter(p => p !== '').slice(1);
                     let current = task;
                     for (const index of parts) {
                         current = current.subtasks[parseInt(index)];
@@ -591,6 +589,93 @@
             return diff >= 2;
         }
 
+        function moveLevelUp(parentKey, path, index) {
+            const taskRef = ref(db, `tasks/${parentKey}`);
+            onValue(taskRef, (snapshot) => {
+                const task = snapshot.val();
+                const parts = path.split('/').filter(p => p !== '');
+                let currentSubtasks = task.subtasks;
+                let parentSubtasks = null;
+                let parentIndex = null;
+
+                if (parts.length === 0) {
+                    log(`Tarefa principal ${parentKey} não pode subir mais`);
+                    return; // Nível 0 (tarefa principal) não pode subir
+                }
+
+                for (let i = 0; i < parts.length - 1; i++) {
+                    parentSubtasks = currentSubtasks;
+                    parentIndex = parseInt(parts[i]);
+                    currentSubtasks = currentSubtasks[parentIndex].subtasks;
+                }
+
+                const subtaskIndex = parseInt(parts[parts.length - 1] || index);
+                const subtaskToMove = currentSubtasks[subtaskIndex];
+
+                if (parts.length === 1) {
+                    // Subindo de nível 1 para nível 0 (tarefa principal)
+                    currentSubtasks.splice(subtaskIndex, 1);
+                    const newTaskRef = ref(db, `tasks/${push(tasksRef).key}`);
+                    set(newTaskRef, { ...subtaskToMove, category: task.category })
+                        .then(() => log(`Subtarefa ${parentKey}/${path} promovida a tarefa principal`))
+                        .catch(error => log(`Erro ao promover subtarefa: ${error.message}`));
+                    update(taskRef, task);
+                } else {
+                    // Subindo entre níveis de subtarefas
+                    const newParentSubtasks = parentSubtasks[parentIndex].subtasks || [];
+                    currentSubtasks.splice(subtaskIndex, 1);
+                    newParentSubtasks.push(subtaskToMove);
+                    update(taskRef, task)
+                        .then(() => log(`Subtarefa ${parentKey}/${path} subiu um nível`))
+                        .catch(error => log(`Erro ao subir nível: ${error.message}`));
+                }
+            }, { onlyOnce: true });
+        }
+
+        function moveLevelDown(parentKey, path, index) {
+            const taskRef = ref(db, `tasks/${parentKey}`);
+            onValue(taskRef, (snapshot) => {
+                const task = snapshot.val();
+                const parts = path.split('/').filter(p => p !== '');
+                let currentSubtasks = parts.length === 0 ? task.subtasks : getNestedSubtasks(task, path);
+                const subtaskIndex = parts.length === 0 ? index : parseInt(parts[parts.length - 1]);
+                const subtaskToMove = currentSubtasks[subtaskIndex];
+                const currentLevel = parts.length;
+
+                if (currentLevel >= 4) {
+                    log(`Subtarefa ${parentKey}/${path} já está no nível máximo (4)`);
+                    return; // Nível 4 é o máximo
+                }
+
+                let targetSubtasks;
+                if (currentLevel === 0) {
+                    // Descendo de tarefa principal para subtarefa de outra tarefa
+                    const otherTasks = Object.entries(task).filter(([_, t]) => t.subtasks);
+                    if (otherTasks.length === 0) {
+                        log(`Nenhuma tarefa disponível para receber ${parentKey} como subtarefa`);
+                        return;
+                    }
+                    targetSubtasks = task.subtasks || [];
+                    targetSubtasks.push(subtaskToMove);
+                    remove(taskRef);
+                    update(taskRef, task);
+                } else {
+                    // Descendo entre níveis de subtarefas
+                    const siblingIndex = subtaskIndex > 0 ? subtaskIndex - 1 : subtaskIndex + 1;
+                    if (!currentSubtasks[siblingIndex]) {
+                        log(`Nenhuma subtarefa irmã disponível para ${parentKey}/${path}`);
+                        return;
+                    }
+                    targetSubtasks = currentSubtasks[siblingIndex].subtasks || [];
+                    currentSubtasks.splice(subtaskIndex, 1);
+                    targetSubtasks.push(subtaskToMove);
+                    update(taskRef, task)
+                        .then(() => log(`Subtarefa ${parentKey}/${path} desceu um nível`))
+                        .catch(error => log(`Erro ao descer nível: ${error.message}`));
+                }
+            }, { onlyOnce: true });
+        }
+
         function setCategory(category) {
             currentCategory = category;
             document.querySelectorAll('.category-buttons button').forEach(btn => btn.classList.remove('active'));
@@ -638,7 +723,7 @@
             log(`Renderizando subtarefas: key=${key}, path=${path}, level=${level}`);
             if (!task.subtasks || task.subtasks.length === 0 || level > 4) return;
 
-            container.innerHTML = ''; // Limpar o container
+            container.innerHTML = '';
 
             const sortedSubtasks = task.subtasks.map((subtask, originalIndex) => ({ subtask, originalIndex }))
                 .sort((a, b) => {
@@ -664,6 +749,17 @@
                         ${hasSubtasks ? `<button class="expand-btn">${isExpanded ? '−' : '+'}</button>` : '<span class="expand-placeholder"></span>'}
                         <input type="checkbox" ${subtask.completed ? 'checked' : ''} data-id="${fullPath}">
                         <span class="task-text ${isSubtaskBoldItalic ? 'bold-italic' : ''}">${subtask.text} | Data: ${formatDate(subtask.dueDate)} | Prioridade: ${subtask.priority}</span>
+                        <button class="level-btn up-btn" data-id="${fullPath}">↑</button>
+                        <button class="level-btn down-btn" data-id="${fullPath}">↓</button>
+                        <div class="category-dropdown">
+                            <button class="category-btn">Categoria</button>
+                            <div class="dropdown-content">
+                                <button class="dropdown-item" data-category="mainProjects">Projetos Principais</button>
+                                <button class="dropdown-item" data-category="proposed">Proj. Propostos</button>
+                                <button class="dropdown-item" data-category="inProgress">Proj. em Andamento</button>
+                                <button class="dropdown-item" data-category="future">Proj. Futuros</button>
+                            </div>
+                        </div>
                         <button class="edit-btn">Editar</button>
                         <button class="delete-btn">Excluir</button>
                         ${level < 4 ? '<button class="subtask-btn">Subtarefa</button>' : ''}
@@ -691,6 +787,22 @@
                         toggleSubtasks(key, subPath, subLi);
                     });
                 }
+                subLi.querySelector('.up-btn').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const parts = fullPath.split('/').filter(p => p !== '');
+                    const parentKey = parts[0];
+                    const path = parts.slice(1, -1).join('/');
+                    const index = parseInt(parts[parts.length - 1]);
+                    moveLevelUp(parentKey, path, index);
+                });
+                subLi.querySelector('.down-btn').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const parts = fullPath.split('/').filter(p => p !== '');
+                    const parentKey = parts[0];
+                    const path = parts.slice(1, -1).join('/');
+                    const index = parseInt(parts[parts.length - 1]);
+                    moveLevelDown(parentKey, path, index);
+                });
                 subLi.querySelector('.edit-btn').addEventListener('click', (e) => {
                     e.stopPropagation();
                     editSubtask(key, path, originalIndex);
@@ -760,6 +872,8 @@
                             ${hasSubtasks ? `<button class="expand-btn">${isExpanded ? '−' : '+'}</button>` : '<span class="expand-placeholder"></span>'}
                             <input type="checkbox" ${task.completed ? 'checked' : ''} data-id="${key}">
                             <span class="task-text ${isTaskBoldItalic ? 'bold-italic' : ''}">${task.text} | Data: ${formatDate(task.dueDate)} | Prioridade: ${task.priority}</span>
+                            <button class="level-btn up-btn" data-id="${key}">↑</button>
+                            <button class="level-btn down-btn" data-id="${key}">↓</button>
                             <div class="category-dropdown">
                                 <button class="category-btn">Categoria</button>
                                 <div class="dropdown-content">
@@ -796,6 +910,14 @@
                             toggleSubtasks(key, '', li);
                         });
                     }
+                    li.querySelector('.up-btn').addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        moveLevelUp(key, '', 0);
+                    });
+                    li.querySelector('.down-btn').addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        moveLevelDown(key, '', 0);
+                    });
                     const categoryBtn = li.querySelector('.category-btn');
                     categoryBtn.addEventListener('click', (e) => {
                         e.stopPropagation();
@@ -853,39 +975,38 @@
             });
         }
 
-// Função para gerar o conteúdo do campo de notas TXT
-function generateTxtNote() {
-    const taskList = document.getElementById('taskList');
-    const txtNote = document.getElementById('txtNote');
-    let content = '';
+        // Função para gerar o conteúdo do campo de notas TXT
+        function generateTxtNote() {
+            const taskList = document.getElementById('taskList');
+            const txtNote = document.getElementById('txtNote');
+            let content = '';
 
-    const items = taskList.querySelectorAll('li');
-    if (items.length === 0) {
-        content = 'Sem tarefas exibidas.';
-    } else {
-        items.forEach(item => {
-            // Verifica se o item está completado (tachado)
-            const isCompleted = item.classList.contains('completed');
-            if (isCompleted) {
-                // Se a tarefa ou subtarefa está completada, ignora ela e suas subtarefas
-                return;
+            const items = taskList.querySelectorAll('li');
+            if (items.length === 0) {
+                content = 'Sem tarefas exibidas.';
+            } else {
+                items.forEach(item => {
+                    const isCompleted = item.classList.contains('completed');
+                    if (isCompleted) {
+                        return;
+                    }
+
+                    const level = item.className.includes('subtask-level-') ? parseInt(item.className.match(/subtask-level-(\d)/)?.[1] || 0) : 0;
+                    const indent = '    '.repeat(level);
+                    const taskText = item.querySelector('.task-text').textContent;
+                    const notes = item.querySelector('.notes textarea')?.value.trim();
+
+                    content += `${indent}${taskText}\n`;
+                    if (notes) {
+                        content += `${indent}    Notas: ${notes}\n`;
+                    }
+                });
             }
 
-            const level = item.className.includes('subtask-level-') ? parseInt(item.className.match(/subtask-level-(\d)/)?.[1] || 0) : 0;
-            const indent = '    '.repeat(level); // 4 espaços por nível
-            const taskText = item.querySelector('.task-text').textContent;
-            const notes = item.querySelector('.notes textarea')?.value.trim();
+            txtNote.value = content || 'Nenhuma tarefa ou subtarefa não completada visível.';
+            txtNote.style.display = 'block';
+        }
 
-            content += `${indent}${taskText}\n`;
-            if (notes) {
-                content += `${indent}    Notas: ${notes}\n`;
-            }
-        });
-    }
-
-    txtNote.value = content || 'Nenhuma tarefa ou subtarefa não completada visível.';
-    txtNote.style.display = 'block';
-}
         setCategory('mainProjects');
         document.getElementById('mainProjectsBtn').addEventListener('click', () => setCategory('mainProjects'));
         document.getElementById('proposedBtn').addEventListener('click', () => setCategory('proposed'));
