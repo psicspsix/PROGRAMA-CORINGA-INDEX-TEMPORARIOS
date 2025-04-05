@@ -151,68 +151,85 @@
 
         async function scrollToTarget(key, path = '') {
             log(`Iniciando scrollToTarget para key=${key}, path=${path}`);
-            await wait(1500); // Garante que o DOM esteja atualizado após a adição
+            await wait(2000); // Aumentado para 2000ms para garantir renderização completa
 
-            const expandAndFindElement = async () => {
-                const rootElement = document.querySelector(`li[data-key="${key}"]`);
-                if (!rootElement) {
-                    log(`Erro: Elemento raiz não encontrado para key=${key}`);
-                    return null;
-                }
-                log(`Elemento raiz encontrado: key=${key}`);
+            const findElementWithRetry = async (retries = 5, delay = 500) => {
+                const expandAndFindElement = async () => {
+                    const rootElement = document.querySelector(`li[data-key="${key}"]`);
+                    if (!rootElement) {
+                        log(`Erro: Elemento raiz não encontrado para key=${key}`);
+                        return null;
+                    }
+                    log(`Elemento raiz encontrado: key=${key}`);
 
-                if (!path) return rootElement;
+                    if (!path) return rootElement;
 
-                const parts = path.split('/').filter(p => p !== '');
-                let currentElement = rootElement;
-                let currentPath = key;
+                    const parts = path.split('/').filter(p => p !== '');
+                    let currentElement = rootElement;
+                    let currentPath = key;
 
-                for (let i = 0; i < parts.length; i++) {
-                    const subtaskIndex = parseInt(parts[i]);
-                    const subtasksContainer = currentElement.querySelector('.subtasks-container');
-                    const expandBtn = currentElement.querySelector('.expand-btn');
+                    for (let i = 0; i < parts.length; i++) {
+                        const subtaskIndex = parseInt(parts[i]);
+                        const subtasksContainer = currentElement.querySelector('.subtasks-container');
+                        const expandBtn = currentElement.querySelector('.expand-btn');
 
-                    if (subtasksContainer && expandBtn) {
-                        if (!subtasksContainer.classList.contains('visible')) {
-                            subtasksContainer.classList.add('visible');
-                            expandBtn.textContent = '−';
-                            updateExpansionState(key, currentPath, true);
-                            log(`Expandido: ${currentPath}`);
-                            await wait(200); // Espera para renderização após expansão
+                        if (subtasksContainer && expandBtn) {
+                            if (!subtasksContainer.classList.contains('visible')) {
+                                subtasksContainer.classList.add('visible');
+                                expandBtn.textContent = '−';
+                                updateExpansionState(key, currentPath, true);
+                                log(`Expandido: ${currentPath}`);
+                                await wait(300); // Aumentado para 300ms após expansão
+                            }
+                        } else {
+                            log(`Erro: Container ou botão de expansão não encontrado em ${currentPath}`);
+                            return rootElement;
                         }
-                    } else {
-                        log(`Erro: Container ou botão de expansão não encontrado em ${currentPath}`);
-                        return rootElement;
+
+                        currentElement = subtasksContainer.querySelector(`li[data-subtask-index="${subtaskIndex}"]`);
+                        if (!currentElement) {
+                            log(`Erro: Subtarefa não encontrada no path=${currentPath}/${subtaskIndex}`);
+                            return rootElement;
+                        }
+                        currentPath += `/${subtaskIndex}`;
                     }
 
-                    currentElement = subtasksContainer.querySelector(`li[data-subtask-index="${subtaskIndex}"]`);
-                    if (!currentElement) {
-                        log(`Erro: Subtarefa não encontrada no path=${currentPath}/${subtaskIndex}`);
-                        return rootElement; // Volta ao elemento raiz se falhar
-                    }
-                    currentPath += `/${subtaskIndex}`;
+                    return currentElement;
+                };
+
+                let targetElement = await expandAndFindElement();
+                let attempts = 0;
+
+                while (!targetElement && attempts < retries) {
+                    log(`Tentativa ${attempts + 1}: Elemento não encontrado, esperando ${delay}ms`);
+                    await wait(delay);
+                    targetElement = await expandAndFindElement();
+                    attempts++;
                 }
 
-                return currentElement;
+                return targetElement;
             };
 
-            const targetElement = await expandAndFindElement();
+            const targetElement = await findElementWithRetry();
             if (targetElement) {
-                await wait(100); // Garante que o elemento esteja visível antes de calcular
+                await wait(200); // Garante visibilidade antes do cálculo
                 const rect = targetElement.getBoundingClientRect();
                 const scrollPosition = rect.top + window.pageYOffset - 50;
                 log(`Calculando rolagem: top=${rect.top}, pageYOffset=${window.pageYOffset}, scrollPosition=${scrollPosition}`);
-                window.scrollTo({ top: scrollPosition, behavior: 'smooth' });
-                await wait(1000);
+
+                // Forçar visibilidade antes do scroll
+                targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                await wait(1000); // Tempo para o scroll suave completar
+
                 log(`Rolagem concluída para ${path ? `subtarefa em ${key}/${path}` : `tarefa em ${key}`}`);
             } else {
-                log(`Falha ao rolar: elemento não encontrado para key=${key}, path=${path}`);
-                // Rolagem de fallback para o topo da tarefa raiz
+                log(`Falha ao rolar: elemento não encontrado após retries para key=${key}, path=${path}`);
                 const rootElement = document.querySelector(`li[data-key="${key}"]`);
                 if (rootElement) {
                     const rect = rootElement.getBoundingClientRect();
                     const scrollPosition = rect.top + window.pageYOffset - 50;
                     window.scrollTo({ top: scrollPosition, behavior: 'smooth' });
+                    log(`Fallback: Rolagem para raiz em ${key}`);
                 }
             }
         }
