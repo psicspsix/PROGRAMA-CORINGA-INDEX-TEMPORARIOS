@@ -151,9 +151,9 @@
 
         async function scrollToTarget(key, path = '') {
             log(`Iniciando scrollToTarget para key=${key}, path=${path}`);
-            await wait(2000); // Aumentado para 2000ms para garantir renderização completa
+            await wait(2500); // Aumentado para 2500ms para garantir renderização completa
 
-            const findElementWithRetry = async (retries = 5, delay = 500) => {
+            const findElementWithRetry = async (retries = 10, delay = 300) => {
                 const expandAndFindElement = async () => {
                     const rootElement = document.querySelector(`li[data-key="${key}"]`);
                     if (!rootElement) {
@@ -179,19 +179,21 @@
                                 expandBtn.textContent = '−';
                                 updateExpansionState(key, currentPath, true);
                                 log(`Expandido: ${currentPath}`);
-                                await wait(300); // Aumentado para 300ms após expansão
+                                await wait(500); // Aumentado para 500ms após expansão
                             }
                         } else {
                             log(`Erro: Container ou botão de expansão não encontrado em ${currentPath}`);
                             return rootElement;
                         }
 
-                        currentElement = subtasksContainer.querySelector(`li[data-subtask-index="${subtaskIndex}"]`);
-                        if (!currentElement) {
+                        const targetSubtask = subtasksContainer.querySelector(`li[data-subtask-index="${subtaskIndex}"]`);
+                        if (!targetSubtask) {
                             log(`Erro: Subtarefa não encontrada no path=${currentPath}/${subtaskIndex}`);
-                            return rootElement;
+                            return null; // Alterado para null para forçar retry
                         }
+                        currentElement = targetSubtask;
                         currentPath += `/${subtaskIndex}`;
+                        log(`Subtarefa encontrada: ${currentPath}`);
                     }
 
                     return currentElement;
@@ -207,17 +209,26 @@
                     attempts++;
                 }
 
+                if (!targetElement) {
+                    log(`Erro: Elemento alvo não encontrado após ${retries} tentativas para key=${key}, path=${path}`);
+                } else {
+                    log(`Elemento alvo encontrado após ${attempts} tentativas`);
+                }
+
                 return targetElement;
             };
 
             const targetElement = await findElementWithRetry();
             if (targetElement) {
-                await wait(200); // Garante visibilidade antes do cálculo
+                await wait(300); // Aumentado para 300ms para garantir visibilidade
                 const rect = targetElement.getBoundingClientRect();
                 const scrollPosition = rect.top + window.pageYOffset - 50;
                 log(`Calculando rolagem: top=${rect.top}, pageYOffset=${window.pageYOffset}, scrollPosition=${scrollPosition}`);
 
-                // Forçar visibilidade antes do scroll
+                if (rect.top === 0 && path) {
+                    log(`Aviso: top=0 detectado, possivelmente elemento não visível ainda`);
+                }
+
                 targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 await wait(1000); // Tempo para o scroll suave completar
 
@@ -228,8 +239,10 @@
                 if (rootElement) {
                     const rect = rootElement.getBoundingClientRect();
                     const scrollPosition = rect.top + window.pageYOffset - 50;
-                    window.scrollTo({ top: scrollPosition, behavior: 'smooth' });
-                    log(`Fallback: Rolagem para raiz em ${key}`);
+                    rootElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    log(`Fallback: Rolagem para raiz em ${key}, scrollPosition=${scrollPosition}`);
+                } else {
+                    log(`Fallback falhou: elemento raiz ${key} não encontrado`);
                 }
             }
         }
