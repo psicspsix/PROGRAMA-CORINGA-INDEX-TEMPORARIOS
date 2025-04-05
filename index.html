@@ -149,64 +149,75 @@
             requestAnimationFrame(animateScroll);
         }
 
-        async function scrollToTarget(key, path = '') {
-            log(`Iniciando scrollToTarget para key=${key}, path=${path}`);
-            await wait(1000);
+async function scrollToTarget(key, path = '') {
+    log(`Iniciando scrollToTarget para key=${key}, path=${path}`);
+    await wait(1500); // Aumentado para garantir que o DOM esteja totalmente atualizado
 
-            const expandAndFindElement = async () => {
-                const rootElement = document.querySelector(`li[data-key="${key}"]`);
-                if (!rootElement) {
-                    log(`Erro: Elemento raiz não encontrado para key=${key}`);
-                    return null;
-                }
-                log(`Elemento raiz encontrado: key=${key}`);
-
-                if (!path) return rootElement;
-
-                const parts = path.split('/').filter(p => p !== '');
-                let currentElement = rootElement;
-                let currentPath = key;
-
-                for (const part of parts) {
-                    const subtasksContainer = currentElement.querySelector('.subtasks-container');
-                    const expandBtn = currentElement.querySelector('.expand-btn');
-
-                    if (subtasksContainer && expandBtn) {
-                        if (!subtasksContainer.classList.contains('visible')) {
-                            subtasksContainer.classList.add('visible');
-                            expandBtn.textContent = '−';
-                            updateExpansionState(key, currentPath, true);
-                            log(`Expandido: ${currentPath}`);
-                            await wait(200);
-                        }
-                    } else {
-                        log(`Erro: Container ou botão de expansão não encontrado em ${currentPath}`);
-                        return rootElement;
-                    }
-
-                    currentElement = subtasksContainer.querySelector(`li[data-subtask-index="${part}"]`);
-                    if (!currentElement) {
-                        log(`Erro: Subtarefa não encontrada no path=${currentPath}/${part}`);
-                        return rootElement;
-                    }
-                    currentPath += `/${part}`;
-                }
-
-                return currentElement;
-            };
-
-            const targetElement = await expandAndFindElement();
-            if (targetElement) {
-                const rect = targetElement.getBoundingClientRect();
-                const scrollPosition = rect.top + window.pageYOffset - 50;
-                log(`Calculando rolagem: top=${rect.top}, pageYOffset=${window.pageYOffset}, scrollPosition=${scrollPosition}`);
-                window.scrollTo({ top: scrollPosition, behavior: 'smooth' });
-                await wait(1000);
-                log(`Rolagem concluída para ${path ? `subtarefa em ${key}/${path}` : `tarefa em ${key}`}`);
-            } else {
-                log(`Falha ao rolar: elemento não encontrado para key=${key}, path=${path}`);
-            }
+    const expandAndFindElement = async () => {
+        const rootElement = document.querySelector(`li[data-key="${key}"]`);
+        if (!rootElement) {
+            log(`Erro: Elemento raiz não encontrado para key=${key}`);
+            return null;
         }
+        log(`Elemento raiz encontrado: key=${key}`);
+
+        if (!path) return rootElement;
+
+        const parts = path.split('/').filter(p => p !== '');
+        let currentElement = rootElement;
+        let currentPath = key;
+
+        for (let i = 0; i < parts.length; i++) {
+            const subtaskIndex = parseInt(parts[i]);
+            const subtasksContainer = currentElement.querySelector('.subtasks-container');
+            const expandBtn = currentElement.querySelector('.expand-btn');
+
+            if (subtasksContainer && expandBtn) {
+                if (!subtasksContainer.classList.contains('visible')) {
+                    subtasksContainer.classList.add('visible');
+                    expandBtn.textContent = '−';
+                    updateExpansionState(key, currentPath, true);
+                    log(`Expandido: ${currentPath}`);
+                    await wait(200); // Espera adicional para cada expansão
+                }
+            } else {
+                log(`Erro: Container ou botão de expansão não encontrado em ${currentPath}`);
+                return rootElement;
+            }
+
+            // Busca o elemento da subtarefa pelo índice correto
+            currentElement = subtasksContainer.querySelector(`li[data-subtask-index="${subtaskIndex}"]`);
+            if (!currentElement) {
+                log(`Erro: Subtarefa não encontrada no path=${currentPath}/${subtaskIndex}`);
+                return rootElement; // Volta ao elemento raiz se falhar
+            }
+            currentPath += `/${subtaskIndex}`;
+        }
+
+        return currentElement;
+    };
+
+    const targetElement = await expandAndFindElement();
+    if (targetElement) {
+        // Força uma nova renderização antes de calcular a posição
+        await wait(100);
+        const rect = targetElement.getBoundingClientRect();
+        const scrollPosition = rect.top + window.pageYOffset - 50;
+        log(`Calculando rolagem: top=${rect.top}, pageYOffset=${window.pageYOffset}, scrollPosition=${scrollPosition}`);
+        window.scrollTo({ top: scrollPosition, behavior: 'smooth' });
+        await wait(1000);
+        log(`Rolagem concluída para ${path ? `subtarefa em ${key}/${path}` : `tarefa em ${key}`}`);
+    } else {
+        log(`Falha ao rolar: elemento não encontrado para key=${key}, path=${path}`);
+        // Rolagem de fallback para o topo da tarefa raiz
+        const rootElement = document.querySelector(`li[data-key="${key}"]`);
+        if (rootElement) {
+            const rect = rootElement.getBoundingClientRect();
+            const scrollPosition = rect.top + window.pageYOffset - 50;
+            window.scrollTo({ top: scrollPosition, behavior: 'smooth' });
+        }
+    }
+}
 
         function updateExpansionState(key, path, isExpanded) {
             const taskRef = ref(db, `tasks/${key}`);
