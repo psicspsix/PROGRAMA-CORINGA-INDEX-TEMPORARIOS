@@ -45,6 +45,7 @@
         .level-btn { font-size: 14px; padding: 5px; width: 20px; height: 20px; line-height: 10px; text-align: center; cursor: pointer; }
         .level-btn:disabled { opacity: 0.5; cursor: not-allowed; }
         .small-btn { font-size: 14px; padding: 5px; width: 30px; height: 30px; line-height: 20px; text-align: center; }
+        #backBtn { display: none; } /* Escondido por padrão */
     </style>
 </head>
 <body>
@@ -59,13 +60,14 @@
         </div>
     </div>
     <div class="input-row">
-        <input type="text" id="taskInput" placeholder="Digite uma tarefa ou subtarefa">
+        <input type="text" id="taskInput" placeholder="Digite uma tarefa / subtarefa ou termos para realizar uma pesquisa!">
         <input type="date" id="dueDate" placeholder="Data de término (opcional)">
         <input type="number" id="priority" min="1" max="1000" placeholder="Prioridade (1-1000)">
         <button id="actionButton">Adicionar</button>
         <button id="txtBtn">TXT</button>
         <button id="searchBtn" class="small-btn">🔍</button>
         <button id="shareBtn" class="small-btn">↻</button>
+        <button id="backBtn">Voltar</button>
     </div>
     <textarea id="txtNote" placeholder="Conteúdo das tarefas será exibido aqui ao clicar em TXT"></textarea>
     <div id="error"></div>
@@ -920,7 +922,17 @@
                     document.getElementById('success').textContent = 'Resultados encontrados!';
                 }
                 document.getElementById('error').textContent = '';
+                document.getElementById('backBtn').style.display = 'inline-block'; // Mostra o botão Voltar
             });
+        }
+
+        function backToTasks() {
+            log("Voltando à exibição padrão das tarefas");
+            document.getElementById('taskInput').value = '';
+            document.getElementById('success').textContent = '';
+            document.getElementById('error').textContent = '';
+            document.getElementById('backBtn').style.display = 'none'; // Esconde o botão Voltar
+            renderTasks();
         }
 
         async function shareTasks() {
@@ -1253,6 +1265,7 @@
         document.getElementById('txtBtn').addEventListener('click', generateTxtNote);
         document.getElementById('searchBtn').addEventListener('click', searchTasks);
         document.getElementById('shareBtn').addEventListener('click', shareTasks);
+        document.getElementById('backBtn').addEventListener('click', backToTasks);
         document.getElementById('taskInput').addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
                 e.preventDefault();
