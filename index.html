@@ -274,6 +274,26 @@
             }, { onlyOnce: true });
         }
 
+        function updateNotesVisibility(key, path, isVisible) {
+            const taskRef = ref(db, `tasks/${key}`);
+            onValue(taskRef, (snapshot) => {
+                const task = snapshot.val();
+                if (!path) {
+                    task.notesVisible = isVisible;
+                } else {
+                    const parts = path.split('/').filter(p => p !== '');
+                    let current = task;
+                    for (const index of parts) {
+                        current = current.subtasks[parseInt(index)];
+                    }
+                    current.notesVisible = isVisible;
+                }
+                update(taskRef, task)
+                    .then(() => log(`Estado de visibilidade das notas atualizado para ${path || key}: ${isVisible}`))
+                    .catch(error => log(`Erro ao atualizar estado de visibilidade das notas: ${error.message}`));
+            }, { onlyOnce: true });
+        }
+
         function saveTask(taskKey = null) {
             const taskInput = document.getElementById('taskInput');
             const dueDateInput = document.getElementById('dueDate');
@@ -325,7 +345,8 @@
                         notes: subtasks[index].notes || "",
                         completed: subtasks[index].completed || false,
                         subtasks: subtasks[index].subtasks || [],
-                        expanded: subtasks[index].expanded || false
+                        expanded: subtasks[index].expanded || false,
+                        notesVisible: subtasks[index].notesVisible || false
                     };
                     log(`Subtarefa atualizada: ${JSON.stringify(subtasks[index])}`);
                     update(taskRef, task).then(() => {
@@ -360,7 +381,8 @@
                         notes: "",
                         completed: false,
                         subtasks: [],
-                        expanded: false
+                        expanded: false,
+                        notesVisible: false
                     };
 
                     let newIndex;
@@ -408,7 +430,8 @@
                         completed: currentTask.completed || false,
                         category: currentCategory,
                         subtasks: currentTask.subtasks || [],
-                        expanded: currentTask.expanded || false
+                        expanded: currentTask.expanded || false,
+                        notesVisible: currentTask.notesVisible || false
                     };
                     set(taskRef, updatedTask).then(() => {
                         document.getElementById('success').textContent = "Tarefa atualizada com sucesso!";
@@ -429,7 +452,8 @@
                     completed: false,
                     category: currentCategory,
                     subtasks: [],
-                    expanded: false
+                    expanded: false,
+                    notesVisible: false
                 }).then((newTaskRef) => {
                     document.getElementById('success').textContent = "Tarefa adicionada com sucesso!";
                     scrollToTarget(newTaskRef.key);
@@ -547,9 +571,11 @@
             }
         }
 
-        function toggleNotes(li) {
+        function toggleNotes(li, key, path = '') {
             const notesDiv = li.querySelector('.notes');
+            const isVisible = !notesDiv.classList.contains('visible');
             notesDiv.classList.toggle('visible');
+            updateNotesVisibility(key, path, isVisible);
         }
 
         function updateNotes(key, textarea) {
@@ -847,6 +873,7 @@
                     const isBoldItalic = isPastDue(task.dueDate, task.completed);
                     const hasSubtasks = task.subtasks && task.subtasks.length > 0;
                     const isExpanded = task.expanded || false;
+                    const isNotesVisible = task.notesVisible || false;
 
                     li.innerHTML = `
                         <div class="task-row">
@@ -869,7 +896,7 @@
                             ${level < 4 ? '<button class="subtask-btn">Subtarefa</button>' : ''}
                             ${task.notes && task.notes.trim() !== '' ? '<span class="has-notes">(Contém Nota)</span>' : ''}
                         </div>
-                        <div class="notes ${task.notes ? 'visible' : ''}">
+                        <div class="notes ${isNotesVisible ? 'visible' : ''}">
                             <textarea rows="3">${task.notes || ''}</textarea>
                         </div>
                         <div class="subtasks-container ${isExpanded ? 'visible' : ''}"></div>
@@ -884,7 +911,7 @@
 
                     li.querySelector('.task-text').addEventListener('click', (e) => {
                         e.stopPropagation();
-                        toggleNotes(li);
+                        toggleNotes(li, key, path);
                     });
                     if (hasSubtasks) {
                         li.querySelector('.expand-btn').addEventListener('click', (e) => {
@@ -934,7 +961,7 @@
                     if (notesIndicator) {
                         notesIndicator.addEventListener('click', (e) => {
                             e.stopPropagation();
-                            toggleNotes(li);
+                            toggleNotes(li, key, path);
                         });
                     }
                     li.querySelector('textarea').addEventListener('change', (e) => {
@@ -973,6 +1000,7 @@
                     const isBoldItalic = isPastDue(subtask.dueDate, subtask.completed);
                     const hasSubtasks = subtask.subtasks && subtask.subtasks.length > 0;
                     const isExpanded = subtask.expanded || false;
+                    const isNotesVisible = subtask.notesVisible || false;
 
                     li.innerHTML = `
                         <div class="task-row">
@@ -986,7 +1014,7 @@
                             ${level < 4 ? '<button class="subtask-btn">Subtarefa</button>' : ''}
                             ${subtask.notes && subtask.notes.trim() !== '' ? '<span class="has-notes">(Contém Nota)</span>' : ''}
                         </div>
-                        <div class="notes ${subtask.notes ? 'visible' : ''}">
+                        <div class="notes ${isNotesVisible ? 'visible' : ''}">
                             <textarea rows="3">${subtask.notes || ''}</textarea>
                         </div>
                         <div class="subtasks-container ${isExpanded ? 'visible' : ''}"></div>
@@ -1001,7 +1029,7 @@
 
                     li.querySelector('.task-text').addEventListener('click', (e) => {
                         e.stopPropagation();
-                        toggleNotes(li);
+                        toggleNotes(li, key, subtaskPath);
                     });
                     if (hasSubtasks) {
                         li.querySelector('.expand-btn').addEventListener('click', (e) => {
@@ -1038,7 +1066,7 @@
                     if (notesIndicator) {
                         notesIndicator.addEventListener('click', (e) => {
                             e.stopPropagation();
-                            toggleNotes(li);
+                            toggleNotes(li, key, subtaskPath);
                         });
                     }
                     li.querySelector('textarea').addEventListener('change', (e) => {
@@ -1080,6 +1108,7 @@
                     const isBoldItalic = isPastDue(task.dueDate, task.completed);
                     const hasSubtasks = task.subtasks && task.subtasks.length > 0;
                     const isExpanded = task.expanded || false;
+                    const isNotesVisible = task.notesVisible || false;
 
                     li.innerHTML = `
                         <div class="task-row">
@@ -1102,7 +1131,7 @@
                             ${hasSubtasks ? '<button class="subtask-btn">Subtarefa</button>' : '<button class="subtask-btn">Subtarefa</button>'}
                             ${task.notes && task.notes.trim() !== '' ? '<span class="has-notes">(Contém Nota)</span>' : ''}
                         </div>
-                        <div class="notes ${task.notes ? 'visible' : ''}">
+                        <div class="notes ${isNotesVisible ? 'visible' : ''}">
                             <textarea rows="3">${task.notes || ''}</textarea>
                         </div>
                         <div class="subtasks-container ${isExpanded ? 'visible' : ''}"></div>
@@ -1117,7 +1146,7 @@
 
                     li.querySelector('.task-text').addEventListener('click', (e) => {
                         e.stopPropagation();
-                        toggleNotes(li);
+                        toggleNotes(li, key);
                     });
                     if (hasSubtasks) {
                         li.querySelector('.expand-btn').addEventListener('click', (e) => {
@@ -1161,7 +1190,7 @@
                     if (notesIndicator) {
                         notesIndicator.addEventListener('click', (e) => {
                             e.stopPropagation();
-                            toggleNotes(li);
+                            toggleNotes(li, key);
                         });
                     }
                     li.querySelector('textarea').addEventListener('change', (e) => {
