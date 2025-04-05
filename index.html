@@ -67,6 +67,7 @@
         <button id="txtBtn">TXT</button>
         <button id="searchBtn" class="small-btn">🔍</button>
         <button id="shareBtn" class="small-btn">↻</button>
+        <button id="shareCategoryBtn" class="small-btn">⍟</button>
         <button id="backBtn">Voltar</button>
     </div>
     <textarea id="txtNote" placeholder="Conteúdo das tarefas será exibido aqui ao clicar em TXT"></textarea>
@@ -151,7 +152,7 @@
 
         async function scrollToTarget(key, path = '') {
             log(`Iniciando scrollToTarget para key=${key}, path=${path}`);
-            await wait(2500); // Aumentado para 2500ms para garantir renderização completa
+            await wait(2500); // Atraso inicial para renderização
 
             const findElementWithRetry = async (retries = 10, delay = 300) => {
                 const expandAndFindElement = async () => {
@@ -179,7 +180,7 @@
                                 expandBtn.textContent = '−';
                                 updateExpansionState(key, currentPath, true);
                                 log(`Expandido: ${currentPath}`);
-                                await wait(500); // Aumentado para 500ms após expansão
+                                await wait(500); // Atraso após expansão
                             }
                         } else {
                             log(`Erro: Container ou botão de expansão não encontrado em ${currentPath}`);
@@ -189,7 +190,7 @@
                         const targetSubtask = subtasksContainer.querySelector(`li[data-subtask-index="${subtaskIndex}"]`);
                         if (!targetSubtask) {
                             log(`Erro: Subtarefa não encontrada no path=${currentPath}/${subtaskIndex}`);
-                            return null; // Alterado para null para forçar retry
+                            return null;
                         }
                         currentElement = targetSubtask;
                         currentPath += `/${subtaskIndex}`;
@@ -202,8 +203,8 @@
                 let targetElement = await expandAndFindElement();
                 let attempts = 0;
 
-                while (!targetElement && attempts < retries) {
-                    log(`Tentativa ${attempts + 1}: Elemento não encontrado, esperando ${delay}ms`);
+                while ((!targetElement || targetElement.getBoundingClientRect().top === 0) && attempts < retries) {
+                    log(`Tentativa ${attempts + 1}: Elemento não encontrado ou não visível (top=0), esperando ${delay}ms`);
                     await wait(delay);
                     targetElement = await expandAndFindElement();
                     attempts++;
@@ -211,8 +212,10 @@
 
                 if (!targetElement) {
                     log(`Erro: Elemento alvo não encontrado após ${retries} tentativas para key=${key}, path=${path}`);
+                } else if (targetElement.getBoundingClientRect().top === 0) {
+                    log(`Erro: Elemento encontrado, mas ainda não visível (top=0) após ${retries} tentativas`);
                 } else {
-                    log(`Elemento alvo encontrado após ${attempts} tentativas`);
+                    log(`Elemento alvo encontrado e visível após ${attempts} tentativas`);
                 }
 
                 return targetElement;
@@ -220,21 +223,17 @@
 
             const targetElement = await findElementWithRetry();
             if (targetElement) {
-                await wait(300); // Aumentado para 300ms para garantir visibilidade
+                await wait(300); // Atraso adicional para garantir visibilidade
                 const rect = targetElement.getBoundingClientRect();
                 const scrollPosition = rect.top + window.pageYOffset - 50;
                 log(`Calculando rolagem: top=${rect.top}, pageYOffset=${window.pageYOffset}, scrollPosition=${scrollPosition}`);
-
-                if (rect.top === 0 && path) {
-                    log(`Aviso: top=0 detectado, possivelmente elemento não visível ainda`);
-                }
 
                 targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 await wait(1000); // Tempo para o scroll suave completar
 
                 log(`Rolagem concluída para ${path ? `subtarefa em ${key}/${path}` : `tarefa em ${key}`}`);
             } else {
-                log(`Falha ao rolar: elemento não encontrado após retries para key=${key}, path=${path}`);
+                log(`Falha ao rolar: elemento não encontrado ou não visível após retries para key=${key}, path=${path}`);
                 const rootElement = document.querySelector(`li[data-key="${key}"]`);
                 if (rootElement) {
                     const rect = rootElement.getBoundingClientRect();
@@ -975,10 +974,10 @@
         }
 
         async function shareTasks() {
-            if (!confirm("Tem certeza que deseja compartilhar as tarefas? Isso migrará os dados para 'projetos-compartilhados'.")) return;
+            if (!confirm("Tem certeza que deseja compartilhar todas as tarefas? Isso migrará todos os dados para 'projetos-compartilhados'.")) return;
 
-            log("Iniciando migração de dados para compartilhamento...");
-            document.getElementById('success').textContent = "Iniciando migração...";
+            log("Iniciando migração completa de dados para compartilhamento...");
+            document.getElementById('success').textContent = "Iniciando migração completa...";
 
             try {
                 onValue(tasksRef, (snapshot) => {
@@ -990,25 +989,72 @@
                         return;
                     }
 
-                    log(`Encontradas ${Object.keys(tasks).length} tarefas para compartilhar.`);
+                    log(`Encontradas ${Object.keys(tasks).length} tarefas para compartilhar (migração completa).`);
 
                     Object.entries(tasks).forEach(([key, task]) => {
                         const newTaskRef = ref(newDb, `tasks/${key}`);
                         set(newTaskRef, task)
-                            .then(() => {
-                                log(`Tarefa compartilhada com sucesso: ${key} - ${task.text}`);
-                            })
+                            .then(() => log(`Tarefa compartilhada com sucesso: ${key} - ${task.text}`))
                             .catch((error) => {
                                 log(`Erro ao compartilhar tarefa ${key}: ${error.message}`);
                                 document.getElementById('error').textContent = `Erro ao compartilhar tarefa ${key}: ${error.message}`;
                             });
                     });
 
-                    document.getElementById('success').textContent = "Migração concluída!";
-                    log("Migração para compartilhamento concluída!");
+                    document.getElementById('success').textContent = "Migração completa concluída!";
+                    log("Migração completa para compartilhamento concluída!");
                 }, { onlyOnce: true });
             } catch (error) {
-                log(`Erro durante o compartilhamento: ${error.message}`);
+                log(`Erro durante o compartilhamento completo: ${error.message}`);
+                document.getElementById('error').textContent = `Erro durante o compartilhamento: ${error.message}`;
+                document.getElementById('success').textContent = '';
+            }
+        }
+
+        async function shareCategoryTasks() {
+            if (!confirm(`Tem certeza que deseja compartilhar as tarefas da categoria "${currentCategory === 'all' ? 'Todas' : currentCategory}"? Isso migrará apenas os dados visíveis na tela para 'projetos-compartilhados'.`)) return;
+
+            log(`Iniciando migração de tarefas da categoria ${currentCategory}...`);
+            document.getElementById('success').textContent = `Iniciando migração da categoria ${currentCategory}...`;
+
+            try {
+                onValue(tasksRef, (snapshot) => {
+                    const tasks = snapshot.val();
+                    if (!tasks) {
+                        log("Nenhuma tarefa encontrada para compartilhar.");
+                        document.getElementById('error').textContent = "Nenhuma tarefa para compartilhar.";
+                        document.getElementById('success').textContent = '';
+                        return;
+                    }
+
+                    const tasksToShare = Object.entries(tasks).filter(([_, task]) => 
+                        currentCategory === 'all' || task.category === currentCategory
+                    );
+
+                    if (tasksToShare.length === 0) {
+                        log(`Nenhuma tarefa encontrada na categoria ${currentCategory}.`);
+                        document.getElementById('error').textContent = `Nenhuma tarefa na categoria ${currentCategory}.`;
+                        document.getElementById('success').textContent = '';
+                        return;
+                    }
+
+                    log(`Encontradas ${tasksToShare.length} tarefas para compartilhar na categoria ${currentCategory}.`);
+
+                    tasksToShare.forEach(([key, task]) => {
+                        const newTaskRef = ref(newDb, `tasks/${key}`);
+                        set(newTaskRef, task)
+                            .then(() => log(`Tarefa compartilhada com sucesso: ${key} - ${task.text}`))
+                            .catch((error) => {
+                                log(`Erro ao compartilhar tarefa ${key}: ${error.message}`);
+                                document.getElementById('error').textContent = `Erro ao compartilhar tarefa ${key}: ${error.message}`;
+                            });
+                    });
+
+                    document.getElementById('success').textContent = `Migração da categoria ${currentCategory} concluída!`;
+                    log(`Migração da categoria ${currentCategory} para compartilhamento concluída!`);
+                }, { onlyOnce: true });
+            } catch (error) {
+                log(`Erro durante o compartilhamento da categoria ${currentCategory}: ${error.message}`);
                 document.getElementById('error').textContent = `Erro durante o compartilhamento: ${error.message}`;
                 document.getElementById('success').textContent = '';
             }
@@ -1304,6 +1350,7 @@
         document.getElementById('txtBtn').addEventListener('click', generateTxtNote);
         document.getElementById('searchBtn').addEventListener('click', searchTasks);
         document.getElementById('shareBtn').addEventListener('click', shareTasks);
+        document.getElementById('shareCategoryBtn').addEventListener('click', shareCategoryTasks);
         document.getElementById('backBtn').addEventListener('click', backToTasks);
         document.getElementById('taskInput').addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
