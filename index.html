@@ -350,7 +350,7 @@
             } else if (editingTaskKey) {
                 const taskRef = ref(db, `tasks/${editingTaskKey}`);
                 log(`Editando tarefa: key=${editingTaskKey}`);
-                onValue(taskRef, dashesnapshot) => {
+                onValue(taskRef, (snapshot) => {
                     const currentTask = snapshot.val();
                     const updatedTask = {
                         text: taskText,
