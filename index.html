@@ -1038,7 +1038,7 @@
                     })
                     .forEach((subtask, index) => {
                         const subtaskPath = path ? `${path}/${index}` : `${index}`;
-                        log(`Renderizando subtarefas: key=${key}, path=${subtaskPath}, level=${level}`);
+                        log(`Renderizando subtarefa: key=${key}, path=${subtaskPath}, level=${level}, text="${subtask.text}", priority=${subtask.priority}`);
                         const li = document.createElement('li');
                         li.className = `subtask-level-${level} ${subtask.completed ? 'completed' : ''}`;
                         li.setAttribute('data-subtask-index', index);
@@ -1096,6 +1096,7 @@
                             const parentKey = e.target.getAttribute('data-key');
                             const subPath = e.target.getAttribute('data-path');
                             const subIndex = parseInt(e.target.getAttribute('data-index'));
+                            log(`Botão Editar clicado: parentKey=${parentKey}, subPath=${subPath}, subIndex=${subIndex}`);
                             editSubtask(parentKey, subPath, subIndex);
                         });
                         li.querySelector('.delete-btn').addEventListener('click', (e) => {
@@ -1121,9 +1122,14 @@
                         li.querySelector('textarea').addEventListener('change', (e) => {
                             updateSubtaskNotes(key, path, index, e.target);
                         });
-                        li.querySelector('input[type="checkbox"]').addEventListener('change', (e) => {
+                        li.querySelector('input[type="checkbox"]').addEventListener('click', (e) => {
                             e.stopPropagation();
-                            toggleSubtask(key, path, index);
+                            const [parentKeyFromData, fullPath] = e.target.getAttribute('data-id').split('/', 2);
+                            const subtaskPathParts = fullPath.split('/');
+                            const subtaskIndex = parseInt(subtaskPathParts.pop());
+                            const subPath = subtaskPathParts.join('/');
+                            log(`Checkbox clicado: parentKey=${parentKeyFromData}, subPath=${subPath}, subtaskIndex=${subtaskIndex}`);
+                            toggleSubtask(parentKeyFromData, subPath, subtaskIndex);
                         });
                     });
             }
