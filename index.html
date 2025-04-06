@@ -29,9 +29,9 @@
         .dropdown-content { display: none; position: absolute; background-color: #333; min-width: 160px; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2); z-index: 1; border-radius: 5px; }
         .dropdown-content button { width: 100%; text-align: left; padding: 10px; margin: 0; }
         .dropdown-content button:hover { background-color: #555; }
-        .date-today { color: #ffff00; } /* Amarelo para o dia atual */
-        .date-one-day-past { color: #1e90ff; } /* Azul para amanhã */
-        .date-past { color: #ff0000; } /* Vermelho para ontem ou anteriores */
+        .date-today { color: #ffff00; }
+        .date-one-day-past { color: #1e90ff; }
+        .date-past { color: #ff0000; }
         .subtask-level-1 { margin-left: 60px; background: #3a3a3a; }
         .subtask-level-2 { margin-left: 120px; background: #4a4a4a; }
         .subtask-level-3 { margin-left: 180px; background: #5a5a5a; }
@@ -545,17 +545,38 @@
             const taskRef = ref(db, `tasks/${parentKey}`);
             onValue(taskRef, (snapshot) => {
                 const task = snapshot.val();
-                let current = task;
-                const parts = path.split('/').filter(p => p !== '');
-                for (let i = 0; i < parts.length; i++) {
-                    const index = parseInt(parts[i]);
-                    current = current.subtasks[index];
+                let subtasks = task.subtasks || [];
+
+                if (!path) {
+                    // Nível 1
+                    if (!subtasks[subtaskIndex]) {
+                        log(`Erro: Subtarefa no índice ${subtaskIndex} não encontrada em ${parentKey}`);
+                        return;
+                    }
+                    subtasks[subtaskIndex].completed = !subtasks[subtaskIndex].completed;
+                } else {
+                    // Níveis mais profundos
+                    const pathParts = path.split('/').map(Number);
+                    let currentLevel = subtasks;
+                    for (let i = 0; i < pathParts.length; i++) {
+                        if (!currentLevel[pathParts[i]]) {
+                            log(`Erro: Caminho inválido em ${parentKey}/${path} no índice ${pathParts[i]}`);
+                            return;
+                        }
+                        if (i === pathParts.length - 1) {
+                            if (!currentLevel[pathParts[i]].subtasks || !currentLevel[pathParts[i]].subtasks[subtaskIndex]) {
+                                log(`Erro: Subtarefa no índice ${subtaskIndex} não encontrada em ${parentKey}/${path}`);
+                                return;
+                            }
+                            currentLevel[pathParts[i]].subtasks[subtaskIndex].completed = !currentLevel[pathParts[i]].subtasks[subtaskIndex].completed;
+                        } else {
+                            currentLevel = currentLevel[pathParts[i]].subtasks;
+                        }
+                    }
                 }
-                const currentCompleted = current.subtasks[subtaskIndex].completed;
-                const newCompletedState = !currentCompleted;
-                current.subtasks[subtaskIndex].completed = newCompletedState;
-                update(taskRef, task)
-                    .then(() => log(`Atualização no Firebase concluída para ${parentKey}`))
+
+                update(taskRef, { subtasks })
+                    .then(() => log(`Subtarefa atualizada no Firebase: ${parentKey}/${path ? path + '/' : ''}${subtaskIndex}`))
                     .catch(error => log(`Erro ao atualizar subtarefa: ${error.message}`));
             }, { onlyOnce: true });
         }
@@ -801,11 +822,11 @@
             log(`Formatando data: Hoje=${today.toLocaleDateString()}, Due=${due.toLocaleDateString()}`);
 
             if (due.getTime() === today.getTime()) {
-                className = 'date-today'; // Amarelo para hoje
+                className = 'date-today';
             } else if (due.getTime() === today.getTime() + oneDayMs) {
-                className = 'date-one-day-past'; // Azul para amanhã
+                className = 'date-one-day-past';
             } else if (due.getTime() <= today.getTime() - oneDayMs) {
-                className = 'date-past'; // Vermelho para ontem ou anteriores
+                className = 'date-past';
             }
 
             return `<span class="${className}">${day}/${month}/${year}</span>`;
@@ -1004,9 +1025,14 @@
                     li.querySelector('textarea').addEventListener('change', (e) => {
                         level === 0 ? updateNotes(key, e.target) : updateSubtaskNotes(key, path.split('/').slice(0, -1).join('/'), parseInt(path.split('/').pop()), e.target);
                     });
-                    li.querySelector('input[type="checkbox"]').addEventListener('change', (e) => {
+                    li.querySelector('input[type="checkbox"]').addEventListener('click', (e) => {
                         e.stopPropagation();
-                        level === 0 ? toggleTask(key) : toggleSubtask(key, path.split('/').slice(0, -1).join('/'), parseInt(path.split('/').pop()));
+                        const [parentKeyFromData, fullPath] = e.target.getAttribute('data-id').split('/', 2);
+                        const pathParts = fullPath.split('/').filter(p => p !== '');
+                        const subtaskIndex = pathParts.length > 0 ? parseInt(pathParts.pop()) : parseInt(fullPath);
+                        const subPath = pathParts.join('/');
+                        log(`Checkbox clicado: parentKey=${parentKeyFromData}, subPath=${subPath}, subtaskIndex=${subtaskIndex}`);
+                        level === 0 ? toggleTask(parentKeyFromData) : toggleSubtask(parentKeyFromData, subPath, subtaskIndex);
                     });
                 };
 
@@ -1029,13 +1055,11 @@
 
         function renderSubtasks(key, task, container, path = '', level) {
             if (task.subtasks && task.subtasks.length > 0) {
-                // Criar um array de subtarefas com seus índices originais
                 const subtasksWithOriginalIndex = task.subtasks.map((subtask, originalIndex) => ({
                     subtask,
                     originalIndex
                 }));
 
-                // Ordenar apenas para exibição, preservando os índices originais
                 subtasksWithOriginalIndex.sort((a, b) => {
                     const dateA = a.subtask.dueDate || '9999-12-31';
                     const dateB = b.subtask.dueDate || '9999-12-31';
@@ -1048,7 +1072,7 @@
                     log(`Renderizando subtarefa: key=${key}, path=${subtaskPath}, level=${level}, text="${subtask.text}", priority=${subtask.priority}, originalIndex=${originalIndex}`);
                     const li = document.createElement('li');
                     li.className = `subtask-level-${level} ${subtask.completed ? 'completed' : ''}`;
-                    li.setAttribute('data-subtask-path', `${key}/${subtaskPath}`); // Usar o caminho completo com a key
+                    li.setAttribute('data-subtask-path', `${key}/${subtaskPath}`);
                     const isBoldItalic = isPastDue(subtask.dueDate, subtask.completed);
                     const hasSubtasks = subtask.subtasks && subtask.subtasks.length > 0;
                     const shouldExpand = isToday(subtask.dueDate) || isTomorrow(subtask.dueDate);
@@ -1457,7 +1481,6 @@
         document.getElementById('allBtn').addEventListener('click', () => setCategory('all'));
         document.getElementById('backBtn').addEventListener('click', resetForm);
 
-        // Adiciona suporte ao "Enter" em todos os campos de entrada
         document.getElementById('taskInput').addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
                 e.preventDefault();
