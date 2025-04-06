@@ -30,8 +30,8 @@
         .dropdown-content button { width: 100%; text-align: left; padding: 10px; margin: 0; }
         .dropdown-content button:hover { background-color: #555; }
         .date-today { color: #ffff00; } /* Amarelo para o dia atual */
-        .date-one-day-past { color: #1e90ff; } /* Azul para um dia antes */
-        .date-past { color: #ff0000; } /* Vermelho para datas vencidas */
+        .date-one-day-past { color: #1e90ff; } /* Azul para amanhã */
+        .date-past { color: #ff0000; } /* Vermelho para ontem ou anteriores */
         .subtask-level-1 { margin-left: 60px; background: #3a3a3a; }
         .subtask-level-2 { margin-left: 120px; background: #4a4a4a; }
         .subtask-level-3 { margin-left: 180px; background: #5a5a5a; }
@@ -790,11 +790,11 @@
             let className = '';
 
             if (due.getTime() === today.getTime()) {
-                className = 'date-today'; // Amarelo
-            } else if (due.getTime() === today.getTime() - oneDayMs) {
-                className = 'date-one-day-past'; // Azul
-            } else if (due < today) {
-                className = 'date-past'; // Vermelho
+                className = 'date-today'; // Amarelo para hoje
+            } else if (due.getTime() === today.getTime() + oneDayMs) {
+                className = 'date-one-day-past'; // Azul para amanhã
+            } else if (due <= today) {
+                className = 'date-past'; // Vermelho para ontem ou anteriores
             }
 
             return `<span class="${className}">${day}/${month}/${year}</span>`;
@@ -809,14 +809,14 @@
             return due.getTime() === today.getTime();
         }
 
-        function isOneDayPast(dueDate) {
+        function isTomorrow(dueDate) {
             if (!dueDate) return false;
             const today = new Date();
             today.setHours(0, 0, 0, 0);
             const due = new Date(dueDate);
             due.setHours(0, 0, 0, 0);
             const oneDayMs = 24 * 60 * 60 * 1000;
-            return due.getTime() === today.getTime() - oneDayMs;
+            return due.getTime() === today.getTime() + oneDayMs;
         }
 
         function isPastDue(dueDate, completed) {
@@ -897,7 +897,7 @@
                     else li.setAttribute('data-subtask-index', path.split('/').pop());
                     const isBoldItalic = isPastDue(task.dueDate, task.completed);
                     const hasSubtasks = task.subtasks && task.subtasks.length > 0;
-                    const isExpanded = task.expanded || isToday(task.dueDate) || isOneDayPast(task.dueDate);
+                    const isExpanded = task.expanded || isToday(task.dueDate) || isTomorrow(task.dueDate);
                     const isNotesVisible = task.notesVisible || false;
 
                     li.innerHTML = `
@@ -1032,7 +1032,7 @@
                         li.setAttribute('data-subtask-index', index);
                         const isBoldItalic = isPastDue(subtask.dueDate, subtask.completed);
                         const hasSubtasks = subtask.subtasks && subtask.subtasks.length > 0;
-                        const shouldExpand = isToday(subtask.dueDate) || isOneDayPast(subtask.dueDate);
+                        const shouldExpand = isToday(subtask.dueDate) || isTomorrow(subtask.dueDate);
                         const isExpanded = subtask.expanded || shouldExpand;
                         const isNotesVisible = subtask.notesVisible || false;
 
@@ -1141,7 +1141,7 @@
                     li.className = task.completed ? 'completed' : '';
                     const isBoldItalic = isPastDue(task.dueDate, task.completed);
                     const hasSubtasks = task.subtasks && task.subtasks.length > 0;
-                    const shouldExpand = isToday(task.dueDate) || isOneDayPast(task.dueDate);
+                    const shouldExpand = isToday(task.dueDate) || isTomorrow(task.dueDate);
                     const isExpanded = task.expanded || shouldExpand;
                     const isNotesVisible = task.notesVisible || false;
 
