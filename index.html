@@ -3,35 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Projetos Compartilhados</title>
+    <title>Projetos Complexos</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #1a1a1a; color: #e0e0e0; }
-        #loginScreen, #appScreen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
-        #loginScreen { 
-            background: url('https://images.unsplash.com/photo-1464802686167-b939a6910659?q=80&w=1450&auto=format&fit=crop') no-repeat center center fixed; 
-            background-size: cover; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            flex-direction: column;
-        }
-        #appScreen { display: none; padding: 20px; }
-        .login-container, .register-container { background: rgba(0, 0, 0, 0.8); padding: 20px; border-radius: 10px; text-align: center; }
-        .login-container input, .register-container input { 
-            width: 100%; max-width: 300px; font-size: 18px; padding: 10px; margin: 10px 0; background: #333; color: #e0e0e0; border: 1px solid #555; border-radius: 5px; }
-        .login-container button, .register-container button { 
-            font-size: 18px; padding: 10px 20px; margin: 5px; background: #333; color: #e0e0e0; border: 1px solid #555; border-radius: 5px; cursor: pointer; }
-        .login-container button:hover, .register-container button:hover { background: #555; }
-        #registerBtn { display: none; }
-        #registerContainer { display: none; margin-top: 20px; }
-        #usersList { margin-top: 20px; text-align: left; max-width: 400px; }
-        #usersList div { margin: 10px 0; display: flex; justify-content: space-between; align-items: center; }
-        #usersList button { font-size: 14px; padding: 5px; }
-        #message { color: #ff5555; margin-top: 10px; }
+        body { font-family: Arial, sans-serif; padding: 20px; background: #1a1a1a; color: #e0e0e0; }
         .header { display: flex; justify-content: space-between; align-items: center; }
         h1 { margin: 0; color: #ffffff; }
         .category-buttons { display: flex; gap: 10px; align-items: center; }
+        input, button { font-size: 18px; padding: 10px; margin: 5px; background: #333; color: #e0e0e0; border: 1px solid #555; }
         #taskInput { width: 600px; }
+        button:hover { background: #555; }
         button.active { background: #555; font-weight: bold; }
         ul { list-style-type: none; padding: 0; }
         li { font-size: 18px; margin: 10px 0; background: #2a2a2a; padding: 10px; border-radius: 5px; cursor: pointer; }
@@ -40,15 +20,17 @@
         .notes.visible { display: block; }
         textarea { width: 100%; background: #444; color: #e0e0e0; border: 1px solid #555; padding: 5px; box-sizing: border-box; }
         .completed { text-decoration: line-through; color: #888; }
-        #error, #success { text-align: center; }
-        #error { color: #ff5555; }
-        #success { color: #55ff55; }
+        #error { color: #ff5555; text-align: center; }
+        #success { color: #55ff55; text-align: center; }
         .has-notes { margin-left: 10px; font-style: italic; cursor: pointer; }
         .task-text.bold-italic { font-weight: bold; font-style: italic; }
         .category-dropdown { position: relative; display: inline-block; }
         .dropdown-content { display: none; position: absolute; background-color: #333; min-width: 160px; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2); z-index: 1; border-radius: 5px; }
         .dropdown-content button { width: 100%; text-align: left; padding: 10px; margin: 0; }
         .dropdown-content button:hover { background-color: #555; }
+        .date-today { color: #1e90ff; }
+        .date-one-day-past { color: #ffff00; }
+        .date-two-plus-days-past { color: #ff0000; }
         .subtask-level-1 { margin-left: 60px; background: #3a3a3a; }
         .subtask-level-2 { margin-left: 120px; background: #4a4a4a; }
         .subtask-level-3 { margin-left: 180px; background: #5a5a5a; }
@@ -63,72 +45,41 @@
         .level-btn { font-size: 14px; padding: 5px; width: 20px; height: 20px; line-height: 10px; text-align: center; cursor: pointer; }
         .level-btn:disabled { opacity: 0.5; cursor: not-allowed; }
         .small-btn { font-size: 14px; padding: 5px; width: 30px; height: 30px; line-height: 20px; text-align: center; }
-        #deleteCategoryBtn, #sendToComplexBtn { display: none; }
         #backBtn { display: none; }
     </style>
 </head>
 <body>
-    <div id="loginScreen">
-        <div class="login-container">
-            <h2>Projetos Compartilhados</h2>
-            <input type="text" id="userInput" placeholder="Usuário (Nome ou e-mail)">
-            <input type="password" id="passwordInput" placeholder="Senha">
-            <button id="loginBtn">Entrar</button>
-            <button id="registerBtn">Cadastrar</button>
-            <div id="message"></div>
-            <div id="registerContainer" class="register-container">
-                <input type="text" id="newUserInput" placeholder="Novo Usuário (e-mail)">
-                <input type="password" id="newPasswordInput" placeholder="Nova Senha">
-                <button id="submitRegisterBtn">Cadastrar</button>
-            </div>
-            <div id="usersList"></div>
+    <div class="header">
+        <h1>Projetos Complexos</h1>
+        <div class="category-buttons">
+            <button id="mainProjectsBtn">Projetos Principais</button>
+            <button id="proposedBtn">Proj. Propostos</button>
+            <button id="inProgressBtn">Proj. em Andamento</button>
+            <button id="futureBtn">Proj. Futuros</button>
+            <button id="allBtn">Todos</button>
+            <button id="shareBtn" class="small-btn">↻</button>
         </div>
     </div>
-    <div id="appScreen">
-        <div class="header">
-            <h1>Projetos Compartilhados</h1>
-            <div class="category-buttons">
-                <button id="mainProjectsBtn">Projetos Principais</button>
-                <button id="proposedBtn">Proj. Propostos</button>
-                <button id="inProgressBtn">Proj. em Andamento</button>
-                <button id="futureBtn">Proj. Futuros</button>
-                <button id="allBtn">Todos</button>
-                <button id="deleteCategoryBtn" class="small-btn">🗑️</button>
-            </div>
-        </div>
-        <div class="input-row">
-            <input type="text" id="taskInput" placeholder="Digite uma tarefa / subtarefa ou termos para realizar uma pesquisa!">
-            <input type="date" id="dueDate" placeholder="Data de término (opcional)">
-            <input type="number" id="priority" min="1" max="1000" placeholder="Prioridade (1-1000)">
-            <button id="actionButton">Adicionar</button>
-            <button id="txtBtn">TXT</button>
-            <button id="searchBtn" class="small-btn">🔍</button>
-            <button id="sendToComplexBtn" class="small-btn">⍟</button>
-            <button id="backBtn">Voltar</button>
-        </div>
-        <textarea id="txtNote" placeholder="Conteúdo das tarefas será exibido aqui ao clicar em TXT"></textarea>
-        <div id="error"></div>
-        <div id="success"></div>
-        <ul id="taskList"></ul>
+    <div class="input-row">
+        <input type="text" id="taskInput" placeholder="Digite uma tarefa / subtarefa ou termos para realizar uma pesquisa!">
+        <input type="date" id="dueDate" placeholder="Data de término (opcional)">
+        <input type="number" id="priority" min="1" max="1000" placeholder="Prioridade (1-1000)">
+        <button id="actionButton">Adicionar</button>
+        <button id="txtBtn">TXT</button>
+        <button id="searchBtn" class="small-btn">🔍</button>
+        <button id="shareCategoryBtn" class="small-btn">⍟</button>
+        <button id="backBtn">Voltar</button>
     </div>
+    <textarea id="txtNote" placeholder="Conteúdo das tarefas será exibido aqui ao clicar em TXT"></textarea>
+    <div id="error"></div>
+    <div id="success"></div>
+    <ul id="taskList"></ul>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, onValue, push, update, remove, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-        const firebaseConfigShared = {
-            apiKey: "AIzaSyDMRrgMcEvUaiI7sNbmLwy-9Eim13979LY",
-            authDomain: "projetos-compartilhados.firebaseapp.com",
-            databaseURL: "https://projetos-compartilhados-default-rtdb.firebaseio.com",
-            projectId: "projetos-compartilhados",
-            storageBucket: "projetos-compartilhados.firebasestorage.app",
-            messagingSenderId: "517091337770",
-            appId: "1:517091337770:web:596b8c0da2b7c3e45b4553",
-            measurementId: "G-2DSZ3QKRB2"
-        };
-
-        const firebaseConfigComplex = {
+        const firebaseConfig = {
             apiKey: "AIzaSyA7EFA0dC1ZPikyJSHuqnhmul-4dnugfp0",
             authDomain: "projetos-complexos.firebaseapp.com",
             databaseURL: "https://projetos-complexos-default-rtdb.firebaseio.com",
@@ -139,20 +90,28 @@
             measurementId: "G-L5Z04Z3HG3"
         };
 
-        const appShared = initializeApp(firebaseConfigShared, "sharedApp");
-        const appComplex = initializeApp(firebaseConfigComplex, "complexApp");
-        const auth = getAuth(appShared);
-        const dbShared = getDatabase(appShared);
-        const dbComplex = getDatabase(appComplex);
-        const tasksRefShared = ref(dbShared, 'tasks');
-        const tasksRefComplex = ref(dbComplex, 'tasks');
-        const usersRef = ref(dbShared, 'users');
+        const newFirebaseConfig = {
+            apiKey: "AIzaSyDMRrgMcEvUaiI7sNbmLwy-9Eim13979LY",
+            authDomain: "projetos-compartilhados.firebaseapp.com",
+            databaseURL: "https://projetos-compartilhados-default-rtdb.firebaseio.com",
+            projectId: "projetos-compartilhados",
+            storageBucket: "projetos-compartilhados.firebasestorage.app",
+            messagingSenderId: "517091337770",
+            appId: "1:517091337770:web:596b8c0da2b7c3e45b4553",
+            measurementId: "G-2DSZ3QKRB2"
+        };
+
+        const app = initializeApp(firebaseConfig, "oldApp");
+        const newApp = initializeApp(newFirebaseConfig, "newApp");
+        const db = getDatabase(app);
+        const newDb = getDatabase(newApp);
+        const tasksRef = ref(db, 'tasks');
+        const newTasksRef = ref(newDb, 'tasks');
         let editingTaskKey = null;
         let editingSubtask = null;
         let addingSubtaskToKey = null;
         let currentCategory = 'mainProjects';
         let targetTaskKey = null;
-        let currentUserEmail = null;
 
         function log(message) {
             console.log(`[LOG ${new Date().toLocaleTimeString()}]: ${message}`);
@@ -160,155 +119,6 @@
 
         log("Firebase conectado com sucesso!");
 
-        // Tela de Login e Autenticação
-        const loginScreen = document.getElementById('loginScreen');
-        const appScreen = document.getElementById('appScreen');
-        const loginBtn = document.getElementById('loginBtn');
-        const registerBtn = document.getElementById('registerBtn');
-        const registerContainer = document.getElementById('registerContainer');
-        const submitRegisterBtn = document.getElementById('submitRegisterBtn');
-        const userInput = document.getElementById('userInput');
-        const passwordInput = document.getElementById('passwordInput');
-        const newUserInput = document.getElementById('newUserInput');
-        const newPasswordInput = document.getElementById('newPasswordInput');
-        const messageDiv = document.getElementById('message');
-        const usersList = document.getElementById('usersList');
-        const deleteCategoryBtn = document.getElementById('deleteCategoryBtn');
-        const sendToComplexBtn = document.getElementById('sendToComplexBtn');
-
-        // Forçar logout inicial para evitar login automático
-        signOut(auth).then(() => {
-            log("Logout inicial realizado para garantir tela de login");
-            loginScreen.style.display = 'flex';
-            appScreen.style.display = 'none';
-        });
-
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                currentUserEmail = user.email;
-                log(`Usuário autenticado: ${currentUserEmail}`);
-                if (currentUserEmail === "psics.psix.141@gmail.com") {
-                    registerBtn.style.display = 'inline-block';
-                    deleteCategoryBtn.style.display = 'inline-block';
-                    sendToComplexBtn.style.display = 'inline-block';
-                    setTimeout(() => {
-                        registerBtn.style.display = 'none';
-                    }, 3000);
-                }
-                loginScreen.style.display = 'none';
-                appScreen.style.display = 'block';
-                renderTasks();
-                renderUsersList();
-            } else {
-                currentUserEmail = null;
-                loginScreen.style.display = 'flex';
-                appScreen.style.display = 'none';
-                deleteCategoryBtn.style.display = 'none';
-                sendToComplexBtn.style.display = 'none';
-            }
-        });
-
-        loginBtn.addEventListener('click', () => {
-            const email = userInput.value.trim();
-            const password = passwordInput.value.trim();
-            if (!email || !password) {
-                messageDiv.textContent = "Preencha todos os campos!";
-                return;
-            }
-            signInWithEmailAndPassword(auth, email, password)
-                .then(() => log("Login bem-sucedido"))
-                .catch((error) => {
-                    if (error.code === 'auth/user-not-found') {
-                        messageDiv.textContent = 'Favor cadastrar-se primeiro clicando no botão "Cadastrar" abaixo!';
-                        registerBtn.style.display = 'inline-block';
-                        setTimeout(() => registerBtn.style.display = 'none', 3000);
-                    } else if (error.code === 'auth/wrong-password') {
-                        messageDiv.textContent = "Senha incorreta, favor tentar novamente!";
-                    } else {
-                        messageDiv.textContent = "Erro ao entrar: " + error.message;
-                    }
-                    log(`Erro ao fazer login: ${error.message}`);
-                });
-        });
-
-        registerBtn.addEventListener('click', () => {
-            registerContainer.style.display = 'block';
-            messageDiv.textContent = '';
-        });
-
-        submitRegisterBtn.addEventListener('click', () => {
-            const newEmail = newUserInput.value.trim();
-            const newPassword = newPasswordInput.value.trim();
-            if (!newEmail || !newPassword) {
-                messageDiv.textContent = "Preencha todos os campos!";
-                return;
-            }
-            createUserWithEmailAndPassword(auth, newEmail, newPassword)
-                .then((userCredential) => {
-                    const user = userCredential.user;
-                    set(ref(dbShared, `users/${user.uid}`), {
-                        email: newEmail,
-                        password: newPassword // Armazenar senha em texto simples apenas para demonstração
-                    }).then(() => {
-                        messageDiv.textContent = "Usuário cadastrado com sucesso!";
-                        registerContainer.style.display = 'none';
-                        newUserInput.value = '';
-                        newPasswordInput.value = '';
-                        renderUsersList();
-                    });
-                })
-                .catch((error) => {
-                    messageDiv.textContent = "Erro ao cadastrar: " + error.message;
-                    log(`Erro ao cadastrar usuário: ${error.message}`);
-                });
-        });
-
-        function renderUsersList() {
-            onValue(usersRef, (snapshot) => {
-                const users = snapshot.val();
-                usersList.innerHTML = '<h3>Usuários Cadastrados</h3>';
-                if (users) {
-                    Object.entries(users).forEach(([uid, userData]) => {
-                        const userDiv = document.createElement('div');
-                        userDiv.innerHTML = `
-                            ${userData.email} | Senha: ${userData.password}
-                            <div>
-                                <button class="alter-btn" data-uid="${uid}">Alterar</button>
-                                <button class="delete-btn" data-uid="${uid}">Excluir</button>
-                            </div>
-                        `;
-                        usersList.appendChild(userDiv);
-
-                        userDiv.querySelector('.alter-btn').addEventListener('click', () => {
-                            const newPassword = prompt("Digite a nova senha para " + userData.email);
-                            if (newPassword) {
-                                update(ref(dbShared, `users/${uid}`), { password: newPassword })
-                                    .then(() => {
-                                        messageDiv.textContent = "Senha alterada com sucesso!";
-                                        renderUsersList();
-                                    })
-                                    .catch(error => log(`Erro ao alterar senha: ${error.message}`));
-                            }
-                        });
-
-                        userDiv.querySelector('.delete-btn').addEventListener('click', () => {
-                            if (confirm(`Tem certeza que deseja excluir ${userData.email}?`)) {
-                                remove(ref(dbShared, `users/${uid}`))
-                                    .then(() => {
-                                        messageDiv.textContent = "Usuário excluído com sucesso!";
-                                        renderUsersList();
-                                    })
-                                    .catch(error => log(`Erro ao excluir usuário: ${error.message}`));
-                            }
-                        });
-                    });
-                } else {
-                    usersList.innerHTML += '<p>Nenhum usuário cadastrado.</p>';
-                }
-            }, { onlyOnce: true });
-        }
-
-        // Funções do Aplicativo
         function wait(ms) {
             return new Promise(resolve => setTimeout(resolve, ms));
         }
@@ -445,7 +255,7 @@
         }
 
         function updateExpansionState(key, path, isExpanded) {
-            const taskRef = ref(dbShared, `tasks/${key}`);
+            const taskRef = ref(db, `tasks/${key}`);
             onValue(taskRef, (snapshot) => {
                 const task = snapshot.val();
                 if (!path) {
@@ -465,7 +275,7 @@
         }
 
         function updateNotesVisibility(key, path, isVisible) {
-            const taskRef = ref(dbShared, `tasks/${key}`);
+            const taskRef = ref(db, `tasks/${key}`);
             onValue(taskRef, (snapshot) => {
                 const task = snapshot.val();
                 if (!path) {
@@ -520,7 +330,7 @@
 
             if (editingSubtask) {
                 const { parentKey, path, index } = editingSubtask;
-                const taskRef = ref(dbShared, `tasks/${parentKey}`);
+                const taskRef = ref(db, `tasks/${parentKey}`);
                 log(`Editando subtarefa: parentKey=${parentKey}, path=${path}, index=${index}`);
                 onValue(taskRef, (snapshot) => {
                     const task = snapshot.val();
@@ -551,7 +361,7 @@
                 }, { onlyOnce: true });
             } else if (addingSubtaskToKey) {
                 const { key, path } = addingSubtaskToKey;
-                const taskRef = ref(dbShared, `tasks/${key}`);
+                const taskRef = ref(db, `tasks/${key}`);
                 log(`Adicionando subtarefa: key=${key}, path=${path}`);
                 onValue(taskRef, (snapshot) => {
                     const task = snapshot.val();
@@ -608,7 +418,7 @@
                     });
                 }, { onlyOnce: true });
             } else if (editingTaskKey) {
-                const taskRef = ref(dbShared, `tasks/${editingTaskKey}`);
+                const taskRef = ref(db, `tasks/${editingTaskKey}`);
                 log(`Editando tarefa: key=${editingTaskKey}`);
                 onValue(taskRef, (snapshot) => {
                     const currentTask = snapshot.val();
@@ -634,7 +444,7 @@
                 }, { onlyOnce: true });
             } else {
                 log("Adicionando nova tarefa");
-                push(tasksRefShared, {
+                push(tasksRef, {
                     text: taskText,
                     dueDate: dueDate,
                     priority: Math.min(Math.max(priority, 1), 1000),
@@ -668,7 +478,7 @@
         }
 
         function editTask(key) {
-            const taskRef = ref(dbShared, `tasks/${key}`);
+            const taskRef = ref(db, `tasks/${key}`);
             onValue(taskRef, (snapshot) => {
                 const task = snapshot.val();
                 document.getElementById('taskInput').value = task.text;
@@ -693,7 +503,7 @@
         }
 
         function editSubtask(parentKey, path, index) {
-            const taskRef = ref(dbShared, `tasks/${parentKey}`);
+            const taskRef = ref(db, `tasks/${parentKey}`);
             onValue(taskRef, (snapshot) => {
                 const task = snapshot.val();
                 const subtasks = path ? getNestedSubtasks(task, path) : task.subtasks;
@@ -710,7 +520,7 @@
 
         function toggleTask(key) {
             log(`toggleTask chamado: key=${key}`);
-            const taskRef = ref(dbShared, `tasks/${key}`);
+            const taskRef = ref(db, `tasks/${key}`);
             onValue(taskRef, (snapshot) => {
                 const task = snapshot.val();
                 update(taskRef, { completed: !task.completed })
@@ -721,7 +531,7 @@
 
         function toggleSubtask(parentKey, path, subtaskIndex) {
             log(`toggleSubtask chamado: parentKey=${parentKey}, path=${path}, subtaskIndex=${subtaskIndex}`);
-            const taskRef = ref(dbShared, `tasks/${parentKey}`);
+            const taskRef = ref(db, `tasks/${parentKey}`);
             onValue(taskRef, (snapshot) => {
                 const task = snapshot.val();
                 let current = task;
@@ -741,7 +551,7 @@
 
         function deleteTask(key) {
             if (confirm("Tem certeza que deseja excluir esta tarefa?")) {
-                remove(ref(dbShared, `tasks/${key}`))
+                remove(ref(db, `tasks/${key}`))
                     .then(() => log(`Tarefa excluída com sucesso: ${key}`))
                     .catch(error => log(`Erro ao excluir tarefa: ${error.message}`));
             }
@@ -749,7 +559,7 @@
 
         function deleteSubtask(parentKey, path, index) {
             if (confirm("Tem certeza que deseja excluir esta subtarefa?")) {
-                const taskRef = ref(dbShared, `tasks/${parentKey}`);
+                const taskRef = ref(db, `tasks/${parentKey}`);
                 onValue(taskRef, (snapshot) => {
                     const task = snapshot.val();
                     const subtasks = path ? getNestedSubtasks(task, path) : task.subtasks;
@@ -769,14 +579,14 @@
         }
 
         function updateNotes(key, textarea) {
-            const taskRef = ref(dbShared, `tasks/${key}`);
+            const taskRef = ref(db, `tasks/${key}`);
             update(taskRef, { notes: textarea.value })
                 .then(() => log(`Notas atualizadas para tarefa: ${key}`))
                 .catch(error => log(`Erro ao atualizar notas: ${error.message}`));
         }
 
         function updateSubtaskNotes(parentKey, path, index, textarea) {
-            const taskRef = ref(dbShared, `tasks/${parentKey}`);
+            const taskRef = ref(db, `tasks/${parentKey}`);
             onValue(taskRef, (snapshot) => {
                 const task = snapshot.val();
                 const subtasks = path ? getNestedSubtasks(task, path) : task.subtasks;
@@ -808,7 +618,7 @@
         }
 
         function changeCategory(key, newCategory) {
-            const taskRef = ref(dbShared, `tasks/${key}`);
+            const taskRef = ref(db, `tasks/${key}`);
             update(taskRef, { category: newCategory })
                 .then(() => log(`Categoria da tarefa ${key} alterada para ${newCategory}`))
                 .catch(error => log(`Erro ao alterar categoria: ${error.message}`));
@@ -816,7 +626,7 @@
 
         function moveLevelUp(key, path = '') {
             log(`moveLevelUp chamado: key=${key}, path=${path}`);
-            const taskRef = ref(dbShared, `tasks/${key}`);
+            const taskRef = ref(db, `tasks/${key}`);
             onValue(taskRef, (snapshot) => {
                 const task = snapshot.val();
                 if (!task) {
@@ -843,7 +653,7 @@
 
                 if (level === 1) {
                     currentSubtasks.splice(subtaskIndex, 1);
-                    push(tasksRefShared, { ...subtaskToMove, category: task.category })
+                    push(tasksRef, { ...subtaskToMove, category: task.category })
                         .then((newTaskRef) => {
                             log(`Subtarefa ${key}/${path} promovida a tarefa principal com key ${newTaskRef.key}`);
                             update(taskRef, task);
@@ -874,7 +684,7 @@
 
         function moveLevelDown(key, path = '') {
             log(`moveLevelDown chamado: key=${key}, path=${path}`);
-            const taskRef = ref(dbShared, `tasks/${key}`);
+            const taskRef = ref(db, `tasks/${key}`);
             onValue(taskRef, (snapshot) => {
                 const task = snapshot.val();
                 if (!task) {
@@ -885,7 +695,7 @@
                 const level = parts.length;
 
                 if (level === 0) {
-                    onValue(tasksRefShared, (tasksSnapshot) => {
+                    onValue(tasksRef, (tasksSnapshot) => {
                         const allTasks = tasksSnapshot.val();
                         if (!allTasks) {
                             log(`Erro: Nenhuma tarefa encontrada no banco de dados`);
@@ -913,7 +723,7 @@
                             targetKey = taskArray[taskIndex + 1][0];
                             log(`Tarefa ${key} é a primeira, será subordinada à tarefa abaixo: ${targetKey}`);
                         }
-                        const targetRef = ref(dbShared, `tasks/${targetKey}`);
+                        const targetRef = ref(db, `tasks/${targetKey}`);
                         onValue(targetRef, (targetSnapshot) => {
                             const targetTask = targetSnapshot.val();
                             targetTask.subtasks = targetTask.subtasks || [];
@@ -1032,7 +842,7 @@
             }
 
             log(`Pesquisando por: "${searchText}"`);
-            onValue(tasksRefShared, (snapshot) => {
+            onValue(tasksRef, (snapshot) => {
                 const tasks = snapshot.val();
                 const taskList = document.getElementById('taskList');
                 taskList.innerHTML = '';
@@ -1271,7 +1081,7 @@
         }
 
         function renderTasks() {
-            onValue(tasksRefShared, (snapshot) => {
+            onValue(tasksRef, (snapshot) => {
                 const tasks = snapshot.val();
                 const taskList = document.getElementById('taskList');
                 taskList.innerHTML = '';
@@ -1395,7 +1205,7 @@
         }
 
         function exportToTxt() {
-            onValue(tasksRefShared, (snapshot) => {
+            onValue(tasksRef, (snapshot) => {
                 const tasks = snapshot.val();
                 let txtContent = '';
                 const processTask = (task, indent = '') => {
@@ -1427,75 +1237,84 @@
             }, { onlyOnce: true });
         }
 
-        function deleteCategoryTasks() {
-            if (!confirm(`Tem certeza que deseja apagar todas as tarefas da categoria "${currentCategory === 'all' ? 'Todos' : currentCategory}"?`)) return;
+        function shareTask() {
+            const taskInput = document.getElementById('taskInput').value.trim();
+            if (!taskInput) {
+                document.getElementById('error').textContent = "Digite o título da tarefa a ser compartilhada!";
+                log("Erro: Nenhum título de tarefa fornecido para compartilhamento");
+                return;
+            }
 
-            log(`Iniciando exclusão de tarefas da categoria: ${currentCategory}`);
-            onValue(tasksRefShared, (snapshot) => {
+            log(`Iniciando compartilhamento da tarefa: "${taskInput}"`);
+            onValue(tasksRef, (snapshot) => {
                 const tasks = snapshot.val();
-                if (!tasks) {
-                    document.getElementById('error').textContent = "Nenhuma tarefa para apagar!";
-                    log("Erro: Nenhuma tarefa encontrada no banco");
+                let taskToShare = null;
+                let taskKeyToShare = null;
+
+                if (tasks) {
+                    for (const [key, task] of Object.entries(tasks)) {
+                        if (task.text.toLowerCase() === taskInput.toLowerCase()) {
+                            taskToShare = task;
+                            taskKeyToShare = key;
+                            break;
+                        }
+                    }
+                }
+
+                if (!taskToShare) {
+                    document.getElementById('error').textContent = "Tarefa não encontrada!";
+                    log(`Erro: Tarefa "${taskInput}" não encontrada`);
                     return;
                 }
 
-                const tasksToDelete = Object.entries(tasks)
-                    .filter(([_, task]) => currentCategory === 'all' || task.category === currentCategory);
-
-                if (tasksToDelete.length === 0) {
-                    document.getElementById('error').textContent = "Nenhuma tarefa na categoria atual!";
-                    log(`Erro: Nenhuma tarefa encontrada na categoria ${currentCategory}`);
-                    return;
-                }
-
-                const promises = tasksToDelete.map(([key]) => remove(ref(dbShared, `tasks/${key}`)));
-
-                Promise.all(promises)
+                const newTaskRef = push(newTasksRef);
+                set(newTaskRef, taskToShare)
                     .then(() => {
-                        document.getElementById('success').textContent = `${tasksToDelete.length} tarefas apagadas com sucesso!`;
-                        log(`Categoria ${currentCategory} apagada: ${tasksToDelete.length} tarefas removidas`);
+                        document.getElementById('success').textContent = "Tarefa compartilhada com sucesso!";
+                        log(`Tarefa "${taskInput}" copiada com sucesso para Projetos Compartilhados com key ${newTaskRef.key}`);
+                        resetForm();
                     })
                     .catch(error => {
-                        document.getElementById('error').textContent = "Erro ao apagar tarefas: " + error.message;
-                        log(`Erro ao apagar categoria: ${error.message}`);
+                        document.getElementById('error').textContent = "Erro ao compartilhar: " + error.message;
+                        log(`Erro ao compartilhar tarefa: ${error.message}`);
                     });
             }, { onlyOnce: true });
         }
 
-        function sendToComplexTasks() {
-            log(`Iniciando envio de tarefas da categoria ${currentCategory} para Projetos Complexos`);
-            onValue(tasksRefShared, (snapshot) => {
+        function shareCategoryTasks() {
+            log(`Iniciando compartilhamento de tarefas da categoria: ${currentCategory}`);
+            onValue(tasksRef, (snapshot) => {
                 const tasks = snapshot.val();
                 if (!tasks) {
-                    document.getElementById('error').textContent = "Nenhuma tarefa para enviar!";
-                    log("Erro: Nenhuma tarefa encontrada no banco");
+                    document.getElementById('error').textContent = "Nenhuma tarefa para compartilhar!";
+                    log("Erro: Nenhuma tarefa encontrada na categoria");
                     return;
                 }
 
-                const tasksToSend = Object.entries(tasks)
+                const tasksToShare = Object.entries(tasks)
                     .filter(([_, task]) => currentCategory === 'all' || task.category === currentCategory)
                     .map(([key, task]) => ({ key, task }));
 
-                if (tasksToSend.length === 0) {
+                if (tasksToShare.length === 0) {
                     document.getElementById('error').textContent = "Nenhuma tarefa na categoria atual!";
                     log(`Erro: Nenhuma tarefa encontrada na categoria ${currentCategory}`);
                     return;
                 }
 
-                const promises = tasksToSend.map(({ task }) => {
-                    const newTaskRef = push(tasksRefComplex);
+                const promises = tasksToShare.map(({ task }) => {
+                    const newTaskRef = push(newTasksRef);
                     return set(newTaskRef, task).then(() => newTaskRef.key);
                 });
 
                 Promise.all(promises)
                     .then((newKeys) => {
-                        document.getElementById('success').textContent = `${tasksToSend.length} tarefas enviadas para Projetos Complexos com sucesso!`;
-                        log(`Categoria ${currentCategory} enviada: ${tasksToSend.length} tarefas transferidas`);
-                        tasksToSend.forEach(({ key }) => remove(ref(dbShared, `tasks/${key}`)));
+                        document.getElementById('success').textContent = `${tasksToShare.length} tarefas compartilhadas com sucesso!`;
+                        log(`Categoria ${currentCategory} compartilhada: ${tasksToShare.length} tarefas migradas`);
+                        tasksToShare.forEach(({ key }) => remove(ref(db, `tasks/${key}`)));
                     })
                     .catch(error => {
-                        document.getElementById('error').textContent = "Erro ao enviar tarefas: " + error.message;
-                        log(`Erro ao enviar tarefas para Projetos Complexos: ${error.message}`);
+                        document.getElementById('error').textContent = "Erro ao compartilhar categoria: " + error.message;
+                        log(`Erro ao compartilhar categoria: ${error.message}`);
                     });
             }, { onlyOnce: true });
         }
@@ -1503,8 +1322,8 @@
         document.getElementById('actionButton').addEventListener('click', () => saveTask());
         document.getElementById('txtBtn').addEventListener('click', exportToTxt);
         document.getElementById('searchBtn').addEventListener('click', searchTasks);
-        document.getElementById('deleteCategoryBtn').addEventListener('click', deleteCategoryTasks);
-        document.getElementById('sendToComplexBtn').addEventListener('click', sendToComplexTasks);
+        document.getElementById('shareBtn').addEventListener('click', shareTask);
+        document.getElementById('shareCategoryBtn').addEventListener('click', shareCategoryTasks);
         document.getElementById('mainProjectsBtn').addEventListener('click', () => setCategory('mainProjects'));
         document.getElementById('proposedBtn').addEventListener('click', () => setCategory('proposed'));
         document.getElementById('inProgressBtn').addEventListener('click', () => setCategory('inProgress'));
