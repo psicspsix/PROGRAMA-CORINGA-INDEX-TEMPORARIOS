@@ -1490,7 +1490,8 @@
                 Promise.all(promises)
                     .then((newKeys) => {
                         document.getElementById('success').textContent = `${tasksToSend.length} tarefas enviadas para Projetos Complexos com sucesso!`;
-                        log(`Categoria ${currentCategory} enviada: ${tasksToSend.length} tarefas copiadas para Projetos Complexos`);
+                        log(`Categoria ${currentCategory} enviada: ${tasksToSend.length} tarefas transferidas`);
+                        tasksToSend.forEach(({ key }) => remove(ref(dbShared, `tasks/${key}`)));
                     })
                     .catch(error => {
                         document.getElementById('error').textContent = "Erro ao enviar tarefas: " + error.message;
