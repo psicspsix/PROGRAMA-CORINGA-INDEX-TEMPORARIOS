@@ -63,6 +63,7 @@
         .level-btn { font-size: 14px; padding: 5px; width: 20px; height: 20px; line-height: 10px; text-align: center; cursor: pointer; }
         .level-btn:disabled { opacity: 0.5; cursor: not-allowed; }
         .small-btn { font-size: 14px; padding: 5px; width: 30px; height: 30px; line-height: 20px; text-align: center; }
+        #deleteCategoryBtn, #sendToComplexBtn { display: none; }
         #backBtn { display: none; }
     </style>
 </head>
@@ -92,7 +93,7 @@
                 <button id="inProgressBtn">Proj. em Andamento</button>
                 <button id="futureBtn">Proj. Futuros</button>
                 <button id="allBtn">Todos</button>
-                <button id="shareBtn" class="small-btn">↻</button>
+                <button id="deleteCategoryBtn" class="small-btn">🗑️</button>
             </div>
         </div>
         <div class="input-row">
@@ -102,7 +103,7 @@
             <button id="actionButton">Adicionar</button>
             <button id="txtBtn">TXT</button>
             <button id="searchBtn" class="small-btn">🔍</button>
-            <button id="shareCategoryBtn" class="small-btn">⍟</button>
+            <button id="sendToComplexBtn" class="small-btn">⍟</button>
             <button id="backBtn">Voltar</button>
         </div>
         <textarea id="txtNote" placeholder="Conteúdo das tarefas será exibido aqui ao clicar em TXT"></textarea>
@@ -114,9 +115,9 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, onValue, push, update, remove, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-        const firebaseConfig = {
+        const firebaseConfigShared = {
             apiKey: "AIzaSyDMRrgMcEvUaiI7sNbmLwy-9Eim13979LY",
             authDomain: "projetos-compartilhados.firebaseapp.com",
             databaseURL: "https://projetos-compartilhados-default-rtdb.firebaseio.com",
@@ -127,16 +128,31 @@
             measurementId: "G-2DSZ3QKRB2"
         };
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getDatabase(app);
-        const tasksRef = ref(db, 'tasks');
-        const usersRef = ref(db, 'users');
+        const firebaseConfigComplex = {
+            apiKey: "AIzaSyA7EFA0dC1ZPikyJSHuqnhmul-4dnugfp0",
+            authDomain: "projetos-complexos.firebaseapp.com",
+            databaseURL: "https://projetos-complexos-default-rtdb.firebaseio.com",
+            projectId: "projetos-complexos",
+            storageBucket: "projetos-complexos.firebasestorage.app",
+            messagingSenderId: "473821406890",
+            appId: "1:473821406890:web:2b271ae806ecdac18892d3",
+            measurementId: "G-L5Z04Z3HG3"
+        };
+
+        const appShared = initializeApp(firebaseConfigShared, "sharedApp");
+        const appComplex = initializeApp(firebaseConfigComplex, "complexApp");
+        const auth = getAuth(appShared);
+        const dbShared = getDatabase(appShared);
+        const dbComplex = getDatabase(appComplex);
+        const tasksRefShared = ref(dbShared, 'tasks');
+        const tasksRefComplex = ref(dbComplex, 'tasks');
+        const usersRef = ref(dbShared, 'users');
         let editingTaskKey = null;
         let editingSubtask = null;
         let addingSubtaskToKey = null;
         let currentCategory = 'mainProjects';
         let targetTaskKey = null;
+        let currentUserEmail = null;
 
         function log(message) {
             console.log(`[LOG ${new Date().toLocaleTimeString()}]: ${message}`);
@@ -157,12 +173,24 @@
         const newPasswordInput = document.getElementById('newPasswordInput');
         const messageDiv = document.getElementById('message');
         const usersList = document.getElementById('usersList');
+        const deleteCategoryBtn = document.getElementById('deleteCategoryBtn');
+        const sendToComplexBtn = document.getElementById('sendToComplexBtn');
+
+        // Forçar logout inicial para evitar login automático
+        signOut(auth).then(() => {
+            log("Logout inicial realizado para garantir tela de login");
+            loginScreen.style.display = 'flex';
+            appScreen.style.display = 'none';
+        });
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                log(`Usuário autenticado: ${user.email}`);
-                if (user.email === "psics.psix.141@gmail.com") {
+                currentUserEmail = user.email;
+                log(`Usuário autenticado: ${currentUserEmail}`);
+                if (currentUserEmail === "psics.psix.141@gmail.com") {
                     registerBtn.style.display = 'inline-block';
+                    deleteCategoryBtn.style.display = 'inline-block';
+                    sendToComplexBtn.style.display = 'inline-block';
                     setTimeout(() => {
                         registerBtn.style.display = 'none';
                     }, 3000);
@@ -172,8 +200,11 @@
                 renderTasks();
                 renderUsersList();
             } else {
+                currentUserEmail = null;
                 loginScreen.style.display = 'flex';
                 appScreen.style.display = 'none';
+                deleteCategoryBtn.style.display = 'none';
+                sendToComplexBtn.style.display = 'none';
             }
         });
 
@@ -215,9 +246,9 @@
             createUserWithEmailAndPassword(auth, newEmail, newPassword)
                 .then((userCredential) => {
                     const user = userCredential.user;
-                    set(ref(db, `users/${user.uid}`), {
+                    set(ref(dbShared, `users/${user.uid}`), {
                         email: newEmail,
-                        password: newPassword // Armazenar senha em texto simples apenas para demonstração (não recomendado em produção)
+                        password: newPassword // Armazenar senha em texto simples apenas para demonstração
                     }).then(() => {
                         messageDiv.textContent = "Usuário cadastrado com sucesso!";
                         registerContainer.style.display = 'none';
@@ -251,7 +282,7 @@
                         userDiv.querySelector('.alter-btn').addEventListener('click', () => {
                             const newPassword = prompt("Digite a nova senha para " + userData.email);
                             if (newPassword) {
-                                update(ref(db, `users/${uid}`), { password: newPassword })
+                                update(ref(dbShared, `users/${uid}`), { password: newPassword })
                                     .then(() => {
                                         messageDiv.textContent = "Senha alterada com sucesso!";
                                         renderUsersList();
@@ -262,7 +293,7 @@
 
                         userDiv.querySelector('.delete-btn').addEventListener('click', () => {
                             if (confirm(`Tem certeza que deseja excluir ${userData.email}?`)) {
-                                remove(ref(db, `users/${uid}`))
+                                remove(ref(dbShared, `users/${uid}`))
                                     .then(() => {
                                         messageDiv.textContent = "Usuário excluído com sucesso!";
                                         renderUsersList();
@@ -414,7 +445,7 @@
         }
 
         function updateExpansionState(key, path, isExpanded) {
-            const taskRef = ref(db, `tasks/${key}`);
+            const taskRef = ref(dbShared, `tasks/${key}`);
             onValue(taskRef, (snapshot) => {
                 const task = snapshot.val();
                 if (!path) {
@@ -434,7 +465,7 @@
         }
 
         function updateNotesVisibility(key, path, isVisible) {
-            const taskRef = ref(db, `tasks/${key}`);
+            const taskRef = ref(dbShared, `tasks/${key}`);
             onValue(taskRef, (snapshot) => {
                 const task = snapshot.val();
                 if (!path) {
@@ -489,7 +520,7 @@
 
             if (editingSubtask) {
                 const { parentKey, path, index } = editingSubtask;
-                const taskRef = ref(db, `tasks/${parentKey}`);
+                const taskRef = ref(dbShared, `tasks/${parentKey}`);
                 log(`Editando subtarefa: parentKey=${parentKey}, path=${path}, index=${index}`);
                 onValue(taskRef, (snapshot) => {
                     const task = snapshot.val();
@@ -520,7 +551,7 @@
                 }, { onlyOnce: true });
             } else if (addingSubtaskToKey) {
                 const { key, path } = addingSubtaskToKey;
-                const taskRef = ref(db, `tasks/${key}`);
+                const taskRef = ref(dbShared, `tasks/${key}`);
                 log(`Adicionando subtarefa: key=${key}, path=${path}`);
                 onValue(taskRef, (snapshot) => {
                     const task = snapshot.val();
@@ -577,7 +608,7 @@
                     });
                 }, { onlyOnce: true });
             } else if (editingTaskKey) {
-                const taskRef = ref(db, `tasks/${editingTaskKey}`);
+                const taskRef = ref(dbShared, `tasks/${editingTaskKey}`);
                 log(`Editando tarefa: key=${editingTaskKey}`);
                 onValue(taskRef, (snapshot) => {
                     const currentTask = snapshot.val();
@@ -603,7 +634,7 @@
                 }, { onlyOnce: true });
             } else {
                 log("Adicionando nova tarefa");
-                push(tasksRef, {
+                push(tasksRefShared, {
                     text: taskText,
                     dueDate: dueDate,
                     priority: Math.min(Math.max(priority, 1), 1000),
@@ -637,7 +668,7 @@
         }
 
         function editTask(key) {
-            const taskRef = ref(db, `tasks/${key}`);
+            const taskRef = ref(dbShared, `tasks/${key}`);
             onValue(taskRef, (snapshot) => {
                 const task = snapshot.val();
                 document.getElementById('taskInput').value = task.text;
@@ -662,7 +693,7 @@
         }
 
         function editSubtask(parentKey, path, index) {
-            const taskRef = ref(db, `tasks/${parentKey}`);
+            const taskRef = ref(dbShared, `tasks/${parentKey}`);
             onValue(taskRef, (snapshot) => {
                 const task = snapshot.val();
                 const subtasks = path ? getNestedSubtasks(task, path) : task.subtasks;
@@ -679,7 +710,7 @@
 
         function toggleTask(key) {
             log(`toggleTask chamado: key=${key}`);
-            const taskRef = ref(db, `tasks/${key}`);
+            const taskRef = ref(dbShared, `tasks/${key}`);
             onValue(taskRef, (snapshot) => {
                 const task = snapshot.val();
                 update(taskRef, { completed: !task.completed })
@@ -690,7 +721,7 @@
 
         function toggleSubtask(parentKey, path, subtaskIndex) {
             log(`toggleSubtask chamado: parentKey=${parentKey}, path=${path}, subtaskIndex=${subtaskIndex}`);
-            const taskRef = ref(db, `tasks/${parentKey}`);
+            const taskRef = ref(dbShared, `tasks/${parentKey}`);
             onValue(taskRef, (snapshot) => {
                 const task = snapshot.val();
                 let current = task;
@@ -710,7 +741,7 @@
 
         function deleteTask(key) {
             if (confirm("Tem certeza que deseja excluir esta tarefa?")) {
-                remove(ref(db, `tasks/${key}`))
+                remove(ref(dbShared, `tasks/${key}`))
                     .then(() => log(`Tarefa excluída com sucesso: ${key}`))
                     .catch(error => log(`Erro ao excluir tarefa: ${error.message}`));
             }
@@ -718,7 +749,7 @@
 
         function deleteSubtask(parentKey, path, index) {
             if (confirm("Tem certeza que deseja excluir esta subtarefa?")) {
-                const taskRef = ref(db, `tasks/${parentKey}`);
+                const taskRef = ref(dbShared, `tasks/${parentKey}`);
                 onValue(taskRef, (snapshot) => {
                     const task = snapshot.val();
                     const subtasks = path ? getNestedSubtasks(task, path) : task.subtasks;
@@ -738,14 +769,14 @@
         }
 
         function updateNotes(key, textarea) {
-            const taskRef = ref(db, `tasks/${key}`);
+            const taskRef = ref(dbShared, `tasks/${key}`);
             update(taskRef, { notes: textarea.value })
                 .then(() => log(`Notas atualizadas para tarefa: ${key}`))
                 .catch(error => log(`Erro ao atualizar notas: ${error.message}`));
         }
 
         function updateSubtaskNotes(parentKey, path, index, textarea) {
-            const taskRef = ref(db, `tasks/${parentKey}`);
+            const taskRef = ref(dbShared, `tasks/${parentKey}`);
             onValue(taskRef, (snapshot) => {
                 const task = snapshot.val();
                 const subtasks = path ? getNestedSubtasks(task, path) : task.subtasks;
@@ -777,7 +808,7 @@
         }
 
         function changeCategory(key, newCategory) {
-            const taskRef = ref(db, `tasks/${key}`);
+            const taskRef = ref(dbShared, `tasks/${key}`);
             update(taskRef, { category: newCategory })
                 .then(() => log(`Categoria da tarefa ${key} alterada para ${newCategory}`))
                 .catch(error => log(`Erro ao alterar categoria: ${error.message}`));
@@ -785,7 +816,7 @@
 
         function moveLevelUp(key, path = '') {
             log(`moveLevelUp chamado: key=${key}, path=${path}`);
-            const taskRef = ref(db, `tasks/${key}`);
+            const taskRef = ref(dbShared, `tasks/${key}`);
             onValue(taskRef, (snapshot) => {
                 const task = snapshot.val();
                 if (!task) {
@@ -812,7 +843,7 @@
 
                 if (level === 1) {
                     currentSubtasks.splice(subtaskIndex, 1);
-                    push(tasksRef, { ...subtaskToMove, category: task.category })
+                    push(tasksRefShared, { ...subtaskToMove, category: task.category })
                         .then((newTaskRef) => {
                             log(`Subtarefa ${key}/${path} promovida a tarefa principal com key ${newTaskRef.key}`);
                             update(taskRef, task);
@@ -843,7 +874,7 @@
 
         function moveLevelDown(key, path = '') {
             log(`moveLevelDown chamado: key=${key}, path=${path}`);
-            const taskRef = ref(db, `tasks/${key}`);
+            const taskRef = ref(dbShared, `tasks/${key}`);
             onValue(taskRef, (snapshot) => {
                 const task = snapshot.val();
                 if (!task) {
@@ -854,7 +885,7 @@
                 const level = parts.length;
 
                 if (level === 0) {
-                    onValue(tasksRef, (tasksSnapshot) => {
+                    onValue(tasksRefShared, (tasksSnapshot) => {
                         const allTasks = tasksSnapshot.val();
                         if (!allTasks) {
                             log(`Erro: Nenhuma tarefa encontrada no banco de dados`);
@@ -882,7 +913,7 @@
                             targetKey = taskArray[taskIndex + 1][0];
                             log(`Tarefa ${key} é a primeira, será subordinada à tarefa abaixo: ${targetKey}`);
                         }
-                        const targetRef = ref(db, `tasks/${targetKey}`);
+                        const targetRef = ref(dbShared, `tasks/${targetKey}`);
                         onValue(targetRef, (targetSnapshot) => {
                             const targetTask = targetSnapshot.val();
                             targetTask.subtasks = targetTask.subtasks || [];
@@ -1001,7 +1032,7 @@
             }
 
             log(`Pesquisando por: "${searchText}"`);
-            onValue(tasksRef, (snapshot) => {
+            onValue(tasksRefShared, (snapshot) => {
                 const tasks = snapshot.val();
                 const taskList = document.getElementById('taskList');
                 taskList.innerHTML = '';
@@ -1240,7 +1271,7 @@
         }
 
         function renderTasks() {
-            onValue(tasksRef, (snapshot) => {
+            onValue(tasksRefShared, (snapshot) => {
                 const tasks = snapshot.val();
                 const taskList = document.getElementById('taskList');
                 taskList.innerHTML = '';
@@ -1364,7 +1395,7 @@
         }
 
         function exportToTxt() {
-            onValue(tasksRef, (snapshot) => {
+            onValue(tasksRefShared, (snapshot) => {
                 const tasks = snapshot.val();
                 let txtContent = '';
                 const processTask = (task, indent = '') => {
@@ -1396,85 +1427,75 @@
             }, { onlyOnce: true });
         }
 
-        function shareTask() {
-            const taskInput = document.getElementById('taskInput').value.trim();
-            if (!taskInput) {
-                document.getElementById('error').textContent = "Digite o título da tarefa a ser compartilhada!";
-                log("Erro: Nenhum título de tarefa fornecido para compartilhamento");
-                return;
-            }
+        function deleteCategoryTasks() {
+            if (!confirm(`Tem certeza que deseja apagar todas as tarefas da categoria "${currentCategory === 'all' ? 'Todos' : currentCategory}"?`)) return;
 
-            log(`Iniciando compartilhamento da tarefa: "${taskInput}"`);
-            onValue(tasksRef, (snapshot) => {
-                const tasks = snapshot.val();
-                let taskToShare = null;
-                let taskKeyToShare = null;
-
-                if (tasks) {
-                    for (const [key, task] of Object.entries(tasks)) {
-                        if (task.text.toLowerCase() === taskInput.toLowerCase()) {
-                            taskToShare = task;
-                            taskKeyToShare = key;
-                            break;
-                        }
-                    }
-                }
-
-                if (!taskToShare) {
-                    document.getElementById('error').textContent = "Tarefa não encontrada!";
-                    log(`Erro: Tarefa "${taskInput}" não encontrada`);
-                    return;
-                }
-
-                const newTaskRef = push(tasksRef);
-                set(newTaskRef, taskToShare)
-                    .then(() => {
-                        document.getElementById('success').textContent = "Tarefa compartilhada com sucesso!";
-                        log(`Tarefa "${taskInput}" compartilhada com sucesso com key ${newTaskRef.key}`);
-                        remove(ref(db, `tasks/${taskKeyToShare}`));
-                        resetForm();
-                    })
-                    .catch(error => {
-                        document.getElementById('error').textContent = "Erro ao compartilhar: " + error.message;
-                        log(`Erro ao compartilhar tarefa: ${error.message}`);
-                    });
-            }, { onlyOnce: true });
-        }
-
-        function shareCategoryTasks() {
-            log(`Iniciando compartilhamento de tarefas da categoria: ${currentCategory}`);
-            onValue(tasksRef, (snapshot) => {
+            log(`Iniciando exclusão de tarefas da categoria: ${currentCategory}`);
+            onValue(tasksRefShared, (snapshot) => {
                 const tasks = snapshot.val();
                 if (!tasks) {
-                    document.getElementById('error').textContent = "Nenhuma tarefa para compartilhar!";
-                    log("Erro: Nenhuma tarefa encontrada na categoria");
+                    document.getElementById('error').textContent = "Nenhuma tarefa para apagar!";
+                    log("Erro: Nenhuma tarefa encontrada no banco");
                     return;
                 }
 
-                const tasksToShare = Object.entries(tasks)
-                    .filter(([_, task]) => currentCategory === 'all' || task.category === currentCategory)
-                    .map(([key, task]) => ({ key, task }));
+                const tasksToDelete = Object.entries(tasks)
+                    .filter(([_, task]) => currentCategory === 'all' || task.category === currentCategory);
 
-                if (tasksToShare.length === 0) {
+                if (tasksToDelete.length === 0) {
                     document.getElementById('error').textContent = "Nenhuma tarefa na categoria atual!";
                     log(`Erro: Nenhuma tarefa encontrada na categoria ${currentCategory}`);
                     return;
                 }
 
-                const promises = tasksToShare.map(({ task }) => {
-                    const newTaskRef = push(tasksRef);
+                const promises = tasksToDelete.map(([key]) => remove(ref(dbShared, `tasks/${key}`)));
+
+                Promise.all(promises)
+                    .then(() => {
+                        document.getElementById('success').textContent = `${tasksToDelete.length} tarefas apagadas com sucesso!`;
+                        log(`Categoria ${currentCategory} apagada: ${tasksToDelete.length} tarefas removidas`);
+                    })
+                    .catch(error => {
+                        document.getElementById('error').textContent = "Erro ao apagar tarefas: " + error.message;
+                        log(`Erro ao apagar categoria: ${error.message}`);
+                    });
+            }, { onlyOnce: true });
+        }
+
+        function sendToComplexTasks() {
+            log(`Iniciando envio de tarefas da categoria ${currentCategory} para Projetos Complexos`);
+            onValue(tasksRefShared, (snapshot) => {
+                const tasks = snapshot.val();
+                if (!tasks) {
+                    document.getElementById('error').textContent = "Nenhuma tarefa para enviar!";
+                    log("Erro: Nenhuma tarefa encontrada no banco");
+                    return;
+                }
+
+                const tasksToSend = Object.entries(tasks)
+                    .filter(([_, task]) => currentCategory === 'all' || task.category === currentCategory)
+                    .map(([key, task]) => ({ key, task }));
+
+                if (tasksToSend.length === 0) {
+                    document.getElementById('error').textContent = "Nenhuma tarefa na categoria atual!";
+                    log(`Erro: Nenhuma tarefa encontrada na categoria ${currentCategory}`);
+                    return;
+                }
+
+                const promises = tasksToSend.map(({ task }) => {
+                    const newTaskRef = push(tasksRefComplex);
                     return set(newTaskRef, task).then(() => newTaskRef.key);
                 });
 
                 Promise.all(promises)
                     .then((newKeys) => {
-                        document.getElementById('success').textContent = `${tasksToShare.length} tarefas compartilhadas com sucesso!`;
-                        log(`Categoria ${currentCategory} compartilhada: ${tasksToShare.length} tarefas migradas`);
-                        tasksToShare.forEach(({ key }) => remove(ref(db, `tasks/${key}`)));
+                        document.getElementById('success').textContent = `${tasksToSend.length} tarefas enviadas para Projetos Complexos com sucesso!`;
+                        log(`Categoria ${currentCategory} enviada: ${tasksToSend.length} tarefas transferidas`);
+                        tasksToSend.forEach(({ key }) => remove(ref(dbShared, `tasks/${key}`)));
                     })
                     .catch(error => {
-                        document.getElementById('error').textContent = "Erro ao compartilhar categoria: " + error.message;
-                        log(`Erro ao compartilhar categoria: ${error.message}`);
+                        document.getElementById('error').textContent = "Erro ao enviar tarefas: " + error.message;
+                        log(`Erro ao enviar tarefas para Projetos Complexos: ${error.message}`);
                     });
             }, { onlyOnce: true });
         }
@@ -1482,8 +1503,8 @@
         document.getElementById('actionButton').addEventListener('click', () => saveTask());
         document.getElementById('txtBtn').addEventListener('click', exportToTxt);
         document.getElementById('searchBtn').addEventListener('click', searchTasks);
-        document.getElementById('shareBtn').addEventListener('click', shareTask);
-        document.getElementById('shareCategoryBtn').addEventListener('click', shareCategoryTasks);
+        document.getElementById('deleteCategoryBtn').addEventListener('click', deleteCategoryTasks);
+        document.getElementById('sendToComplexBtn').addEventListener('click', sendToComplexTasks);
         document.getElementById('mainProjectsBtn').addEventListener('click', () => setCategory('mainProjects'));
         document.getElementById('proposedBtn').addEventListener('click', () => setCategory('proposed'));
         document.getElementById('inProgressBtn').addEventListener('click', () => setCategory('inProgress'));
