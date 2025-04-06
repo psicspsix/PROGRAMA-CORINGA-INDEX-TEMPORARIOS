@@ -154,6 +154,9 @@
         .date-two-plus-days-past {
             color: #ff0000; /* Vermelho para dois dias ou mais anteriores */
         }
+        #backBtn {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -172,8 +175,9 @@
         <input type="date" id="dueDate" placeholder="Data de término (opcional)">
         <input type="number" id="priority" min="1" max="1000" placeholder="Prioridade (1-1000)">
         <button id="actionButton">Adicionar</button>
-        <button id="searchBtn" class="small-btn">🔍</button>
         <button id="txtBtn" class="small-btn">TXT</button>
+        <button id="searchBtn" class="small-btn">🔍</button>
+        <button id="backBtn">Voltar</button>
     </div>
     <textarea id="txtNote" placeholder="Tarefas ativas serão exibidas aqui ao clicar em TXT"></textarea>
     <div id="error"></div>
@@ -282,8 +286,11 @@
             document.getElementById('priority').value = '';
             document.getElementById('actionButton').textContent = 'Adicionar';
             document.getElementById('error').textContent = '';
+            document.getElementById('txtNote').style.display = 'none';
+            document.getElementById('backBtn').style.display = 'none';
             editingTaskKey = null;
             targetTaskKey = null;
+            renderTasks();
         }
 
         // Função para editar tarefa
@@ -335,6 +342,7 @@
                     console.log("Nenhuma correspondência encontrada na pesquisa");
                 } else {
                     document.getElementById('success').textContent = "Resultados da pesquisa exibidos!";
+                    document.getElementById('backBtn').style.display = 'inline-block';
                     console.log("Resultados da pesquisa renderizados com sucesso");
                 }
             }, { onlyOnce: true });
@@ -579,8 +587,9 @@
         document.getElementById('otherBtn').addEventListener('click', () => setCategory('other'));
         document.getElementById('allBtn').addEventListener('click', () => setCategory('all'));
         document.getElementById('actionButton').addEventListener('click', saveTask);
-        document.getElementById('searchBtn').addEventListener('click', searchTasks);
         document.getElementById('txtBtn').addEventListener('click', exportToTxt);
+        document.getElementById('searchBtn').addEventListener('click', searchTasks);
+        document.getElementById('backBtn').addEventListener('click', resetForm);
 
         // Adiciona suporte ao "Enter" nos campos
         document.getElementById('taskInput').addEventListener('keydown', (e) => {
