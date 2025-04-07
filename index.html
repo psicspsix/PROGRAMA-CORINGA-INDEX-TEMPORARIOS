@@ -935,7 +935,7 @@
                     li.innerHTML = `
                         <div class="task-row">
                             ${hasSubtasks ? `<button class="expand-btn">${isExpanded ? '−' : '+'}</button>` : '<span class="expand-placeholder"></span>'}
-                            <input type="checkbox" ${task.completed ? 'checked' : ''} data-id="${key}/${path}">
+                            <input type="checkbox" ${task.completed ? 'checked' : ''} data-key="${key}" data-path="${path}">
                             <span class="task-text ${isBoldItalic ? 'bold-italic' : ''}">${task.text} | Data: ${formatDate(task.dueDate)} | Prioridade: ${task.priority}</span>
                             <button class="level-btn up-btn" ${level === 0 ? 'disabled' : ''} data-id="${key}/${path}">↑</button>
                             <button class="level-btn down-btn" data-id="${key}/${path}">↓</button>
@@ -1027,12 +1027,17 @@
                     });
                     li.querySelector('input[type="checkbox"]').addEventListener('click', (e) => {
                         e.stopPropagation();
-                        const [parentKeyFromData, fullPath] = e.target.getAttribute('data-id').split('/', 2);
+                        const parentKey = e.target.getAttribute('data-key');
+                        const fullPath = e.target.getAttribute('data-path');
                         const pathParts = fullPath.split('/').filter(p => p !== '');
-                        const subtaskIndex = pathParts.length > 0 ? parseInt(pathParts.pop()) : parseInt(fullPath);
+                        const subtaskIndex = parseInt(pathParts.pop()) || 0;
                         const subPath = pathParts.join('/');
-                        log(`Checkbox clicado: parentKey=${parentKeyFromData}, subPath=${subPath}, subtaskIndex=${subtaskIndex}`);
-                        level === 0 ? toggleTask(parentKeyFromData) : toggleSubtask(parentKeyFromData, subPath, subtaskIndex);
+                        log(`Checkbox clicado: parentKey=${parentKey}, subPath=${subPath}, subtaskIndex=${subtaskIndex}`);
+                        if (level === 0) {
+                            toggleTask(parentKey);
+                        } else {
+                            toggleSubtask(parentKey, subPath, subtaskIndex);
+                        }
                     });
                 };
 
@@ -1082,7 +1087,7 @@
                     li.innerHTML = `
                         <div class="task-row">
                             ${hasSubtasks ? `<button class="expand-btn">${isExpanded ? '−' : '+'}</button>` : '<span class="expand-placeholder"></span>'}
-                            <input type="checkbox" ${subtask.completed ? 'checked' : ''} data-id="${key}/${subtaskPath}">
+                            <input type="checkbox" ${subtask.completed ? 'checked' : ''} data-key="${key}" data-path="${subtaskPath}">
                             <span class="task-text ${isBoldItalic ? 'bold-italic' : ''}">${subtask.text} | Data: ${formatDate(subtask.dueDate)} | Prioridade: ${subtask.priority}</span>
                             <button class="level-btn up-btn" data-id="${key}/${subtaskPath}">↑</button>
                             <button class="level-btn down-btn" data-id="${key}/${subtaskPath}">↓</button>
@@ -1163,12 +1168,13 @@
                     });
                     li.querySelector('input[type="checkbox"]').addEventListener('click', (e) => {
                         e.stopPropagation();
-                        const [parentKeyFromData, fullPath] = e.target.getAttribute('data-id').split('/', 2);
+                        const parentKey = e.target.getAttribute('data-key');
+                        const fullPath = e.target.getAttribute('data-path');
                         const pathParts = fullPath.split('/').filter(p => p !== '');
                         const subtaskIndex = parseInt(pathParts.pop());
                         const subPath = pathParts.join('/');
-                        log(`Checkbox clicado: parentKey=${parentKeyFromData}, subPath=${subPath}, subtaskIndex=${subtaskIndex}`);
-                        toggleSubtask(parentKeyFromData, subPath, subtaskIndex);
+                        log(`Checkbox clicado: parentKey=${parentKey}, subPath=${subPath}, subtaskIndex=${subtaskIndex}`);
+                        toggleSubtask(parentKey, subPath, subtaskIndex);
                     });
                 });
             }
@@ -1208,7 +1214,7 @@
                     li.innerHTML = `
                         <div class="task-row">
                             ${hasSubtasks ? `<button class="expand-btn">${isExpanded ? '−' : '+'}</button>` : '<span class="expand-placeholder"></span>'}
-                            <input type="checkbox" ${task.completed ? 'checked' : ''} data-id="${key}">
+                            <input type="checkbox" ${task.completed ? 'checked' : ''} data-key="${key}" data-path="">
                             <span class="task-text ${isBoldItalic ? 'bold-italic' : ''}">${task.text} | Data: ${formatDate(task.dueDate)} | Prioridade: ${task.priority}</span>
                             <button class="level-btn up-btn" disabled data-id="${key}">↑</button>
                             <button class="level-btn down-btn" ${taskArray.length === 1 ? 'disabled' : ''} data-id="${key}">↓</button>
@@ -1294,7 +1300,9 @@
                     });
                     li.querySelector('input[type="checkbox"]').addEventListener('click', (e) => {
                         e.stopPropagation();
-                        toggleTask(key);
+                        const parentKey = e.target.getAttribute('data-key');
+                        log(`Checkbox clicado (tarefa nível 0): parentKey=${parentKey}`);
+                        toggleTask(parentKey);
                     });
                 });
 
