@@ -1187,13 +1187,13 @@
                 }
             };
 
-            // Limpar campos de texto (corrigidos para IDs em minúsculas para a Pesquisa normal)
-            clearValue(`${prefix}searchInput`);           // Primeiro campo de pesquisa
-            clearValue(`${prefix}searchPromptText`);      // Texto do prompt
-            clearValue(`${prefix}searchPromptFunction`);  // Função do prompt
-            clearValue(`${prefix}searchPromptLocation`);  // Local onde foi utilizado
-            clearValue(`${prefix}searchPromptNote`);      // Palavras-chave
-            clearValue(`${prefix}searchPromptAuthor`);    // Nome do autor
+            // Limpar campos de texto com IDs corretos
+            clearValue(`${prefix}SearchInput`);           // Pesquisa: searchInput, Avançada: advSearchInput
+            clearValue(`${prefix}SearchPromptText`);      // Pesquisa: searchPromptText, Avançada: advSearchPromptText
+            clearValue(`${prefix}SearchPromptFunction`);  // Pesquisa: searchPromptFunction, Avançada: advSearchPromptFunction
+            clearValue(`${prefix}SearchPromptLocation`);  // Pesquisa: searchPromptLocation, Avançada: advSearchPromptLocation
+            clearValue(`${prefix}SearchPromptNote`);      // Pesquisa: searchPromptNote, Avançada: advSearchPromptNote
+            clearValue(`${prefix}SearchPromptAuthor`);    // Pesquisa: searchPromptAuthor, Avançada: advSearchPromptAuthor
             if (isAdvanced) clearValue('advSearchPromptUserEmail'); // Apenas para Pesquisa Avançada
 
             // Limpar seleções dos combo boxes
