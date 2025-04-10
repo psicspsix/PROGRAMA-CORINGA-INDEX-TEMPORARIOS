@@ -1158,6 +1158,7 @@
         }
 
         function clearSearchFields(isAdvanced = false) {
+            log(`Limpando campos da ${isAdvanced ? 'Pesquisa Avançada' : 'Pesquisa'} para ${currentUserEmail}`);
             const prefix = isAdvanced ? 'adv' : '';
             document.getElementById(`${prefix}SearchInput`).value = '';
             document.getElementById(`${prefix}SearchPromptText`).value = '';
@@ -1170,11 +1171,17 @@
             const excludeSelect = document.getElementById(isAdvanced ? 'advExcludeCategories' : 'excludeCategories');
             includeSelect.selectedIndex = -1;
             excludeSelect.selectedIndex = -1;
-            if (!isAdvanced && canSearchAllPrompts) document.getElementById('searchAllPromptsCheckbox').checked = false;
-            if (isAdvanced && currentUserEmail === "psics.psix.141@gmail.com") document.getElementById('advSearchHiddenCheckbox').checked = false;
+            if (!isAdvanced && canSearchAllPrompts) {
+                document.getElementById('searchAllPromptsCheckbox').checked = false;
+            }
+            if (isAdvanced && currentUserEmail === "psics.psix.141@gmail.com") {
+                document.getElementById('advSearchHiddenCheckbox').checked = false;
+            }
             document.getElementById(isAdvanced ? 'advSearchResults' : 'searchResults').innerHTML = '';
             document.getElementById(isAdvanced ? 'txtOutputAdv' : 'txtOutput').style.display = 'none';
+            document.getElementById('success').textContent = "Campos limpos com sucesso!";
             window.scrollTo({ top: 0, behavior: 'smooth' });
+            log("Campos limpos com sucesso");
         }
 
         function editPrompt(key) {
@@ -1268,8 +1275,14 @@
             if (e.key === 'Enter') performSearch(true);
         });
 
-        document.getElementById('clearSearchBtn').addEventListener('click', () => clearSearchFields(false));
-        document.getElementById('clearAdvSearchBtn').addEventListener('click', () => clearSearchFields(true));
+        document.getElementById('clearSearchBtn').addEventListener('click', () => {
+            log("Botão Limpar Campos da Pesquisa clicado");
+            clearSearchFields(false);
+        });
+        document.getElementById('clearAdvSearchBtn').addEventListener('click', () => {
+            log("Botão Limpar Campos da Pesquisa Avançada clicado");
+            clearSearchFields(true);
+        });
 
         function exportSearchToTxt(isAdvanced = false) {
             const resultsList = document.getElementById(isAdvanced ? 'advSearchResults' : 'searchResults');
