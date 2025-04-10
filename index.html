@@ -1159,7 +1159,7 @@
 
         function clearSearchFields(isAdvanced = false) {
             log(`Limpando campos da ${isAdvanced ? 'Pesquisa Avançada' : 'Pesquisa'} para ${currentUserEmail}`);
-            const prefix = isAdvanced ? 'adv' : '';
+            const prefix = isAdvanced ? 'advSearch' : 'search';
 
             // Função auxiliar para limpar campo se ele existir
             const clearValue = (id) => {
@@ -1188,12 +1188,12 @@
             };
 
             // Limpar campos de texto com IDs corretos
-            clearValue(`${prefix}searchInput`);           // Pesquisa: searchInput, Avançada: advsearchInput
-            clearValue(`${prefix}searchPromptText`);      // Pesquisa: searchPromptText, Avançada: advsearchPromptText
-            clearValue(`${prefix}searchPromptFunction`);  // Pesquisa: searchPromptFunction, Avançada: advsearchPromptFunction
-            clearValue(`${prefix}searchPromptLocation`);  // Pesquisa: searchPromptLocation, Avançada: advsearchPromptLocation
-            clearValue(`${prefix}searchPromptNote`);      // Pesquisa: searchPromptNote, Avançada: advsearchPromptNote
-            clearValue(`${prefix}searchPromptAuthor`);    // Pesquisa: searchPromptAuthor, Avançada: advsearchPromptAuthor
+            clearValue(`${prefix}Input`);           // Pesquisa: searchInput, Avançada: advSearchInput
+            clearValue(`${prefix}PromptText`);      // Pesquisa: searchPromptText, Avançada: advSearchPromptText
+            clearValue(`${prefix}PromptFunction`);  // Pesquisa: searchPromptFunction, Avançada: advSearchPromptFunction
+            clearValue(`${prefix}PromptLocation`);  // Pesquisa: searchPromptLocation, Avançada: advSearchPromptLocation
+            clearValue(`${prefix}PromptNote`);      // Pesquisa: searchPromptNote, Avançada: advSearchPromptNote
+            clearValue(`${prefix}PromptAuthor`);    // Pesquisa: searchPromptAuthor, Avançada: advSearchPromptAuthor
             if (isAdvanced) clearValue('advSearchPromptUserEmail'); // Apenas para Pesquisa Avançada
 
             // Limpar seleções dos combo boxes
