@@ -1164,7 +1164,27 @@
             // Função auxiliar para limpar campo se ele existir
             const clearValue = (id) => {
                 const element = document.getElementById(id);
-                if (element) element.value = '';
+                if (element) {
+                    element.value = '';
+                    log(`Campo ${id} limpo`);
+                } else {
+                    log(`Campo ${id} não encontrado`);
+                }
+            };
+
+            // Função auxiliar para limpar seleções de combo box
+            const clearSelect = (id) => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.selectedIndex = -1;
+                    // Forçar desmarcação de todas as opções
+                    for (let option of element.options) {
+                        option.selected = false;
+                    }
+                    log(`Combo box ${id} limpo`);
+                } else {
+                    log(`Combo box ${id} não encontrado`);
+                }
             };
 
             // Limpar campos de texto
@@ -1177,31 +1197,52 @@
             if (isAdvanced) clearValue('advSearchPromptUserEmail');
 
             // Limpar seleções dos combo boxes
-            const includeSelect = document.getElementById(isAdvanced ? 'advIncludeCategories' : 'includeCategories');
-            const excludeSelect = document.getElementById(isAdvanced ? 'advExcludeCategories' : 'excludeCategories');
-            if (includeSelect) includeSelect.selectedIndex = -1;
-            if (excludeSelect) excludeSelect.selectedIndex = -1;
+            clearSelect(isAdvanced ? 'advIncludeCategories' : 'includeCategories');
+            clearSelect(isAdvanced ? 'advExcludeCategories' : 'excludeCategories');
 
             // Limpar checkbox da Pesquisa, se aplicável
             if (!isAdvanced && canSearchAllPrompts && currentUserEmail !== "psics.psix.141@gmail.com") {
                 const checkbox = document.getElementById('searchAllPromptsCheckbox');
-                if (checkbox) checkbox.checked = false;
+                if (checkbox) {
+                    checkbox.checked = false;
+                    log("Checkbox searchAllPromptsCheckbox limpo");
+                }
             }
 
             // Limpar checkbox da Pesquisa Avançada, se aplicável
             if (isAdvanced && currentUserEmail === "psics.psix.141@gmail.com") {
                 const hiddenCheckbox = document.getElementById('advSearchHiddenCheckbox');
-                if (hiddenCheckbox) hiddenCheckbox.checked = false;
+                if (hiddenCheckbox) {
+                    hiddenCheckbox.checked = false;
+                    log("Checkbox advSearchHiddenCheckbox limpo");
+                }
             }
 
             // Limpar resultados e saída de texto
             const results = document.getElementById(isAdvanced ? 'advSearchResults' : 'searchResults');
             const txtOutput = document.getElementById(isAdvanced ? 'txtOutputAdv' : 'txtOutput');
-            if (results) results.innerHTML = '';
-            if (txtOutput) txtOutput.style.display = 'none';
+            if (results) {
+                results.innerHTML = '';
+                log(`Resultados ${isAdvanced ? 'advSearchResults' : 'searchResults'} limpos`);
+            }
+            if (txtOutput) {
+                txtOutput.style.display = 'none';
+                log(`Saída de texto ${isAdvanced ? 'txtOutputAdv' : 'txtOutput'} ocultada`);
+            }
 
+            // Exibir mensagem de sucesso
             document.getElementById('success').textContent = "Campos limpos com sucesso!";
+
+            // Forçar rolagem para o topo
             window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            // Forçar atualização do DOM
+            const screen = document.getElementById(isAdvanced ? 'advancedSearchScreen' : 'searchScreen');
+            screen.style.display = 'none';
+            setTimeout(() => {
+                screen.style.display = 'block';
+            }, 0);
+
             log("Campos limpos com sucesso");
         }
 
