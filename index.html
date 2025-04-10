@@ -3,161 +3,534 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Projetos Compartilhados</title>
+    <title>Prompts para IAs</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #1a1a1a; color: #e0e0e0; }
-        #loginScreen, #appScreen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 0; 
+            padding: 0; 
+            background: #1a1a1a; 
+            color: #e0e0e0; 
+            overflow-x: hidden; 
+        }
+        #loginScreen, #appScreen { 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            box-sizing: border-box; 
+        }
         #loginScreen { 
-            background: url('https://images.unsplash.com/photo-1464802686167-b939a6910659?q=80&w=1450&auto=format&fit=crop') no-repeat center center fixed; 
+            background: url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1470&auto=format&fit=crop') no-repeat center center fixed; 
             background-size: cover; 
             display: flex; 
             justify-content: center; 
             align-items: center; 
             flex-direction: column;
         }
-        #appScreen { display: none; padding: 20px; }
-        .login-container, .register-container { background: rgba(0, 0, 0, 0.8); padding: 20px; border-radius: 10px; text-align: center; }
+        #appScreen { 
+            display: none; 
+            padding: 20px; 
+            overflow-y: auto; 
+            overflow-x: hidden; 
+        }
+        .login-container, .register-container { 
+            background: rgba(0, 0, 0, 0.8); 
+            padding: 20px; 
+            border-radius: 10px; 
+            text-align: center; 
+        }
         .login-container input, .register-container input { 
-            width: 100%; max-width: 300px; font-size: 18px; padding: 10px; margin: 10px 0; background: #333; color: #e0e0e0; border: 1px solid #555; border-radius: 5px; }
+            width: 100%; 
+            max-width: 300px; 
+            font-size: 18px; 
+            padding: 10px; 
+            margin: 10px 0; 
+            background: #333; 
+            color: #e0e0e0; 
+            border: 1px solid #555; 
+            border-radius: 5px; 
+        }
         .login-container button, .register-container button { 
-            font-size: 18px; padding: 10px 20px; margin: 5px; background: #333; color: #e0e0e0; border: 1px solid #555; border-radius: 5px; cursor: pointer; }
-        .login-container button:hover, .register-container button:hover { background: #555; }
-        #registerBtn { display: none; }
-        #registerContainer { display: none; margin-top: 20px; }
-        #usersList { margin-top: 20px; text-align: left; max-width: 400px; }
-        #usersList div { margin: 10px 0; display: flex; justify-content: space-between; align-items: center; }
-        #usersList button { font-size: 14px; padding: 5px; }
-        #message { color: #ff5555; margin-top: 10px; }
-        .header { display: flex; justify-content: space-between; align-items: center; }
-        h1 { margin: 0; color: #ffffff; }
-        .category-buttons { display: flex; gap: 10px; align-items: center; }
-        input, button { font-size: 18px; padding: 10px; margin: 5px; background: #333; color: #e0e0e0; border: 1px solid #555; }
-        #taskInput { width: 600px; }
-        button:hover { background: #555; }
-        button.active { background: #555; font-weight: bold; }
-        .small-btn { font-size: 14px; padding: 5px; width: 30px; height: 30px; line-height: 20px; text-align: center; }
-        ul { list-style-type: none; padding: 0; }
-        li { font-size: 18px; margin: 10px 0; background: #2a2a2a; padding: 10px; border-radius: 5px; cursor: pointer; }
-        .task-row { display: flex; align-items: center; gap: 10px; }
-        .notes { display: none; margin-top: 10px; padding: 10px; background: #333; border-radius: 5px; width: 100%; }
-        .notes.visible { display: block; }
-        textarea { width: 100%; background: #444; color: #e0e0e0; border: 1px solid #555; padding: 5px; box-sizing: border-box; }
-        .completed { text-decoration: line-through; color: #888; }
-        #error, #success { text-align: center; }
-        #error { color: #ff5555; }
-        #success { color: #55ff55; }
-        .has-notes { margin-left: 10px; font-style: italic; cursor: pointer; }
-        .task-text.bold-italic { font-weight: bold; font-style: italic; }
-        .category-dropdown { position: relative; display: inline-block; }
-        .dropdown-content { display: none; position: absolute; background-color: #333; min-width: 160px; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2); z-index: 1; border-radius: 5px; }
-        .dropdown-content button { width: 100%; text-align: left; padding: 10px; margin: 0; }
-        .dropdown-content button:hover { background-color: #555; }
-        .date-today { color: #ffff00; }
-        .date-one-day-past { color: #1e90ff; }
-        .date-past { color: #ff0000; }
-        .subtask-level-1 { margin-left: 60px; background: #3a3a3a; }
-        .subtask-level-2 { margin-left: 120px; background: #4a4a4a; }
-        .subtask-level-3 { margin-left: 180px; background: #5a5a5a; }
-        .subtask-level-4 { margin-left: 240px; background: #6a6a6a; }
-        .expand-btn { font-size: 18px; padding: 0; width: 20px; height: 20px; line-height: 20px; text-align: center; cursor: pointer; background: none; border: none; color: #e0e0e0; margin: 0 10px 0 0; flex-shrink: 0; }
-        .expand-placeholder { width: 20px; height: 20px; margin: 0 10px 0 0; display: inline-block; flex-shrink: 0; }
-        .task-row input[type="checkbox"] { width: 18px; height: 18px; margin: 0 10px 0 0; flex-shrink: 0; }
-        .subtasks-container { display: none; }
-        .subtasks-container.visible { display: block; }
-        .input-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-        #txtNote { display: none; margin: 10px 0; padding: 10px; background: #333; border-radius: 5px; width: 100%; min-height: 100px; resize: vertical; }
-        .level-btn { font-size: 14px; padding: 5px; width: 20px; height: 20px; line-height: 10px; text-align: center; cursor: pointer; }
-        .level-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-        #deleteCategoryBtn, #sendToComplexBtn { display: none; }
-        #backBtn { display: none; }
+            font-size: 18px; 
+            padding: 10px 20px; 
+            margin: 5px; 
+            background: #333; 
+            color: #e0e0e0; 
+            border: 1px solid #555; 
+            border-radius: 5px; 
+            cursor: pointer; 
+        }
+        .login-container button:hover, .register-container button:hover { 
+            background: #555; 
+        }
+        #registerContainer { 
+            display: none; 
+            margin-top: 20px; 
+        }
+        #message { 
+            color: #ff5555; 
+            margin-top: 10px; 
+        }
+        .header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            flex-wrap: wrap; 
+            max-width: 100%; 
+            margin-bottom: 60px; 
+        }
+        h1 { 
+            margin: 0; 
+            color: #ffffff; 
+        }
+        .menu { 
+            display: flex; 
+            gap: 10px; 
+            align-items: center; 
+            flex-wrap: wrap; 
+        }
+        button { 
+            font-size: 18px; 
+            padding: 10px; 
+            margin: 5px; 
+            background: #333; 
+            color: #e0e0e0; 
+            border: 1px solid #555; 
+            cursor: pointer; 
+        }
+        button:hover { 
+            background: #555; 
+        }
+        button.active { 
+            background: #555; 
+            font-weight: bold; 
+        }
+        .small-btn { 
+            font-size: 14px; 
+            padding: 5px; 
+            width: 30px; 
+            height: 30px; 
+            line-height: 20px; 
+            text-align: center; 
+        }
+        ul { 
+            list-style-type: none; 
+            padding: 0; 
+        }
+        li { 
+            font-size: 18px; 
+            margin: 10px 0; 
+            background: #2a2a2a; 
+            padding: 10px; 
+            border-radius: 5px; 
+        }
+        .prompt-row { 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+        }
+        .adv-prompt-details { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 5px; 
+        }
+        textarea { 
+            width: 100%; 
+            background: #444; 
+            color: #e0e0e0; 
+            border: 1px solid #555; 
+            padding: 5px; 
+            box-sizing: border-box; 
+            font-size: 20px; 
+        }
+        textarea::placeholder { 
+            font-size: 20px; 
+            color: #888; 
+        }
+        #error, #success { 
+            text-align: center; 
+        }
+        #error { 
+            color: #ff5555; 
+        }
+        #success { 
+            color: #55ff55; 
+        }
+        .input-row { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 10px; 
+            align-items: flex-start; 
+        }
+        #promptText, #editPromptText { 
+            height: 150px; 
+        }
+        #promptFunction, #editPromptFunction { 
+            height: 100px; 
+        }
+        .location-note-container { 
+            display: flex; 
+            flex-direction: row; 
+            gap: 10px; 
+            width: 100%; 
+        }
+        #promptLocation, #editPromptLocation, #promptNote, #editPromptNote { 
+            height: 50px; 
+            width: 50%; 
+        }
+        #promptAuthor, #editPromptAuthor { 
+            width: 33.33%; 
+            background: #000; 
+            color: #fff; 
+            padding: 10px; 
+            border: 1px solid #555; 
+            border-radius: 5px; 
+            font-size: 20px; 
+        }
+        #promptUserEmail, #editPromptUserEmail { 
+            width: 25%; 
+            background: #000; 
+            color: #fff; 
+            padding: 10px; 
+            border: 1px solid #555; 
+            border-radius: 5px; 
+            font-size: 20px; 
+        }
+        #searchPromptAuthor { 
+            width: 33.33%; 
+            background: #000; 
+            color: #fff; 
+            padding: 10px; 
+            border: 1px solid #555; 
+            border-radius: 5px; 
+            font-size: 20px; 
+        }
+        #advSearchPromptAuthor, #advSearchPromptUserEmail { 
+            width: calc(66% + 50mm); 
+            height: 100px; 
+            background: #000; 
+            color: #fff; 
+            padding: 10px; 
+            border: 1px solid #555; 
+            border-radius: 5px; 
+            font-size: 20px; 
+            box-sizing: border-box; 
+        }
+        #promptAuthor.admin, #editPromptAuthor.admin { 
+            width: 25%; 
+        }
+        #promptAuthor::placeholder, #editPromptAuthor::placeholder, #searchPromptAuthor::placeholder, 
+        #promptUserEmail::placeholder, #editPromptUserEmail::placeholder, 
+        #advSearchPromptAuthor::placeholder, #advSearchPromptUserEmail::placeholder { 
+            font-size: 20px; 
+            color: #888; 
+        }
+        #categorySelect, #editCategorySelect { 
+            padding: 10px; 
+            background: #333; 
+            color: #e0e0e0; 
+            border: 1px solid #555; 
+            height: 100px; 
+            width: 33.33%; 
+        }
+        #categorySelect.admin, #editCategorySelect.admin { 
+            width: 50%; 
+        }
+        #categoryName { 
+            width: 33.33%; 
+            background: #000; 
+            color: #fff; 
+            padding: 10px; 
+            border: 1px solid #555; 
+            border-radius: 5px; 
+            font-size: 20px; 
+        }
+        #categoryName::placeholder { 
+            font-size: 20px; 
+            color: #888; 
+        }
+        #txtOutput, #txtOutputAdv { 
+            display: none; 
+            margin: 10px 0; 
+            padding: 10px; 
+            background: #333; 
+            border-radius: 5px; 
+            width: 100%; 
+            min-height: 100px; 
+            resize: vertical; 
+        }
+        .search-container { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 10px; 
+            width: 100%; 
+            box-sizing: border-box; 
+        }
+        .combo-box { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: flex-start; 
+            width: 33%; 
+        }
+        .combo-box select { 
+            height: 200px; 
+            background: #000; 
+            color: #fff; 
+            border: 1px solid #555; 
+            width: 100%; 
+        }
+        #searchInput, #advSearchInput { 
+            width: 100%; 
+            font-size: 18px; 
+            padding: 10px; 
+            background: #000; 
+            color: #fff; 
+            border: 1px solid #555; 
+            border-radius: 5px; 
+            box-sizing: border-box; 
+            margin-bottom: 10px; 
+        }
+        .prompt-container { 
+            display: flex; 
+            flex-direction: row; 
+            gap: 10px; 
+            width: 100%; 
+            justify-content: flex-start; 
+        }
+        .adv-search-author-container { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 0px; 
+            width: calc(66% + 50mm); 
+        }
+        .checkbox-container { 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+        }
+        #hiddenCheckbox, #advSearchHiddenCheckbox, #editHiddenCheckbox, #searchAllPromptsCheckbox { 
+            width: 20px; 
+            height: 20px; 
+        }
+        .category-list, .user-list { 
+            margin-top: 50px; 
+        }
+        .search-btn-small { 
+            padding: 5px 10px; 
+            font-size: 16px; 
+            width: auto; 
+            align-self: flex-start; 
+        }
     </style>
 </head>
 <body>
     <div id="loginScreen">
         <div class="login-container">
-            <h2>Projetos Compartilhados</h2>
-            <input type="text" id="userInput" placeholder="Usuário (Nome ou e-mail)">
+            <h2>Prompts para IAs</h2>
+            <input type="text" id="userInput" placeholder="Usuário (e-mail)">
             <input type="password" id="passwordInput" placeholder="Senha">
             <button id="loginBtn">Entrar</button>
             <button id="registerBtn">Cadastrar</button>
+            <button id="recoverBtn">Recuperar Senha</button>
             <div id="message"></div>
             <div id="registerContainer" class="register-container">
                 <input type="text" id="newUserInput" placeholder="Novo Usuário (e-mail)">
                 <input type="password" id="newPasswordInput" placeholder="Nova Senha">
                 <button id="submitRegisterBtn">Cadastrar</button>
             </div>
-            <div id="usersList"></div>
         </div>
     </div>
     <div id="appScreen">
         <div class="header">
-            <h1>Projetos Compartilhados</h1>
-            <div class="category-buttons">
-                <button id="mainProjectsBtn">Projetos Principais</button>
-                <button id="proposedBtn">Proj. Propostos</button>
-                <button id="inProgressBtn">Proj. em Andamento</button>
-                <button id="futureBtn">Proj. Futuros</button>
-                <button id="allBtn">Todos</button>
-                <button id="deleteCategoryBtn" class="small-btn">🗑️</button>
+            <h1>Prompts para IAs</h1>
+            <div class="menu">
+                <button id="storePromptBtn">Cadastro de Prompt</button>
+                <button id="categoryBtn">Cadastro de Categoria</button>
+                <button id="searchBtn">Pesquisa</button>
+                <button id="advancedSearchBtn" style="display: none;">Pesquisa Avançada</button>
+                <button id="authorizationBtn" style="display: none;">Autorizações</button>
             </div>
         </div>
-        <div class="input-row">
-            <input type="text" id="taskInput" placeholder="Digite uma tarefa / subtarefa ou termos para realizar uma pesquisa!">
-            <input type="date" id="dueDate" placeholder="Data de término (opcional)">
-            <input type="number" id="priority" min="1" max="1000" placeholder="Prioridade (1-1000)">
-            <button id="actionButton">Adicionar</button>
-            <button id="txtBtn">TXT</button>
-            <button id="searchBtn" class="small-btn">🔍</button>
-            <button id="shareBtn" class="small-btn">↻</button>
-            <button id="sendToComplexBtn" class="small-btn">⍟</button>
-            <button id="backBtn">Voltar</button>
+        <div id="mainContent">
+            <div id="recentPrompts">
+                <h2>Últimos Prompts Armazenados</h2>
+                <ul id="promptList"></ul>
+                <button id="backBtn" style="display: none;">Voltar</button>
+            </div>
+            <div id="storePromptScreen" style="display: none;">
+                <div class="input-row">
+                    <textarea id="promptText" placeholder="Digite o texto do prompt"></textarea>
+                    <textarea id="promptFunction" placeholder="Descreva a função do prompt"></textarea>
+                    <div class="location-note-container">
+                        <textarea id="promptLocation" placeholder="Local em que foi utilizado (IA testada)"></textarea>
+                        <textarea id="promptNote" placeholder="Digite as palavras-chaves"></textarea>
+                    </div>
+                    <div class="prompt-container" id="storePromptContainer">
+                        <input type="text" id="promptAuthor" placeholder="Nome do Autor">
+                        <input type="text" id="promptUserEmail" placeholder="E-mail do Usuário" style="display: none;">
+                        <select id="categorySelect" multiple></select>
+                    </div>
+                    <div class="checkbox-container">
+                        <button id="savePromptBtn">Salvar Prompt</button>
+                        <div id="hiddenCheckboxContainer" style="display: none;">
+                            <input type="checkbox" id="hiddenCheckbox">
+                            <label for="hiddenCheckbox">Oculto</label>
+                        </div>
+                    </div>
+                </div>
+                <button id="backBtnStore">Voltar</button>
+            </div>
+            <div id="editPromptScreen" style="display: none;">
+                <div class="input-row">
+                    <textarea id="editPromptText" placeholder="Digite o texto do prompt"></textarea>
+                    <textarea id="editPromptFunction" placeholder="Descreva a função do prompt"></textarea>
+                    <div class="location-note-container">
+                        <textarea id="editPromptLocation" placeholder="Local em que foi utilizado (IA testada)"></textarea>
+                        <textarea id="editPromptNote" placeholder="Digite as palavras-chaves"></textarea>
+                    </div>
+                    <div class="prompt-container">
+                        <input type="text" id="editPromptAuthor" placeholder="Nome do Autor">
+                        <input type="text" id="editPromptUserEmail" placeholder="E-mail do Usuário">
+                        <select id="editCategorySelect" multiple></select>
+                    </div>
+                    <div class="checkbox-container">
+                        <button id="saveEditPromptBtn">Salvar Alterações</button>
+                        <div id="editHiddenCheckboxContainer" style="display: none;">
+                            <input type="checkbox" id="editHiddenCheckbox">
+                            <label for="editHiddenCheckbox">Oculto</label>
+                        </div>
+                    </div>
+                </div>
+                <button id="backBtnEdit">Voltar</button>
+            </div>
+            <div id="categoryScreen" style="display: none;">
+                <div class="input-row">
+                    <input type="text" id="categoryName" placeholder="Nome da Categoria">
+                    <textarea id="categoryDesc" placeholder="Breve descrição da categoria"></textarea>
+                    <button id="saveCategoryBtn">Cadastrar Categoria</button>
+                </div>
+                <button id="backBtnCategory">Voltar</button>
+                <div class="category-list">
+                    <h3>Categorias já cadastradas</h3>
+                    <ul id="categoryList"></ul>
+                </div>
+            </div>
+            <div id="searchScreen" style="display: none;">
+                <div class="search-container">
+                    <input type="text" id="searchInput" placeholder="Digite o texto para pesquisa">
+                    <button id="doSearchBtnTop" class="search-btn-small">Pesquisar</button>
+                    <div class="input-row">
+                        <textarea id="searchPromptText" placeholder="Digite o texto do prompt"></textarea>
+                        <textarea id="searchPromptFunction" placeholder="Descreva a função do prompt"></textarea>
+                        <div class="location-note-container">
+                            <textarea id="searchPromptLocation" placeholder="Local em que foi utilizado (IA testada)"></textarea>
+                            <textarea id="searchPromptNote" placeholder="Digite as palavras-chaves"></textarea>
+                        </div>
+                        <div class="prompt-container">
+                            <input type="text" id="searchPromptAuthor" placeholder="Nome do Autor">
+                            <div class="combo-box">
+                                <label>Incluir Categorias:</label>
+                                <select id="includeCategories" multiple></select>
+                            </div>
+                            <div class="combo-box">
+                                <label>Excluir Categorias:</label>
+                                <select id="excludeCategories" multiple></select>
+                            </div>
+                        </div>
+                        <div id="searchAllPromptsCheckboxContainer" class="checkbox-container" style="display: none;">
+                            <input type="checkbox" id="searchAllPromptsCheckbox">
+                            <label for="searchAllPromptsCheckbox">Pesquisar nos prompts de todos os usuários</label>
+                        </div>
+                    </div>
+                    <div class="checkbox-container">
+                        <button id="doSearchBtn" class="search-btn-small">Pesquisar</button>
+                        <button id="clearSearchBtn" class="search-btn-small">Limpar Campos</button>
+                    </div>
+                </div>
+                <button id="txtSearchBtn">TXT</button>
+                <textarea id="txtOutput" placeholder="Resultados da pesquisa aparecerão aqui"></textarea>
+                <ul id="searchResults"></ul>
+                <button id="backBtnSearch">Voltar</button>
+            </div>
+            <div id="advancedSearchScreen" style="display: none;">
+                <div class="search-container">
+                    <input type="text" id="advSearchInput" placeholder="Digite o texto para pesquisa avançada">
+                    <button id="doAdvSearchBtnTop" class="search-btn-small">Pesquisar</button>
+                    <div class="input-row">
+                        <textarea id="advSearchPromptText" placeholder="Digite o texto do prompt"></textarea>
+                        <textarea id="advSearchPromptFunction" placeholder="Descreva a função do prompt"></textarea>
+                        <div class="location-note-container">
+                            <textarea id="advSearchPromptLocation" placeholder="Local em que foi utilizado (IA testada)"></textarea>
+                            <textarea id="advSearchPromptNote" placeholder="Digite as palavras-chaves"></textarea>
+                        </div>
+                        <div class="prompt-container">
+                            <div class="adv-search-author-container">
+                                <input type="text" id="advSearchPromptAuthor" placeholder="Nome do Autor">
+                                <input type="text" id="advSearchPromptUserEmail" placeholder="E-mail do Usuário">
+                            </div>
+                            <div class="combo-box">
+                                <label>Incluir Categorias:</label>
+                                <select id="advIncludeCategories" multiple></select>
+                            </div>
+                            <div class="combo-box">
+                                <label>Excluir Categorias:</label>
+                                <select id="advExcludeCategories" multiple></select>
+                            </div>
+                        </div>
+                        <div id="advSearchHiddenCheckboxContainer" class="checkbox-container" style="display: none;">
+                            <input type="checkbox" id="advSearchHiddenCheckbox">
+                            <label for="advSearchHiddenCheckbox">Incluir Ocultos</label>
+                        </div>
+                    </div>
+                    <div class="checkbox-container">
+                        <button id="doAdvSearchBtn" class="search-btn-small">Pesquisar</button>
+                        <button id="clearAdvSearchBtn" class="search-btn-small">Limpar Campos</button>
+                    </div>
+                </div>
+                <button id="txtAdvSearchBtn">TXT</button>
+                <textarea id="txtOutputAdv" placeholder="Resultados da pesquisa avançada aparecerão aqui"></textarea>
+                <ul id="advSearchResults"></ul>
+                <button id="backBtnAdvSearch">Voltar</button>
+            </div>
+            <div id="authorizationScreen" style="display: none;">
+                <h2>Autorizações</h2>
+                <div class="user-list">
+                    <h3>Usuários Cadastrados</h3>
+                    <ul id="userList"></ul>
+                </div>
+                <button id="backBtnAuthorization">Voltar</button>
+            </div>
         </div>
-        <textarea id="txtNote" placeholder="Conteúdo das tarefas será exibido aqui ao clicar em TXT"></textarea>
         <div id="error"></div>
         <div id="success"></div>
-        <ul id="taskList"></ul>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, onValue, push, update, remove, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getDatabase, ref, onValue, push, update, set, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-        const firebaseConfigShared = {
-            apiKey: "AIzaSyDMRrgMcEvUaiI7sNbmLwy-9Eim13979LY",
-            authDomain: "projetos-compartilhados.firebaseapp.com",
-            databaseURL: "https://projetos-compartilhados-default-rtdb.firebaseio.com",
-            projectId: "projetos-compartilhados",
-            storageBucket: "projetos-compartilhados.firebasestorage.app",
-            messagingSenderId: "517091337770",
-            appId: "1:517091337770:web:596b8c0da2b7c3e45b4553",
-            measurementId: "G-2DSZ3QKRB2"
+        const firebaseConfig = {
+            apiKey: "AIzaSyDZ8rtMXtSztcePnSh6sSe9yl3wyJ9GaNs",
+            authDomain: "gerenciador-de-prompts-de-ias.firebaseapp.com",
+            projectId: "gerenciador-de-prompts-de-ias",
+            storageBucket: "gerenciador-de-prompts-de-ias.firebasestorage.app",
+            messagingSenderId: "902314577084",
+            appId: "1:902314577084:web:a97afc0081d83b048894b9",
+            measurementId: "G-5C0RJFG1GH"
         };
 
-        const firebaseConfigComplex = {
-            apiKey: "AIzaSyA7EFA0dC1ZPikyJSHuqnhmul-4dnugfp0",
-            authDomain: "projetos-complexos.firebaseapp.com",
-            databaseURL: "https://projetos-complexos-default-rtdb.firebaseio.com",
-            projectId: "projetos-complexos",
-            storageBucket: "projetos-complexos.firebasestorage.app",
-            messagingSenderId: "473821406890",
-            appId: "1:473821406890:web:2b271ae806ecdac18892d3",
-            measurementId: "G-L5Z04Z3HG3"
-        };
-
-        const appShared = initializeApp(firebaseConfigShared, "sharedApp");
-        const appComplex = initializeApp(firebaseConfigComplex, "complexApp");
-        const auth = getAuth(appShared);
-        const dbShared = getDatabase(appShared);
-        const dbComplex = getDatabase(appComplex);
-        const tasksRefShared = ref(dbShared, 'tasks');
-        const tasksRefComplex = ref(dbComplex, 'tasks');
-        const usersRef = ref(dbShared, 'users');
-        let editingTaskKey = null;
-        let editingSubtask = null;
-        let addingSubtaskToKey = null;
-        let currentCategory = 'mainProjects';
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+        const promptsRef = ref(db, 'prompts');
+        const categoriesRef = ref(db, 'categories');
+        const usersRef = ref(db, 'users');
         let currentUserEmail = null;
+        let editingPromptKey = null;
+        let canSearchAllPrompts = false;
 
         function log(message) {
             console.log(`[LOG ${new Date().toLocaleTimeString()}]: ${message}`);
@@ -170,6 +543,7 @@
         const appScreen = document.getElementById('appScreen');
         const loginBtn = document.getElementById('loginBtn');
         const registerBtn = document.getElementById('registerBtn');
+        const recoverBtn = document.getElementById('recoverBtn');
         const registerContainer = document.getElementById('registerContainer');
         const submitRegisterBtn = document.getElementById('submitRegisterBtn');
         const userInput = document.getElementById('userInput');
@@ -177,9 +551,9 @@
         const newUserInput = document.getElementById('newUserInput');
         const newPasswordInput = document.getElementById('newPasswordInput');
         const messageDiv = document.getElementById('message');
-        const usersList = document.getElementById('usersList');
-        const deleteCategoryBtn = document.getElementById('deleteCategoryBtn');
-        const sendToComplexBtn = document.getElementById('sendToComplexBtn');
+        const searchBtn = document.getElementById('searchBtn');
+        const advancedSearchBtn = document.getElementById('advancedSearchBtn');
+        const authorizationBtn = document.getElementById('authorizationBtn');
 
         signOut(auth).then(() => {
             log("Logout inicial realizado para garantir tela de login");
@@ -191,28 +565,58 @@
             if (user) {
                 currentUserEmail = user.email;
                 log(`Usuário autenticado: ${currentUserEmail}`);
+                const userRef = ref(db, `users/${user.uid}`);
+                onValue(userRef, (snapshot) => {
+                    const userData = snapshot.val();
+                    canSearchAllPrompts = userData?.canSearchAllPrompts || false;
+                    if (canSearchAllPrompts && currentUserEmail !== "psics.psix.141@gmail.com") {
+                        document.getElementById('searchAllPromptsCheckboxContainer').style.display = 'flex';
+                    } else {
+                        document.getElementById('searchAllPromptsCheckboxContainer').style.display = 'none';
+                    }
+                }, { onlyOnce: true });
+
                 if (currentUserEmail === "psics.psix.141@gmail.com") {
-                    registerBtn.style.display = 'inline-block';
-                    deleteCategoryBtn.style.display = 'inline-block';
-                    sendToComplexBtn.style.display = 'inline-block';
-                    setTimeout(() => {
-                        registerBtn.style.display = 'none';
-                    }, 3000);
+                    searchBtn.style.display = 'none';
+                    advancedSearchBtn.style.display = 'inline-block';
+                    authorizationBtn.style.display = 'inline-block';
+                    document.getElementById('hiddenCheckboxContainer').style.display = 'flex';
+                    document.getElementById('advSearchHiddenCheckboxContainer').style.display = 'flex';
+                    document.getElementById('editHiddenCheckboxContainer').style.display = 'flex';
+                    document.getElementById('promptUserEmail').style.display = 'inline-block';
+                    document.getElementById('promptAuthor').classList.add('admin');
+                    document.getElementById('categorySelect').classList.add('admin');
+                } else {
+                    searchBtn.style.display = 'inline-block';
+                    advancedSearchBtn.style.display = 'none';
+                    authorizationBtn.style.display = 'none';
+                    document.getElementById('hiddenCheckboxContainer').style.display = 'none';
+                    document.getElementById('advSearchHiddenCheckboxContainer').style.display = 'none';
+                    document.getElementById('editHiddenCheckboxContainer').style.display = 'none';
+                    document.getElementById('promptUserEmail').style.display = 'none';
+                    document.getElementById('promptAuthor').classList.remove('admin');
+                    document.getElementById('categorySelect').classList.remove('admin');
                 }
                 loginScreen.style.display = 'none';
                 appScreen.style.display = 'block';
-                renderTasks();
-                renderUsersList();
+                showRecentPrompts();
             } else {
                 currentUserEmail = null;
+                canSearchAllPrompts = false;
                 loginScreen.style.display = 'flex';
                 appScreen.style.display = 'none';
-                deleteCategoryBtn.style.display = 'none';
-                sendToComplexBtn.style.display = 'none';
+                searchBtn.style.display = 'inline-block';
+                advancedSearchBtn.style.display = 'none';
+                authorizationBtn.style.display = 'none';
             }
         });
 
-        loginBtn.addEventListener('click', () => {
+        loginBtn.addEventListener('click', loginUser);
+        passwordInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') loginUser();
+        });
+
+        function loginUser() {
             const email = userInput.value.trim();
             const password = passwordInput.value.trim();
             if (!email || !password) {
@@ -223,9 +627,7 @@
                 .then(() => log("Login bem-sucedido"))
                 .catch((error) => {
                     if (error.code === 'auth/user-not-found') {
-                        messageDiv.textContent = 'Favor cadastrar-se primeiro clicando no botão "Cadastrar" abaixo!';
-                        registerBtn.style.display = 'inline-block';
-                        setTimeout(() => registerBtn.style.display = 'none', 3000);
+                        messageDiv.textContent = "Favor cadastrar-se primeiro clicando no botão abaixo!";
                     } else if (error.code === 'auth/wrong-password') {
                         messageDiv.textContent = "Senha incorreta, favor tentar novamente!";
                     } else {
@@ -233,7 +635,7 @@
                     }
                     log(`Erro ao fazer login: ${error.message}`);
                 });
-        });
+        }
 
         registerBtn.addEventListener('click', () => {
             registerContainer.style.display = 'block';
@@ -250,15 +652,15 @@
             createUserWithEmailAndPassword(auth, newEmail, newPassword)
                 .then((userCredential) => {
                     const user = userCredential.user;
-                    set(ref(dbShared, `users/${user.uid}`), {
+                    set(ref(db, `users/${user.uid}`), {
                         email: newEmail,
-                        password: newPassword
+                        password: newPassword,
+                        canSearchAllPrompts: false
                     }).then(() => {
                         messageDiv.textContent = "Usuário cadastrado com sucesso!";
                         registerContainer.style.display = 'none';
                         newUserInput.value = '';
                         newPasswordInput.value = '';
-                        renderUsersList();
                     });
                 })
                 .catch((error) => {
@@ -267,1382 +669,643 @@
                 });
         });
 
-        function renderUsersList() {
-            onValue(usersRef, (snapshot) => {
-                const users = snapshot.val();
-                usersList.innerHTML = '<h3>Usuários Cadastrados</h3>';
-                if (users) {
-                    Object.entries(users).forEach(([uid, userData]) => {
-                        const userDiv = document.createElement('div');
-                        userDiv.innerHTML = `
-                            ${userData.email} | Senha: ${userData.password}
-                            <div>
-                                <button class="alter-btn" data-uid="${uid}">Alterar</button>
-                                <button class="delete-btn" data-uid="${uid}">Excluir</button>
-                            </div>
-                        `;
-                        usersList.appendChild(userDiv);
-
-                        userDiv.querySelector('.alter-btn').addEventListener('click', () => {
-                            const newPassword = prompt("Digite a nova senha para " + userData.email);
-                            if (newPassword) {
-                                update(ref(dbShared, `users/${uid}`), { password: newPassword })
-                                    .then(() => {
-                                        messageDiv.textContent = "Senha alterada com sucesso!";
-                                        renderUsersList();
-                                    })
-                                    .catch(error => log(`Erro ao alterar senha: ${error.message}`));
-                            }
-                        });
-
-                        userDiv.querySelector('.delete-btn').addEventListener('click', () => {
-                            if (confirm(`Tem certeza que deseja excluir ${userData.email}?`)) {
-                                remove(ref(dbShared, `users/${uid}`))
-                                    .then(() => {
-                                        messageDiv.textContent = "Usuário excluído com sucesso!";
-                                        renderUsersList();
-                                    })
-                                    .catch(error => log(`Erro ao excluir usuário: ${error.message}`));
-                            }
-                        });
-                    });
-                } else {
-                    usersList.innerHTML += '<p>Nenhum usuário cadastrado.</p>';
-                }
-            }, { onlyOnce: true });
-        }
+        recoverBtn.addEventListener('click', () => {
+            const email = userInput.value.trim();
+            if (!email) {
+                messageDiv.textContent = "Digite seu e-mail para recuperação!";
+                return;
+            }
+            sendPasswordResetEmail(auth, email)
+                .then(() => {
+                    messageDiv.textContent = "E-mail de recuperação enviado com sucesso!";
+                })
+                .catch((error) => {
+                    messageDiv.textContent = "Erro ao enviar e-mail de recuperação: " + error.message;
+                    log(`Erro ao enviar e-mail de recuperação: ${error.message}`);
+                });
+        });
 
         // Funções do Aplicativo
-        function wait(ms) {
-            return new Promise(resolve => setTimeout(resolve, ms));
+        function showScreen(screenId) {
+            document.querySelectorAll('#mainContent > div').forEach(div => div.style.display = 'none');
+            document.getElementById(screenId).style.display = 'block';
+            document.getElementById('error').textContent = '';
+            document.getElementById('success').textContent = '';
         }
 
-        function scrollToInput() {
-            const taskInput = document.getElementById('taskInput');
-            const targetPosition = taskInput.getBoundingClientRect().top + window.pageYOffset - 20;
-            const startPosition = window.pageYOffset;
-            const distance = targetPosition - startPosition;
-            const duration = 1000;
-            let startTime = null;
-
-            log(`Iniciando rolagem para o input: posição calculada=${targetPosition}, posição atual=${startPosition}`);
-
-            function animateScroll(currentTime) {
-                if (!startTime) startTime = currentTime;
-                const elapsed = currentTime - startTime;
-                const progress = Math.min(elapsed / duration, 1);
-                const ease = progress * (2 - progress);
-                window.scrollTo(0, startPosition + distance * ease);
-
-                if (progress < 1) {
-                    requestAnimationFrame(animateScroll);
-                } else {
-                    log(`Rolagem para o input concluída: posição=${targetPosition}`);
-                }
-            }
-
-            requestAnimationFrame(animateScroll);
-        }
-
-        async function scrollToTarget(key, path = '') {
-            log(`Iniciando scrollToTarget para key=${key}, path=${path}`);
-            await wait(4000);
-
-            const findElementWithRetry = async (retries = 15, delay = 500) => {
-                const expandAndFindElement = async () => {
-                    const rootElement = document.querySelector(`li[data-key="${key}"]`);
-                    if (!rootElement) {
-                        log(`Erro: Elemento raiz não encontrado para key=${key}`);
-                        return null;
-                    }
-                    log(`Elemento raiz encontrado: key=${key}`);
-
-                    if (!path) return rootElement;
-
-                    const parts = path.split('/').filter(p => p !== '');
-                    let currentElement = rootElement;
-                    let currentPath = key;
-
-                    for (let i = 0; i < parts.length; i++) {
-                        const subtaskIndex = parseInt(parts[i]);
-                        const subtasksContainer = currentElement.querySelector('.subtasks-container');
-                        const expandBtn = currentElement.querySelector('.expand-btn');
-
-                        if (subtasksContainer && expandBtn) {
-                            if (!subtasksContainer.classList.contains('visible')) {
-                                subtasksContainer.classList.add('visible');
-                                expandBtn.textContent = '−';
-                                updateExpansionState(key, currentPath, true);
-                                log(`Expandido: ${currentPath}`);
-                                await wait(500);
-                            }
-                        } else {
-                            log(`Erro: Container ou botão de expansão não encontrado em ${currentPath}`);
-                            return rootElement;
+        function loadCategories(selectElement, selectedCategories = []) {
+            onValue(categoriesRef, (snapshot) => {
+                const categories = snapshot.val();
+                selectElement.innerHTML = '';
+                if (categories) {
+                    const sortedCategories = Object.entries(categories).sort((a, b) => a[1].name.localeCompare(b[1].name));
+                    sortedCategories.forEach(([key, category]) => {
+                        const option = document.createElement('option');
+                        option.value = key;
+                        option.textContent = category.name;
+                        if (selectedCategories.includes(category.name)) {
+                            option.selected = true;
                         }
-
-                        const targetSubtask = subtasksContainer.querySelector(`li[data-subtask-path="${currentPath}/${subtaskIndex}"]`);
-                        if (!targetSubtask) {
-                            log(`Erro: Subtarefa não encontrada no path=${currentPath}/${subtaskIndex}`);
-                            return null;
-                        }
-                        currentElement = targetSubtask;
-                        currentPath += `/${subtaskIndex}`;
-                        log(`Subtarefa encontrada: ${currentPath}`);
-                    }
-
-                    return currentElement;
-                };
-
-                let targetElement = null;
-                let attempts = 0;
-
-                while (attempts < retries) {
-                    targetElement = await expandAndFindElement();
-                    if (targetElement) {
-                        const rect = targetElement.getBoundingClientRect();
-                        if (rect.top > 0) {
-                            log(`Elemento alvo encontrado e visível após ${attempts} tentativas: top=${rect.top}`);
-                            break;
-                        } else {
-                            log(`Tentativa ${attempts + 1}: Elemento encontrado, mas não visível (top=${rect.top}), esperando ${delay}ms`);
-                        }
-                    } else {
-                        log(`Tentativa ${attempts + 1}: Elemento não encontrado, esperando ${delay}ms`);
-                    }
-                    await wait(delay);
-                    attempts++;
+                        selectElement.appendChild(option);
+                    });
                 }
-
-                if (!targetElement) {
-                    log(`Erro: Elemento alvo não encontrado após ${retries} tentativas para key=${key}, path=${path}`);
-                } else if (targetElement.getBoundingClientRect().top <= 0) {
-                    log(`Erro: Elemento encontrado, mas ainda não visível (top=0) após ${retries} tentativas`);
-                }
-
-                return targetElement;
-            };
-
-            const targetElement = await findElementWithRetry();
-            if (targetElement) {
-                await wait(300);
-                const rect = targetElement.getBoundingClientRect();
-                const scrollPosition = rect.top + window.pageYOffset - 50;
-                log(`Calculando rolagem: top=${rect.top}, pageYOffset=${window.pageYOffset}, scrollPosition=${scrollPosition}`);
-
-                targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                await wait(1000);
-
-                log(`Rolagem concluída para ${path ? `subtarefa em ${key}/${path}` : `tarefa em ${key}`}`);
-            } else {
-                log(`Falha ao rolar: elemento não encontrado ou não visível após retries para key=${key}, path=${path}`);
-                const rootElement = document.querySelector(`li[data-key="${key}"]`);
-                if (rootElement) {
-                    const rect = rootElement.getBoundingClientRect();
-                    const scrollPosition = rect.top + window.pageYOffset - 50;
-                    rootElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    log(`Fallback: Rolagem para raiz em ${key}, scrollPosition=${scrollPosition}`);
-                } else {
-                    log(`Fallback falhou: elemento raiz ${key} não encontrado`);
-                }
-            }
-        }
-
-        function updateExpansionState(key, path, isExpanded) {
-            const taskRef = ref(dbShared, `tasks/${key}`);
-            onValue(taskRef, (snapshot) => {
-                const task = snapshot.val();
-                if (!path) {
-                    task.expanded = isExpanded;
-                } else {
-                    const parts = path.split('/').filter(p => p !== '').slice(1);
-                    let current = task;
-                    for (const index of parts) {
-                        current = current.subtasks[parseInt(index)];
-                    }
-                    current.expanded = isExpanded;
-                }
-                update(taskRef, task)
-                    .then(() => log(`Estado de expansão atualizado para ${path || key}: ${isExpanded}`))
-                    .catch(error => log(`Erro ao atualizar estado de expansão: ${error.message}`));
             }, { onlyOnce: true });
         }
 
-        function updateNotesVisibility(key, path, isVisible) {
-            const taskRef = ref(dbShared, `tasks/${key}`);
-            onValue(taskRef, (snapshot) => {
-                const task = snapshot.val();
-                if (!path) {
-                    task.notesVisible = isVisible;
-                } else {
-                    const parts = path.split('/').filter(p => p !== '');
-                    let current = task;
-                    for (const index of parts) {
-                        current = current.subtasks[parseInt(index)];
-                    }
-                    current.notesVisible = isVisible;
+        function showRecentPrompts() {
+            showScreen('recentPrompts');
+            onValue(promptsRef, (snapshot) => {
+                const prompts = snapshot.val();
+                const promptList = document.getElementById('promptList');
+                promptList.innerHTML = '';
+                if (!prompts) {
+                    promptList.innerHTML = '<li>Nenhum prompt armazenado ainda.</li>';
+                    return;
                 }
-                update(taskRef, task)
-                    .then(() => log(`Estado de visibilidade das notas atualizado para ${path || key}: ${isVisible}`))
-                    .catch(error => log(`Erro ao atualizar estado de visibilidade das notas: ${error.message}`));
+                let userPrompts;
+                if (currentUserEmail === "psics.psix.141@gmail.com") {
+                    userPrompts = Object.entries(prompts)
+                        .sort((a, b) => b[1].timestamp - a[1].timestamp)
+                        .slice(0, 10);
+                } else {
+                    userPrompts = Object.entries(prompts)
+                        .filter(([_, prompt]) => prompt.userEmail === currentUserEmail)
+                        .sort((a, b) => b[1].timestamp - a[1].timestamp)
+                        .slice(0, 10);
+                }
+                userPrompts.forEach(([key, prompt]) => {
+                    const categoriesText = Array.isArray(prompt.categories) ? prompt.categories.join(', ') : 'Sem categorias';
+                    const li = document.createElement('li');
+                    li.innerHTML = `
+                        <div class="prompt-row">
+                            <span>${prompt.text} | Autor: ${prompt.author} | Categorias: ${categoriesText}</span>
+                            <button class="copy-btn" data-text="${prompt.text}">Copiar</button>
+                            ${currentUserEmail === "psics.psix.141@gmail.com" ? `
+                                <button class="edit-btn" data-key="${key}">Editar</button>
+                                <button class="delete-btn" data-key="${key}">Excluir</button>
+                            ` : ''}
+                        </div>
+                    `;
+                    promptList.appendChild(li);
+                    li.querySelector('.copy-btn').addEventListener('click', (e) => {
+                        navigator.clipboard.writeText(e.target.getAttribute('data-text'));
+                        document.getElementById('success').textContent = "Prompt copiado para a área de transferência!";
+                    });
+                    if (currentUserEmail === "psics.psix.141@gmail.com") {
+                        li.querySelector('.edit-btn').addEventListener('click', (e) => {
+                            const key = e.target.getAttribute('data-key');
+                            editPrompt(key);
+                        });
+                        li.querySelector('.delete-btn').addEventListener('click', (e) => {
+                            const key = e.target.getAttribute('data-key');
+                            deletePrompt(key, false);
+                        });
+                    }
+                });
             }, { onlyOnce: true });
         }
 
-        function saveTask(taskKey = null) {
-            const taskInput = document.getElementById('taskInput');
-            const dueDateInput = document.getElementById('dueDate');
-            const priorityInput = document.getElementById('priority');
-            const taskText = taskInput.value.trim();
-            let dueDate = dueDateInput.value || null;
-            const priority = parseInt(priorityInput.value) || 1;
+        document.getElementById('storePromptBtn').addEventListener('click', () => {
+            showScreen('storePromptScreen');
+            loadCategories(document.getElementById('categorySelect'));
+            document.getElementById('promptUserEmail').value = currentUserEmail;
+        });
 
-            log(`saveTask chamado: taskText="${taskText}", editingTaskKey=${editingTaskKey}, editingSubtask=${JSON.stringify(editingSubtask)}, addingSubtaskToKey=${JSON.stringify(addingSubtaskToKey)}`);
+        document.getElementById('savePromptBtn').addEventListener('click', () => {
+            const text = document.getElementById('promptText').value.trim();
+            const func = document.getElementById('promptFunction').value.trim();
+            const location = document.getElementById('promptLocation').value.trim();
+            const note = document.getElementById('promptNote').value.trim();
+            let author = document.getElementById('promptAuthor').value.trim();
+            const userEmail = document.getElementById('promptUserEmail').value.trim();
+            const categorySelect = document.getElementById('categorySelect');
+            const categories = Array.from(categorySelect.selectedOptions).map(option => option.textContent) || [];
+            const hidden = currentUserEmail === "psics.psix.141@gmail.com" && document.getElementById('hiddenCheckbox').checked;
 
-            if (taskText === '') {
-                document.getElementById('error').textContent = "Preencha a tarefa!";
-                log("Erro: Tarefa vazia");
+            if (!text || !func) {
+                document.getElementById('error').textContent = "Preencha os campos obrigatórios: Texto do Prompt e Função!";
                 return;
             }
 
-            const validateSubtaskConstraints = (parentTask, newDueDate, newPriority) => {
-                if (!parentTask) {
-                    log("Erro: parentTask é undefined");
-                    return true;
-                }
-                if (newDueDate && parentTask.dueDate && newDueDate > parentTask.dueDate) {
-                    document.getElementById('error').textContent = "Data da subtarefa não pode ser posterior à da tarefa!";
-                    log("Erro: Data da subtarefa posterior à tarefa");
-                    return false;
-                }
-                if (parentTask.priority !== undefined && newPriority > parentTask.priority) {
-                    document.getElementById('error').textContent = "Prioridade da subtarefa não pode ser maior que a da tarefa!";
-                    log("Erro: Prioridade da subtarefa maior que a tarefa");
-                    return false;
-                }
-                return true;
+            if (!author) {
+                author = currentUserEmail;
+            }
+
+            const newPrompt = {
+                text,
+                function: func,
+                location,
+                note,
+                author,
+                userEmail: userEmail || currentUserEmail,
+                categories: categories.length > 0 ? categories : [],
+                timestamp: Date.now(),
+                hidden: hidden || false
             };
 
-            if (editingSubtask) {
-                const { parentKey, path, index } = editingSubtask;
-                const taskRef = ref(dbShared, `tasks/${parentKey}`);
-                log(`Editando subtarefa: parentKey=${parentKey}, path=${path}, index=${index}`);
-                onValue(taskRef, (snapshot) => {
-                    const task = snapshot.val();
-                    const subtasks = path ? getNestedSubtasks(task, path) : task.subtasks;
-                    const parentTask = path ? getParentTask(task, path) : task;
-                    if (!validateSubtaskConstraints(parentTask, dueDate, priority)) return;
+            push(promptsRef, newPrompt)
+                .then(() => {
+                    document.getElementById('success').textContent = "Prompt armazenado com sucesso!";
+                    document.getElementById('promptText').value = '';
+                    document.getElementById('promptFunction').value = '';
+                    document.getElementById('promptLocation').value = '';
+                    document.getElementById('promptNote').value = '';
+                    document.getElementById('promptAuthor').value = '';
+                    document.getElementById('promptUserEmail').value = currentUserEmail;
+                    categorySelect.selectedIndex = -1;
+                    if (hidden) document.getElementById('hiddenCheckbox').checked = false;
+                })
+                .catch(error => log(`Erro ao armazenar prompt: ${error.message}`));
+        });
 
-                    subtasks[index] = {
-                        text: taskText,
-                        dueDate: dueDate,
-                        priority: Math.min(Math.max(priority, 1), 1000),
-                        notes: subtasks[index].notes || "",
-                        completed: subtasks[index].completed || false,
-                        subtasks: subtasks[index].subtasks || [],
-                        expanded: subtasks[index].expanded || false,
-                        notesVisible: subtasks[index].notesVisible || false
-                    };
-                    log(`Subtarefa atualizada: ${JSON.stringify(subtasks[index])}`);
-                    update(taskRef, task).then(() => {
-                        document.getElementById('success').textContent = "Subtarefa atualizada com sucesso!";
-                        const fullPath = path ? `${path}/${index}` : `${index}`;
-                        scrollToTarget(parentKey, fullPath);
-                        resetForm();
-                    }).catch((error) => {
-                        document.getElementById('error').textContent = "Erro ao atualizar subtarefa: " + error.message;
-                        log(`Erro ao atualizar subtarefa: ${error.message}`);
-                    });
-                }, { onlyOnce: true });
-            } else if (addingSubtaskToKey) {
-                const { key, path } = addingSubtaskToKey;
-                const taskRef = ref(dbShared, `tasks/${key}`);
-                log(`Adicionando subtarefa: key=${key}, path=${path}`);
-                onValue(taskRef, (snapshot) => {
-                    const task = snapshot.val();
-                    if (!task) {
-                        document.getElementById('error').textContent = "Tarefa pai não encontrada!";
-                        log(`Erro: Tarefa pai não encontrada para key=${key}`);
-                        return;
-                    }
+        document.getElementById('categoryBtn').addEventListener('click', () => {
+            showScreen('categoryScreen');
+            loadCategoryList();
+            const saveBtn = document.getElementById('saveCategoryBtn');
+            saveBtn.textContent = "Cadastrar Categoria";
+            saveBtn.removeEventListener('click', editCategoryHandler);
+            saveBtn.addEventListener('click', saveCategoryDefault);
+        });
 
-                    const parentTask = path ? getParentTask(task, path) : task;
-                    if (!validateSubtaskConstraints(parentTask, dueDate, priority)) return;
-
-                    const newSubtask = {
-                        text: taskText,
-                        dueDate: dueDate,
-                        priority: Math.min(Math.max(priority, 1), 1000),
-                        notes: "",
-                        completed: false,
-                        subtasks: [],
-                        expanded: false,
-                        notesVisible: false
-                    };
-
-                    let newIndex;
-                    if (!path) {
-                        task.subtasks = task.subtasks || [];
-                        newIndex = task.subtasks.length;
-                        task.subtasks.push(newSubtask);
-                    } else {
-                        const parts = path.split('/').filter(p => p !== '');
-                        let current = task;
-                        for (let i = 0; i < parts.length; i++) {
-                            const index = parseInt(parts[i]);
-                            if (!current.subtasks) current.subtasks = [];
-                            if (i === parts.length - 1) {
-                                current.subtasks[index].subtasks = current.subtasks[index].subtasks || [];
-                                newIndex = current.subtasks[index].subtasks.length;
-                                current.subtasks[index].subtasks.push(newSubtask);
-                            } else {
-                                current = current.subtasks[index];
-                            }
-                        }
-                    }
-
-                    log(`Nova subtarefa adicionada: ${JSON.stringify(newSubtask)}`);
-                    update(taskRef, task).then(() => {
-                        document.getElementById('success').textContent = "Subtarefa adicionada com sucesso!";
-                        const newPath = path ? `${path}/${newIndex}` : `${newIndex}`;
-                        scrollToTarget(key, newPath);
-                        resetForm();
-                    }).catch((error) => {
-                        document.getElementById('error').textContent = "Erro ao adicionar subtarefa: " + error.message;
-                        log(`Erro ao adicionar subtarefa: ${error.message}`);
-                    });
-                }, { onlyOnce: true });
-            } else if (editingTaskKey) {
-                const taskRef = ref(dbShared, `tasks/${editingTaskKey}`);
-                log(`Editando tarefa: key=${editingTaskKey}`);
-                onValue(taskRef, (snapshot) => {
-                    const currentTask = snapshot.val();
-                    const updatedTask = {
-                        text: taskText,
-                        dueDate: dueDate,
-                        priority: Math.min(Math.max(priority, 1), 1000),
-                        notes: currentTask.notes || "",
-                        completed: currentTask.completed || false,
-                        category: currentCategory,
-                        subtasks: currentTask.subtasks || [],
-                        expanded: currentTask.expanded || false,
-                        notesVisible: currentTask.notesVisible || false
-                    };
-                    set(taskRef, updatedTask).then(() => {
-                        document.getElementById('success').textContent = "Tarefa atualizada com sucesso!";
-                        scrollToTarget(editingTaskKey);
-                        resetForm();
-                    }).catch((error) => {
-                        document.getElementById('error').textContent = "Erro ao atualizar: " + error.message;
-                        log(`Erro ao atualizar tarefa: ${error.message}`);
-                    });
-                }, { onlyOnce: true });
-            } else {
-                log("Adicionando nova tarefa");
-                push(tasksRefShared, {
-                    text: taskText,
-                    dueDate: dueDate,
-                    priority: Math.min(Math.max(priority, 1), 1000),
-                    notes: "",
-                    completed: false,
-                    category: currentCategory,
-                    subtasks: [],
-                    expanded: false,
-                    notesVisible: false
-                }).then((newTaskRef) => {
-                    document.getElementById('success').textContent = "Tarefa adicionada com sucesso!";
-                    scrollToTarget(newTaskRef.key);
-                    resetForm();
-                }).catch((error) => {
-                    document.getElementById('error').textContent = "Erro ao adicionar: " + error.message;
-                    log(`Erro ao adicionar tarefa: ${error.message}`);
-                });
+        function saveCategoryDefault() {
+            const name = document.getElementById('categoryName').value.trim();
+            const desc = document.getElementById('categoryDesc').value.trim();
+            if (!name || !desc) {
+                document.getElementById('error').textContent = "Preencha todos os campos!";
+                return;
             }
+            push(categoriesRef, { name, description: desc })
+                .then(() => {
+                    document.getElementById('success').textContent = "Categoria cadastrada com sucesso!";
+                    document.getElementById('categoryName').value = '';
+                    document.getElementById('categoryDesc').value = '';
+                    loadCategoryList();
+                })
+                .catch(error => log(`Erro ao cadastrar categoria: ${error.message}`));
         }
 
-        function resetForm() {
-            document.getElementById('taskInput').value = '';
-            document.getElementById('dueDate').value = '';
-            document.getElementById('priority').value = '';
-            document.getElementById('actionButton').textContent = 'Adicionar';
-            document.getElementById('error').textContent = '';
-            document.getElementById('txtNote').style.display = 'none';
-            document.getElementById('backBtn').style.display = 'none';
-            editingTaskKey = null;
-            editingSubtask = null;
-            addingSubtaskToKey = null;
-            renderTasks();
-            log("Formulário resetado");
-        }
-
-        function editTask(key) {
-            const taskRef = ref(dbShared, `tasks/${key}`);
-            log(`editTask chamado para key=${key}`);
-            onValue(taskRef, (snapshot) => {
-                const task = snapshot.val();
-                if (!task) {
-                    log(`Erro: Tarefa com key=${key} não encontrada`);
-                    document.getElementById('error').textContent = "Tarefa não encontrada!";
-                    return;
-                }
-                document.getElementById('taskInput').value = task.text;
-                document.getElementById('dueDate').value = task.dueDate || '';
-                document.getElementById('priority').value = task.priority || '';
-                document.getElementById('actionButton').textContent = 'Salvar';
-                editingTaskKey = key;
-                scrollToInput();
-                document.getElementById('taskInput').focus();
-                log(`Dados carregados para edição: text="${task.text}", dueDate="${task.dueDate}", priority=${task.priority}`);
-            }, { onlyOnce: true });
-        }
-
-        function addSubtask(key, path = '') {
-            log(`Preparando para adicionar subtarefa: parentKey=${key}, path=${path}`);
-            document.getElementById('taskInput').value = '';
-            document.getElementById('dueDate').value = '';
-            document.getElementById('priority').value = '';
-            document.getElementById('actionButton').textContent = 'Adicionar Subtarefa';
-            addingSubtaskToKey = { key, path };
-            scrollToInput();
-            document.getElementById('taskInput').focus();
-        }
-
-        function editSubtask(parentKey, path, index) {
-            const taskRef = ref(dbShared, `tasks/${parentKey}`);
-            log(`editSubtask chamado: parentKey=${parentKey}, path=${path}, index=${index}`);
-            onValue(taskRef, (snapshot) => {
-                const task = snapshot.val();
-                const subtasks = path ? getNestedSubtasks(task, path) : task.subtasks;
-                const subtask = subtasks[index];
-                document.getElementById('taskInput').value = subtask.text;
-                document.getElementById('dueDate').value = subtask.dueDate || '';
-                document.getElementById('priority').value = subtask.priority || '';
-                document.getElementById('actionButton').textContent = 'Salvar Subtarefa';
-                editingSubtask = { parentKey, path, index };
-                scrollToInput();
-                document.getElementById('taskInput').focus();
-                log(`Dados da subtarefa carregados: text="${subtask.text}", dueDate="${subtask.dueDate}", priority=${subtask.priority}`);
-            }, { onlyOnce: true });
-        }
-
-        function toggleTask(key) {
-            log(`toggleTask chamado: key=${key}`);
-            const taskRef = ref(dbShared, `tasks/${key}`);
-            onValue(taskRef, (snapshot) => {
-                const task = snapshot.val();
-                update(taskRef, { completed: !task.completed })
-                    .then(() => log(`Tarefa ${key} atualizada no Firebase: completed=${!task.completed}`))
-                    .catch(error => log(`Erro ao atualizar tarefa: ${error.message}`));
-            }, { onlyOnce: true });
-        }
-
-        function toggleSubtask(parentKey, path, subtaskIndex) {
-            log(`toggleSubtask chamado: parentKey=${parentKey}, path=${path}, subtaskIndex=${subtaskIndex}`);
-            const taskRef = ref(dbShared, `tasks/${parentKey}`);
-            onValue(taskRef, (snapshot) => {
-                const task = snapshot.val();
-                let subtasks = task.subtasks || [];
-
-                if (!path) {
-                    if (!subtasks[subtaskIndex]) {
-                        log(`Erro: Subtarefa no índice ${subtaskIndex} não encontrada em ${parentKey}`);
-                        return;
-                    }
-                    subtasks[subtaskIndex].completed = !subtasks[subtaskIndex].completed;
-                } else {
-                    const pathParts = path.split('/').map(Number);
-                    let currentLevel = subtasks;
-                    for (let i = 0; i < pathParts.length; i++) {
-                        if (!currentLevel[pathParts[i]]) {
-                            log(`Erro: Caminho inválido em ${parentKey}/${path} no índice ${pathParts[i]}`);
-                            return;
-                        }
-                        if (i === pathParts.length - 1) {
-                            if (!currentLevel[pathParts[i]].subtasks || !currentLevel[pathParts[i]].subtasks[subtaskIndex]) {
-                                log(`Erro: Subtarefa no índice ${subtaskIndex} não encontrada em ${parentKey}/${path}`);
-                                return;
-                            }
-                            currentLevel[pathParts[i]].subtasks[subtaskIndex].completed = !currentLevel[pathParts[i]].subtasks[subtaskIndex].completed;
-                        } else {
-                            currentLevel = currentLevel[pathParts[i]].subtasks;
-                        }
-                    }
-                }
-
-                update(taskRef, { subtasks })
-                    .then(() => log(`Subtarefa atualizada no Firebase: ${parentKey}/${path ? path + '/' : ''}${subtaskIndex}`))
-                    .catch(error => log(`Erro ao atualizar subtarefa: ${error.message}`));
-            }, { onlyOnce: true });
-        }
-
-        function deleteTask(key) {
-            if (confirm("Tem certeza que deseja excluir esta tarefa?")) {
-                remove(ref(dbShared, `tasks/${key}`))
-                    .then(() => log(`Tarefa excluída com sucesso: ${key}`))
-                    .catch(error => log(`Erro ao excluir tarefa: ${error.message}`));
+        function editCategoryHandler() {
+            const name = document.getElementById('categoryName').value.trim();
+            const desc = document.getElementById('categoryDesc').value.trim();
+            const key = this.dataset.key;
+            if (!name || !desc) {
+                document.getElementById('error').textContent = "Preencha todos os campos!";
+                return;
             }
-        }
-
-        function deleteSubtask(parentKey, path, index) {
-            if (confirm("Tem certeza que deseja excluir esta subtarefa?")) {
-                const taskRef = ref(dbShared, `tasks/${parentKey}`);
-                onValue(taskRef, (snapshot) => {
-                    const task = snapshot.val();
-                    const subtasks = path ? getNestedSubtasks(task, path) : task.subtasks;
-                    subtasks.splice(index, 1);
-                    update(taskRef, task)
-                        .then(() => log(`Subtarefa excluída com sucesso: ${parentKey}/${path}/${index}`))
-                        .catch(error => log(`Erro ao excluir subtarefa: ${error.message}`));
-                }, { onlyOnce: true });
-            }
-        }
-
-        function toggleNotes(li, key, path = '') {
-            const notesDiv = li.querySelector('.notes');
-            const isVisible = !notesDiv.classList.contains('visible');
-            notesDiv.classList.toggle('visible');
-            updateNotesVisibility(key, path, isVisible);
-        }
-
-        function updateNotes(key, textarea) {
-            const taskRef = ref(dbShared, `tasks/${key}`);
-            update(taskRef, { notes: textarea.value })
-                .then(() => log(`Notas atualizadas para tarefa: ${key}`))
-                .catch(error => log(`Erro ao atualizar notas: ${error.message}`));
-        }
-
-        function updateSubtaskNotes(parentKey, path, index, textarea) {
-            const taskRef = ref(dbShared, `tasks/${parentKey}`);
-            onValue(taskRef, (snapshot) => {
-                const task = snapshot.val();
-                const subtasks = path ? getNestedSubtasks(task, path) : task.subtasks;
-                subtasks[index].notes = textarea.value;
-                update(taskRef, task)
-                    .then(() => log(`Notas da subtarefa atualizadas: ${parentKey}/${path}/${index}`))
-                    .catch(error => log(`Erro ao atualizar notas da subtarefa: ${error.message}`));
-            }, { onlyOnce: true });
-        }
-
-        function toggleCategoryDropdown(dropdown) {
-            const content = dropdown.querySelector('.dropdown-content');
-            content.style.display = content.style.display === 'block' ? 'none' : 'block';
-        }
-
-        function toggleSubtasks(key, path, li) {
-            const fullPath = path ? `${key}/${path}` : key;
-            const subtasksContainer = li.querySelector('.subtasks-container');
-            const expandBtn = li.querySelector('.expand-btn');
-            const isExpanded = !subtasksContainer.classList.contains('visible');
-            if (isExpanded) {
-                subtasksContainer.classList.add('visible');
-                expandBtn.textContent = '−';
-            } else {
-                subtasksContainer.classList.remove('visible');
-                expandBtn.textContent = '+';
-            }
-            updateExpansionState(key, fullPath, isExpanded);
-        }
-
-        function changeCategory(key, newCategory) {
-            const taskRef = ref(dbShared, `tasks/${key}`);
-            update(taskRef, { category: newCategory })
-                .then(() => log(`Categoria da tarefa ${key} alterada para ${newCategory}`))
+            set(ref(db, `categories/${key}`), { name, description: desc })
+                .then(() => {
+                    document.getElementById('success').textContent = "Categoria alterada com sucesso!";
+                    document.getElementById('categoryName').value = '';
+                    document.getElementById('categoryDesc').value = '';
+                    const saveBtn = document.getElementById('saveCategoryBtn');
+                    saveBtn.textContent = "Cadastrar Categoria";
+                    saveBtn.removeEventListener('click', editCategoryHandler);
+                    saveBtn.addEventListener('click', saveCategoryDefault);
+                    loadCategoryList();
+                })
                 .catch(error => log(`Erro ao alterar categoria: ${error.message}`));
         }
 
-        function moveLevelUp(key, path = '') {
-            log(`moveLevelUp chamado: key=${key}, path=${path}`);
-            const taskRef = ref(dbShared, `tasks/${key}`);
-            onValue(taskRef, (snapshot) => {
-                const task = snapshot.val();
-                if (!task) {
-                    log(`Erro: Tarefa ${key} não encontrada`);
+        document.getElementById('categoryName').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') document.getElementById('saveCategoryBtn').click();
+        });
+
+        document.getElementById('categoryDesc').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') document.getElementById('saveCategoryBtn').click();
+        });
+
+        function loadCategoryList() {
+            const categoryList = document.getElementById('categoryList');
+            onValue(categoriesRef, (snapshot) => {
+                const categories = snapshot.val();
+                categoryList.innerHTML = '';
+                if (!categories) {
+                    categoryList.innerHTML = '<li>Nenhuma categoria cadastrada.</li>';
                     return;
                 }
-                const parts = path.split('/').filter(p => p !== '');
-                const level = parts.length;
-
-                if (level === 0) {
-                    log(`Tarefa principal ${key} não pode subir mais (nível 0)`);
-                    return;
-                }
-
-                const subtaskIndex = parseInt(parts[parts.length - 1]);
-                let currentSubtasks = level === 1 ? task.subtasks : getNestedSubtasks(task, parts.slice(0, -1).join('/'));
-                
-                if (!currentSubtasks || !Array.isArray(currentSubtasks) || subtaskIndex >= currentSubtasks.length) {
-                    log(`Erro: Subtarefas inválidas ou índice fora do intervalo em ${key}/${path}`);
-                    return;
-                }
-
-                const subtaskToMove = currentSubtasks[subtaskIndex];
-
-                if (level === 1) {
-                    currentSubtasks.splice(subtaskIndex, 1);
-                    push(tasksRefShared, { ...subtaskToMove, category: task.category })
-                        .then((newTaskRef) => {
-                            log(`Subtarefa ${key}/${path} promovida a tarefa principal com key ${newTaskRef.key}`);
-                            update(taskRef, task);
-                            scrollToTarget(newTaskRef.key);
-                        })
-                        .catch(error => log(`Erro ao promover subtarefa: ${error.message}`));
-                } else {
-                    const parentPath = parts.slice(0, -2).join('/');
-                    const parentSubtasks = parentPath ? getNestedSubtasks(task, parentPath) : task.subtasks;
-                    
-                    if (!parentSubtasks || !Array.isArray(parentSubtasks)) {
-                        log(`Erro: ParentSubtasks inválido em ${key}/${parentPath}`);
-                        return;
+                const sortedCategories = Object.entries(categories).sort((a, b) => a[1].name.localeCompare(b[1].name));
+                sortedCategories.forEach(([key, category]) => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `
+                        <div class="prompt-row">
+                            <span>${category.name} | ${category.description}</span>
+                            ${currentUserEmail === "psics.psix.141@gmail.com" ? `
+                                <button class="edit-category-btn" data-key="${key}">Alterar</button>
+                                <button class="delete-category-btn" data-key="${key}">Excluir</button>
+                            ` : ''}
+                        </div>
+                    `;
+                    categoryList.appendChild(li);
+                    if (currentUserEmail === "psics.psix.141@gmail.com") {
+                        li.querySelector('.edit-category-btn').addEventListener('click', (e) => {
+                            const key = e.target.getAttribute('data-key');
+                            editCategory(key);
+                        });
+                        li.querySelector('.delete-category-btn').addEventListener('click', (e) => {
+                            const key = e.target.getAttribute('data-key');
+                            deleteCategory(key);
+                        });
                     }
-
-                    currentSubtasks.splice(subtaskIndex, 1);
-                    parentSubtasks.push(subtaskToMove);
-                    update(taskRef, task)
-                        .then(() => {
-                            log(`Subtarefa ${key}/${path} subiu de nível ${level} para ${level - 1}`);
-                            const newPath = parentPath ? `${parentPath}/${parentSubtasks.length - 1}` : `${parentSubtasks.length - 1}`;
-                            scrollToTarget(key, newPath);
-                        })
-                        .catch(error => log(`Erro ao subir nível: ${error.message}`));
-                }
+                });
             }, { onlyOnce: true });
         }
 
-        function moveLevelDown(key, path = '') {
-            log(`moveLevelDown chamado: key=${key}, path=${path}`);
-            const taskRef = ref(dbShared, `tasks/${key}`);
-            onValue(taskRef, (snapshot) => {
-                const task = snapshot.val();
-                if (!task) {
-                    log(`Erro: Tarefa ${key} não encontrada`);
-                    return;
-                }
-                const parts = path.split('/').filter(p => p !== '');
-                const level = parts.length;
-
-                if (level === 0) {
-                    onValue(tasksRefShared, (tasksSnapshot) => {
-                        const allTasks = tasksSnapshot.val();
-                        if (!allTasks) {
-                            log(`Erro: Nenhuma tarefa encontrada no banco de dados`);
-                            return;
-                        }
-                        const taskArray = Object.entries(allTasks)
-                            .filter(([_, t]) => currentCategory === 'all' || t.category === currentCategory)
-                            .sort((a, b) => {
-                                if (a[1].completed !== b[1].completed) return a[1].completed - b[1].completed;
-                                const dateA = a[1].dueDate || '9999-12-31';
-                                const dateB = b[1].dueDate || '9999-12-31';
-                                if (dateA !== dateB) return dateA.localeCompare(dateB);
-                                return b[1].priority - a[1].priority;
-                            });
-                        const taskIndex = taskArray.findIndex(([k]) => k === key);
-                        if (taskArray.length === 1) {
-                            log(`Tarefa ${key} é a única, botão deve estar desabilitado`);
-                            return;
-                        }
-                        let targetKey, newIndex;
-                        if (taskIndex > 0) {
-                            targetKey = taskArray[taskIndex - 1][0];
-                            log(`Tarefa ${key} será subordinada à tarefa acima: ${targetKey}`);
-                        } else {
-                            targetKey = taskArray[taskIndex + 1][0];
-                            log(`Tarefa ${key} é a primeira, será subordinada à tarefa abaixo: ${targetKey}`);
-                        }
-                        const targetRef = ref(dbShared, `tasks/${targetKey}`);
-                        onValue(targetRef, (targetSnapshot) => {
-                            const targetTask = targetSnapshot.val();
-                            targetTask.subtasks = targetTask.subtasks || [];
-                            newIndex = targetTask.subtasks.length;
-                            targetTask.subtasks.push({ ...task });
-                            update(targetRef, targetTask)
-                                .then(() => {
-                                    remove(taskRef);
-                                    log(`Tarefa ${key} desceu para subtarefa de ${targetKey} no índice ${newIndex}`);
-                                    scrollToTarget(targetKey, `${newIndex}`);
-                                })
-                                .catch(error => log(`Erro ao descer tarefa: ${error.message}`));
-                        }, { onlyOnce: true });
-                    }, { onlyOnce: true });
-                } else {
-                    const parentSubtasks = level === 1 ? task.subtasks : getNestedSubtasks(task, parts.slice(0, -1).join('/'));
-                    const subtaskIndex = parseInt(parts[parts.length - 1]);
-
-                    if (!parentSubtasks || !Array.isArray(parentSubtasks) || subtaskIndex >= parentSubtasks.length) {
-                        log(`Erro: Subtarefas inválidas ou índice fora do intervalo em ${key}/${path}`);
-                        return;
-                    }
-
-                    if (parentSubtasks.length === 1) {
-                        log(`Subtarefa ${key}/${path} é a única no nível ${level}, botão deve estar desabilitado`);
-                        return;
-                    }
-
-                    const subtaskToMove = parentSubtasks[subtaskIndex];
-                    let targetIndex;
-                    if (subtaskIndex > 0) {
-                        targetIndex = subtaskIndex - 1;
-                        log(`Subtarefa ${key}/${path} será subordinada à subtarefa acima: índice ${targetIndex}`);
-                    } else {
-                        targetIndex = subtaskIndex + 1;
-                        log(`Subtarefa ${key}/${path} é a primeira, será subordinada à subtarefa abaixo: índice ${targetIndex}`);
-                    }
-
-                    parentSubtasks[targetIndex].subtasks = parentSubtasks[targetIndex].subtasks || [];
-                    const newIndex = parentSubtasks[targetIndex].subtasks.length;
-                    parentSubtasks[targetIndex].subtasks.push(subtaskToMove);
-                    parentSubtasks.splice(subtaskIndex, 1);
-                    update(taskRef, task)
-                        .then(() => {
-                            log(`Subtarefa ${key}/${path} desceu de nível ${level} para ${level + 1}`);
-                            const newPath = `${parts.slice(0, -1).join('/')}/${targetIndex}/${newIndex}`;
-                            scrollToTarget(key, newPath);
-                        })
-                        .catch(error => log(`Erro ao descer nível: ${error.message}`));
-                }
+        function editCategory(key) {
+            const categoryRef = ref(db, `categories/${key}`);
+            onValue(categoryRef, (snapshot) => {
+                const category = snapshot.val();
+                document.getElementById('categoryName').value = category.name;
+                document.getElementById('categoryDesc').value = category.description;
+                const saveBtn = document.getElementById('saveCategoryBtn');
+                saveBtn.textContent = "Alterar Categoria";
+                saveBtn.removeEventListener('click', saveCategoryDefault);
+                saveBtn.dataset.key = key;
+                saveBtn.addEventListener('click', editCategoryHandler);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
             }, { onlyOnce: true });
         }
 
-        function formatDate(dateStr) {
-            if (!dateStr) return 'Sem data';
-            const [year, month, day] = dateStr.split('-');
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            const due = new Date(year, month - 1, day);
-            due.setHours(0, 0, 0, 0);
-            const oneDayMs = 24 * 60 * 60 * 1000;
-            let className = '';
-
-            log(`Formatando data: Hoje=${today.toLocaleDateString()}, Due=${due.toLocaleDateString()}`);
-
-            if (due.getTime() === today.getTime()) {
-                className = 'date-today';
-            } else if (due.getTime() === today.getTime() + oneDayMs) {
-                className = 'date-one-day-past';
-            } else if (due.getTime() <= today.getTime() - oneDayMs) {
-                className = 'date-past';
+        function deleteCategory(key) {
+            if (confirm("Tem certeza que deseja excluir esta categoria?")) {
+                const categoryRef = ref(db, `categories/${key}`);
+                remove(categoryRef)
+                    .then(() => {
+                        document.getElementById('success').textContent = "Categoria excluída com sucesso!";
+                        loadCategoryList();
+                    })
+                    .catch(error => log(`Erro ao excluir categoria: ${error.message}`));
             }
-
-            return `<span class="${className}">${day}/${month}/${year}</span>`;
         }
 
-        function isToday(dueDate) {
-            if (!dueDate) return false;
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            const due = new Date(dueDate);
-            due.setHours(0, 0, 0, 0);
-            return due.getTime() === today.getTime();
-        }
+        document.getElementById('searchBtn').addEventListener('click', () => {
+            showScreen('searchScreen');
+            loadCategories(document.getElementById('includeCategories'));
+            loadCategories(document.getElementById('excludeCategories'));
+            document.getElementById('searchAllPromptsCheckbox').checked = false;
+        });
 
-        function isTomorrow(dueDate) {
-            if (!dueDate) return false;
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            const due = new Date(dueDate);
-            due.setHours(0, 0, 0, 0);
-            const oneDayMs = 24 * 60 * 60 * 1000;
-            return due.getTime() === today.getTime() + oneDayMs;
-        }
+        document.getElementById('advancedSearchBtn').addEventListener('click', () => {
+            showScreen('advancedSearchScreen');
+            loadCategories(document.getElementById('advIncludeCategories'));
+            loadCategories(document.getElementById('advExcludeCategories'));
+            if (currentUserEmail === "psics.psix.141@gmail.com") {
+                document.getElementById('advSearchHiddenCheckbox').checked = false;
+            }
+        });
 
-        function isPastDue(dueDate, completed) {
-            if (!dueDate || completed) return false;
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            const due = new Date(dueDate);
-            due.setHours(0, 0, 0, 0);
-            return due.getTime() < today.getTime();
-        }
+        document.getElementById('authorizationBtn').addEventListener('click', () => {
+            showScreen('authorizationScreen');
+            loadUserList();
+        });
 
-        function setCategory(category) {
-            currentCategory = category;
-            document.querySelectorAll('.category-buttons button').forEach(btn => btn.classList.remove('active'));
-            document.getElementById(`${category}Btn`).classList.add('active');
-            renderTasks();
-        }
-
-        function getNestedSubtasks(task, path) {
-            if (!path) return task.subtasks || [];
-            const parts = path.split('/').filter(p => p !== '');
-            let current = task;
-            for (const index of parts) {
-                if (!current.subtasks || !Array.isArray(current.subtasks) || parseInt(index) >= current.subtasks.length) {
-                    log(`Erro: Caminho inválido em getNestedSubtasks para path=${path}`);
-                    return [];
+        function loadUserList() {
+            const userList = document.getElementById('userList');
+            onValue(usersRef, (snapshot) => {
+                const users = snapshot.val();
+                userList.innerHTML = '';
+                if (!users) {
+                    userList.innerHTML = '<li>Nenhum usuário cadastrado.</li>';
+                    return;
                 }
-                current = current.subtasks[parseInt(index)];
-            }
-            return current.subtasks || [];
+                const sortedUsers = Object.entries(users).sort((a, b) => a[1].email.localeCompare(b[1].email));
+                sortedUsers.forEach(([uid, user]) => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `
+                        <div class="prompt-row">
+                            <span>${user.email}</span>
+                            <div class="checkbox-container">
+                                <input type="checkbox" id="perm_${uid}" ${user.canSearchAllPrompts ? 'checked' : ''}>
+                                <label for="perm_${uid}">Permissão para pesquisar todos os prompts</label>
+                                ${user.email !== "psics.psix.141@gmail.com" ? `<button class="delete-user-btn" data-uid="${uid}">Excluir</button>` : ''}
+                            </div>
+                        </div>
+                    `;
+                    userList.appendChild(li);
+                    li.querySelector(`#perm_${uid}`).addEventListener('change', (e) => {
+                        set(ref(db, `users/${uid}/canSearchAllPrompts`), e.target.checked)
+                            .then(() => log(`Permissão atualizada para ${user.email}`))
+                            .catch(error => log(`Erro ao atualizar permissão: ${error.message}`));
+                    });
+                    if (user.email !== "psics.psix.141@gmail.com") {
+                        li.querySelector('.delete-user-btn').addEventListener('click', (e) => {
+                            const uid = e.target.getAttribute('data-uid');
+                            deleteUser(uid);
+                        });
+                    }
+                });
+            }, { onlyOnce: true });
         }
 
-        function getParentTask(task, path) {
-            const parts = path.split('/').filter(p => p !== '');
-            let current = task;
-            for (let i = 0; i < parts.length - 1; i++) {
-                current = current.subtasks[parseInt(parts[i])];
+        function deleteUser(uid) {
+            if (confirm("Tem certeza que deseja excluir este usuário? Isso também excluirá todos os seus prompts.")) {
+                const userRef = ref(db, `users/${uid}`);
+                const userPromptsRef = ref(db, 'prompts');
+                onValue(userPromptsRef, (snapshot) => {
+                    const prompts = snapshot.val();
+                    if (prompts) {
+                        const userPrompts = Object.entries(prompts).filter(([_, prompt]) => prompt.userEmail === currentUserEmail);
+                        userPrompts.forEach(([key, _]) => {
+                            remove(ref(db, `prompts/${key}`));
+                        });
+                    }
+                }, { onlyOnce: true });
+                remove(userRef)
+                    .then(() => {
+                        document.getElementById('success').textContent = "Usuário e seus prompts excluídos com sucesso!";
+                        loadUserList();
+                    })
+                    .catch(error => log(`Erro ao excluir usuário: ${error.message}`));
             }
-            return current;
         }
 
-        function searchTasks() {
-            const searchText = document.getElementById('taskInput').value.trim().toLowerCase();
-            if (!searchText) {
-                document.getElementById('error').textContent = "Digite um texto para pesquisar!";
-                log("Erro: Texto de pesquisa vazio");
+        function performSearch(isAdvanced = false) {
+            const input = document.getElementById(isAdvanced ? 'advSearchInput' : 'searchInput').value.trim().toLowerCase();
+            const promptText = document.getElementById(isAdvanced ? 'advSearchPromptText' : 'searchPromptText').value.trim().toLowerCase();
+            const promptFunction = document.getElementById(isAdvanced ? 'advSearchPromptFunction' : 'searchPromptFunction').value.trim().toLowerCase();
+            const promptLocation = document.getElementById(isAdvanced ? 'advSearchPromptLocation' : 'searchPromptLocation').value.trim().toLowerCase();
+            const promptNote = document.getElementById(isAdvanced ? 'advSearchPromptNote' : 'searchPromptNote').value.trim().toLowerCase();
+            const promptAuthor = document.getElementById(isAdvanced ? 'advSearchPromptAuthor' : 'searchPromptAuthor').value.trim().toLowerCase();
+            const promptUserEmail = isAdvanced ? document.getElementById('advSearchPromptUserEmail').value.trim().toLowerCase() : '';
+            const includeSelect = document.getElementById(isAdvanced ? 'advIncludeCategories' : 'includeCategories');
+            const excludeSelect = document.getElementById(isAdvanced ? 'advExcludeCategories' : 'excludeCategories');
+            const includeCategories = Array.from(includeSelect.selectedOptions).map(opt => opt.textContent);
+            const excludeCategories = Array.from(excludeSelect.selectedOptions).map(opt => opt.textContent);
+            const includeHidden = isAdvanced && currentUserEmail === "psics.psix.141@gmail.com" && document.getElementById('advSearchHiddenCheckbox').checked;
+            const searchAllPrompts = !isAdvanced && canSearchAllPrompts && document.getElementById('searchAllPromptsCheckbox').checked;
+            const resultsList = document.getElementById(isAdvanced ? 'advSearchResults' : 'searchResults');
+
+            if (includeCategories.length > 0 && excludeCategories.length > 0 && includeCategories.some(cat => excludeCategories.includes(cat))) {
+                document.getElementById('error').textContent = "Conflito nas categorias! Marque apenas em uma coluna.";
                 return;
             }
 
-            log(`Pesquisando por: "${searchText}"`);
-            onValue(tasksRefShared, (snapshot) => {
-                const tasks = snapshot.val();
-                const taskList = document.getElementById('taskList');
-                taskList.innerHTML = '';
-                let found = false;
+            onValue(promptsRef, (snapshot) => {
+                const prompts = snapshot.val();
+                resultsList.innerHTML = '';
+                if (!prompts) {
+                    resultsList.innerHTML = '<li>Nenhum prompt encontrado.</li>';
+                    scrollToResults(isAdvanced);
+                    return;
+                }
 
-                const searchInTask = (task, key, path = '') => {
-                    const taskText = task.text.toLowerCase();
-                    const notesText = (task.notes || '').toLowerCase();
-                    if (taskText.includes(searchText) || notesText.includes(searchText)) {
-                        renderTaskMatch(key, task, path);
-                        return true;
-                    }
-                    if (task.subtasks) {
-                        task.subtasks.forEach((subtask, index) => {
-                            const subPath = path ? `${path}/${index}` : `${index}`;
-                            if (searchInTask(subtask, key, subPath)) found = true;
-                        });
-                    }
-                    return found;
-                };
+                const hasCriteria = input || promptText || promptFunction || promptLocation || promptNote || promptAuthor || (isAdvanced && promptUserEmail) || includeCategories.length > 0 || excludeCategories.length > 0;
 
-                const renderTaskMatch = (key, task, path) => {
+                const filteredPrompts = Object.entries(prompts)
+                    .filter(([_, prompt]) => {
+                        if (!isAdvanced && !searchAllPrompts && prompt.userEmail !== currentUserEmail) return false;
+                        if (!isAdvanced && prompt.hidden && prompt.userEmail === "psics.psix.141@gmail.com") return false;
+                        if (isAdvanced && currentUserEmail !== "psics.psix.141@gmail.com" && prompt.hidden) return false;
+
+                        if (isAdvanced && includeHidden && !hasCriteria) {
+                            return prompt.hidden && prompt.userEmail === "psics.psix.141@gmail.com";
+                        }
+
+                        if (!hasCriteria && !includeHidden) return false;
+
+                        const generalMatch = !input || (
+                            prompt.text.toLowerCase().includes(input) ||
+                            prompt.function.toLowerCase().includes(input) ||
+                            prompt.location.toLowerCase().includes(input) ||
+                            (prompt.note && prompt.note.toLowerCase().includes(input)) ||
+                            prompt.author.toLowerCase().includes(input) ||
+                            (prompt.categories && prompt.categories.some(cat => cat.toLowerCase().includes(input))) ||
+                            prompt.userEmail.toLowerCase().includes(input)
+                        );
+
+                        const specificMatch = (
+                            (!promptText || prompt.text.toLowerCase().includes(promptText)) &&
+                            (!promptFunction || prompt.function.toLowerCase().includes(promptFunction)) &&
+                            (!promptLocation || prompt.location.toLowerCase().includes(promptLocation)) &&
+                            (!promptNote || (prompt.note && prompt.note.toLowerCase().includes(promptNote))) &&
+                            (!promptAuthor || prompt.author.toLowerCase().includes(promptAuthor)) &&
+                            (!promptUserEmail || prompt.userEmail.toLowerCase().includes(promptUserEmail))
+                        );
+
+                        const includeMatch = includeCategories.length === 0 || (Array.isArray(prompt.categories) && prompt.categories.some(cat => includeCategories.includes(cat)));
+                        const excludeMatch = excludeCategories.length === 0 || !(Array.isArray(prompt.categories) && prompt.categories.some(cat => excludeCategories.includes(cat)));
+
+                        if (isAdvanced && includeHidden && hasCriteria) {
+                            return generalMatch && specificMatch && includeMatch && excludeMatch;
+                        }
+
+                        if (prompt.hidden && prompt.userEmail === "psics.psix.141@gmail.com" && !includeHidden) return false;
+
+                        return generalMatch && specificMatch && includeMatch && excludeMatch;
+                    })
+                    .sort((a, b) => b[1].timestamp - a[1].timestamp);
+
+                filteredPrompts.forEach(([key, prompt]) => {
+                    const categoriesText = Array.isArray(prompt.categories) ? prompt.categories.join(', ') : 'Sem categorias';
                     const li = document.createElement('li');
-                    const level = path.split('/').filter(p => p !== '').length;
-                    li.className = `subtask-level-${level} ${task.completed ? 'completed' : ''}`;
-                    if (level === 0) li.setAttribute('data-key', key);
-                    else li.setAttribute('data-subtask-path', `${key}/${path}`);
-                    const isBoldItalic = isPastDue(task.dueDate, task.completed);
-                    const hasSubtasks = task.subtasks && task.subtasks.length > 0;
-                    const isExpanded = task.expanded || isToday(task.dueDate) || isTomorrow(task.dueDate);
-                    const isNotesVisible = task.notesVisible || false;
-
-                    li.innerHTML = `
-                        <div class="task-row">
-                            ${hasSubtasks ? `<button class="expand-btn">${isExpanded ? '−' : '+'}</button>` : '<span class="expand-placeholder"></span>'}
-                            <input type="checkbox" ${task.completed ? 'checked' : ''} data-key="${key}" data-path="${path}">
-                            <span class="task-text ${isBoldItalic ? 'bold-italic' : ''}">${task.text} | Data: ${formatDate(task.dueDate)} | Prioridade: ${task.priority}</span>
-                            <button class="level-btn up-btn" ${level === 0 ? 'disabled' : ''} data-id="${key}/${path}">↑</button>
-                            <button class="level-btn down-btn" data-id="${key}/${path}">↓</button>
-                            <div class="category-dropdown">
-                                <button class="category-btn">Categoria</button>
-                                <div class="dropdown-content">
-                                    <button class="dropdown-item" data-category="mainProjects">Projetos Principais</button>
-                                    <button class="dropdown-item" data-category="proposed">Proj. Propostos</button>
-                                    <button class="dropdown-item" data-category="inProgress">Proj. em Andamento</button>
-                                    <button class="dropdown-item" data-category="future">Proj. Futuros</button>
+                    if (isAdvanced) {
+                        li.innerHTML = `
+                            <div class="prompt-row">
+                                <div class="adv-prompt-details">
+                                    <span>Texto: ${prompt.text}</span>
+                                    <span>Função: ${prompt.function}</span>
+                                    <span>Local: ${prompt.location}</span>
+                                    <span>Palavras-chave: ${prompt.note || ''}</span>
+                                    <span>Autor: ${prompt.author}</span>
+                                    <span>E-mail: ${prompt.userEmail}</span>
+                                    <span>Categorias: ${categoriesText}</span>
                                 </div>
+                                <button class="copy-btn" data-text="${prompt.text}">Copiar</button>
+                                <button class="edit-btn" data-key="${key}">Editar</button>
+                                ${currentUserEmail === "psics.psix.141@gmail.com" ? `<button class="delete-btn" data-key="${key}">Excluir</button>` : ''}
                             </div>
-                            <button class="edit-btn" data-key="${key}">Editar</button>
-                            <button class="delete-btn">Excluir</button>
-                            ${level < 4 ? '<button class="subtask-btn">Subtarefa</button>' : ''}
-                            ${task.notes && task.notes.trim() !== '' ? '<span class="has-notes">(Contém Nota)</span>' : ''}
-                        </div>
-                        <div class="notes ${isNotesVisible ? 'visible' : ''}">
-                            <textarea rows="3">${task.notes || ''}</textarea>
-                        </div>
-                        <div class="subtasks-container ${isExpanded ? 'visible' : ''}"></div>
-                    `;
-
-                    if (hasSubtasks) {
-                        const subtasksContainer = li.querySelector('.subtasks-container');
-                        renderSubtasks(key, task, subtasksContainer, path, level + 1);
+                        `;
+                    } else {
+                        li.innerHTML = `
+                            <div class="prompt-row">
+                                <span>${prompt.text} | Autor: ${prompt.author}</span>
+                                <button class="copy-btn" data-text="${prompt.text}">Copiar</button>
+                                ${currentUserEmail === "psics.psix.141@gmail.com" ? `
+                                    <button class="edit-btn" data-key="${key}">Editar</button>
+                                    <button class="delete-btn" data-key="${key}">Excluir</button>
+                                ` : ''}
+                            </div>
+                        `;
                     }
-                    taskList.appendChild(li);
-                    found = true;
-
-                    li.querySelector('.task-text').addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        toggleNotes(li, key, path);
+                    resultsList.appendChild(li);
+                    li.querySelector('.copy-btn').addEventListener('click', (e) => {
+                        navigator.clipboard.writeText(e.target.getAttribute('data-text'));
+                        document.getElementById('success').textContent = "Prompt copiado para a área de transferência!";
                     });
-                    if (hasSubtasks) {
-                        li.querySelector('.expand-btn').addEventListener('click', (e) => {
-                            e.stopPropagation();
-                            toggleSubtasks(key, path, li);
+                    if (currentUserEmail === "psics.psix.141@gmail.com") {
+                        li.querySelector('.edit-btn').addEventListener('click', (e) => {
+                            const key = e.target.getAttribute('data-key');
+                            editPrompt(key);
+                        });
+                        li.querySelector('.delete-btn').addEventListener('click', (e) => {
+                            const key = e.target.getAttribute('data-key');
+                            deletePrompt(key, isAdvanced);
                         });
                     }
-                    li.querySelector('.up-btn').addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        moveLevelUp(key, path);
-                    });
-                    li.querySelector('.down-btn').addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        moveLevelDown(key, path);
-                    });
-                    const categoryBtn = li.querySelector('.category-btn');
-                    categoryBtn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        toggleCategoryDropdown(categoryBtn.parentElement);
-                    });
-                    li.querySelectorAll('.dropdown-item').forEach(item => {
-                        item.addEventListener('click', (e) => {
-                            e.stopPropagation();
-                            const newCategory = item.getAttribute('data-category');
-                            changeCategory(key, newCategory);
-                            item.closest('.dropdown-content').style.display = 'none';
-                        });
-                    });
-                    li.querySelector('.edit-btn').addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        const taskKey = e.target.getAttribute('data-key');
-                        level === 0 ? editTask(taskKey) : editSubtask(key, path.split('/').slice(0, -1).join('/'), parseInt(path.split('/').pop()));
-                    });
-                    li.querySelector('.delete-btn').addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        level === 0 ? deleteTask(key) : deleteSubtask(key, path.split('/').slice(0, -1).join('/'), parseInt(path.split('/').pop()));
-                    });
-                    if (level < 4) {
-                        const subtaskBtn = li.querySelector('.subtask-btn');
-                        if (subtaskBtn) {
-                            subtaskBtn.addEventListener('click', (e) => {
-                                e.stopPropagation();
-                                addSubtask(key, path);
-                            });
-                        }
-                    }
-                    const notesIndicator = li.querySelector('.has-notes');
-                    if (notesIndicator) {
-                        notesIndicator.addEventListener('click', (e) => {
-                            e.stopPropagation();
-                            toggleNotes(li, key, path);
-                        });
-                    }
-                    li.querySelector('textarea').addEventListener('change', (e) => {
-                        level === 0 ? updateNotes(key, e.target) : updateSubtaskNotes(key, path.split('/').slice(0, -1).join('/'), parseInt(path.split('/').pop()), e.target);
-                    });
-                    li.querySelector('input[type="checkbox"]').addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        const parentKey = e.target.getAttribute('data-key');
-                        const fullPath = e.target.getAttribute('data-path');
-                        const pathParts = fullPath.split('/').filter(p => p !== '');
-                        const subtaskIndex = parseInt(pathParts.pop()) || 0;
-                        const subPath = pathParts.join('/');
-                        log(`Checkbox clicado: parentKey=${parentKey}, subPath=${subPath}, subtaskIndex=${subtaskIndex}`);
-                        if (level === 0) {
-                            toggleTask(parentKey);
-                        } else {
-                            toggleSubtask(parentKey, subPath, subtaskIndex);
-                        }
-                    });
-                };
+                });
 
-                if (tasks) {
-                    Object.entries(tasks).forEach(([key, task]) => {
-                        if (searchInTask(task, key)) found = true;
-                    });
-                }
-
-                if (!found) {
-                    taskList.innerHTML = '<li>Nenhuma tarefa encontrada.</li>';
-                    log("Nenhuma correspondência encontrada na pesquisa");
+                if (filteredPrompts.length === 0) {
+                    resultsList.innerHTML = '<li>Nenhum prompt encontrado.</li>';
                 } else {
-                    document.getElementById('success').textContent = "Resultados da pesquisa exibidos!";
-                    document.getElementById('backBtn').style.display = 'inline-block';
-                    log("Resultados da pesquisa renderizados com sucesso");
+                    document.getElementById('success').textContent = "Resultados exibidos!";
                 }
+                scrollToResults(isAdvanced);
             }, { onlyOnce: true });
         }
 
-        function renderSubtasks(key, task, container, path = '', level) {
-            if (task.subtasks && task.subtasks.length > 0) {
-                const subtasksWithOriginalIndex = task.subtasks.map((subtask, originalIndex) => ({
-                    subtask,
-                    originalIndex
-                }));
+        function scrollToResults(isAdvanced) {
+            const resultsList = document.getElementById(isAdvanced ? 'advSearchResults' : 'searchResults');
+            resultsList.scrollIntoView({ behavior: 'smooth' });
+        }
 
-                subtasksWithOriginalIndex.sort((a, b) => {
-                    const dateA = a.subtask.dueDate || '9999-12-31';
-                    const dateB = b.subtask.dueDate || '9999-12-31';
-                    if (dateA !== dateB) return dateA.localeCompare(dateB);
-                    return b.subtask.priority - a.subtask.priority;
-                });
+        function clearSearchFields(isAdvanced = false) {
+            const prefix = isAdvanced ? 'adv' : '';
+            document.getElementById(`${prefix}SearchInput`).value = '';
+            document.getElementById(`${prefix}SearchPromptText`).value = '';
+            document.getElementById(`${prefix}SearchPromptFunction`).value = '';
+            document.getElementById(`${prefix}SearchPromptLocation`).value = '';
+            document.getElementById(`${prefix}SearchPromptNote`).value = '';
+            document.getElementById(`${prefix}SearchPromptAuthor`).value = '';
+            if (isAdvanced) document.getElementById('advSearchPromptUserEmail').value = '';
+            const includeSelect = document.getElementById(isAdvanced ? 'advIncludeCategories' : 'includeCategories');
+            const excludeSelect = document.getElementById(isAdvanced ? 'advExcludeCategories' : 'excludeCategories');
+            includeSelect.selectedIndex = -1;
+            excludeSelect.selectedIndex = -1;
+            if (!isAdvanced && canSearchAllPrompts) document.getElementById('searchAllPromptsCheckbox').checked = false;
+            if (isAdvanced && currentUserEmail === "psics.psix.141@gmail.com") document.getElementById('advSearchHiddenCheckbox').checked = false;
+            document.getElementById(isAdvanced ? 'advSearchResults' : 'searchResults').innerHTML = '';
+            document.getElementById(isAdvanced ? 'txtOutputAdv' : 'txtOutput').style.display = 'none';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
 
-                subtasksWithOriginalIndex.forEach(({ subtask, originalIndex }) => {
-                    const subtaskPath = path ? `${path}/${originalIndex}` : `${originalIndex}`;
-                    log(`Renderizando subtarefa: key=${key}, path=${subtaskPath}, level=${level}, text="${subtask.text}", priority=${subtask.priority}, originalIndex=${originalIndex}`);
-                    const li = document.createElement('li');
-                    li.className = `subtask-level-${level} ${subtask.completed ? 'completed' : ''}`;
-                    li.setAttribute('data-subtask-path', `${key}/${subtaskPath}`);
-                    const isBoldItalic = isPastDue(subtask.dueDate, subtask.completed);
-                    const hasSubtasks = subtask.subtasks && subtask.subtasks.length > 0;
-                    const shouldExpand = isToday(subtask.dueDate) || isTomorrow(subtask.dueDate);
-                    const isExpanded = subtask.expanded || shouldExpand;
-                    const isNotesVisible = subtask.notesVisible || false;
+        function editPrompt(key) {
+            showScreen('editPromptScreen');
+            const promptRef = ref(db, `prompts/${key}`);
+            onValue(promptRef, (snapshot) => {
+                const prompt = snapshot.val();
+                if (!prompt) {
+                    document.getElementById('error').textContent = "Prompt não encontrado!";
+                    return;
+                }
+                document.getElementById('editPromptText').value = prompt.text;
+                document.getElementById('editPromptFunction').value = prompt.function;
+                document.getElementById('editPromptLocation').value = prompt.location;
+                document.getElementById('editPromptNote').value = prompt.note || '';
+                document.getElementById('editPromptAuthor').value = prompt.author;
+                document.getElementById('editPromptUserEmail').value = prompt.userEmail;
+                loadCategories(document.getElementById('editCategorySelect'), prompt.categories || []);
+                if (currentUserEmail === "psics.psix.141@gmail.com") {
+                    document.getElementById('editHiddenCheckbox').checked = prompt.hidden || false;
+                }
+                editingPromptKey = key;
+            }, { onlyOnce: true });
+        }
 
-                    li.innerHTML = `
-                        <div class="task-row">
-                            ${hasSubtasks ? `<button class="expand-btn">${isExpanded ? '−' : '+'}</button>` : '<span class="expand-placeholder"></span>'}
-                            <input type="checkbox" ${subtask.completed ? 'checked' : ''} data-key="${key}" data-path="${subtaskPath}">
-                            <span class="task-text ${isBoldItalic ? 'bold-italic' : ''}">${subtask.text} | Data: ${formatDate(subtask.dueDate)} | Prioridade: ${subtask.priority}</span>
-                            <button class="level-btn up-btn" data-id="${key}/${subtaskPath}">↑</button>
-                            <button class="level-btn down-btn" data-id="${key}/${subtaskPath}">↓</button>
-                            <button class="edit-btn" data-key="${key}" data-path="${subtaskPath}">Editar</button>
-                            <button class="delete-btn">Excluir</button>
-                            ${level < 4 ? '<button class="subtask-btn">Subtarefa</button>' : ''}
-                            ${subtask.notes && subtask.notes.trim() !== '' ? '<span class="has-notes">(Contém Nota)</span>' : ''}
-                        </div>
-                        <div class="notes ${isNotesVisible ? 'visible' : ''}">
-                            <textarea rows="3">${subtask.notes || ''}</textarea>
-                        </div>
-                        <div class="subtasks-container ${isExpanded ? 'visible' : ''}"></div>
-                    `;
-
-                    if (hasSubtasks) {
-                        const subtasksContainer = li.querySelector('.subtasks-container');
-                        renderSubtasks(key, subtask, subtasksContainer, subtaskPath, level + 1);
-                    }
-
-                    container.appendChild(li);
-
-                    li.querySelector('.task-text').addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        toggleNotes(li, key, subtaskPath);
-                    });
-                    if (hasSubtasks) {
-                        li.querySelector('.expand-btn').addEventListener('click', (e) => {
-                            e.stopPropagation();
-                            toggleSubtasks(key, subtaskPath, li);
-                        });
-                    }
-                    li.querySelector('.up-btn').addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        moveLevelUp(key, subtaskPath);
-                    });
-                    li.querySelector('.down-btn').addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        moveLevelDown(key, subtaskPath);
-                    });
-                    li.querySelector('.edit-btn').addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        const parentKey = e.target.getAttribute('data-key');
-                        const fullPath = e.target.getAttribute('data-path');
-                        const pathParts = fullPath.split('/').filter(p => p !== '');
-                        const subIndex = parseInt(pathParts.pop());
-                        const subPath = pathParts.join('/');
-                        log(`Botão Editar clicado: parentKey=${parentKey}, subPath=${subPath}, subIndex=${subIndex}`);
-                        editSubtask(parentKey, subPath, subIndex);
-                    });
-                    li.querySelector('.delete-btn').addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        const pathParts = subtaskPath.split('/').filter(p => p !== '');
-                        const subIndex = parseInt(pathParts.pop());
-                        const subPath = pathParts.join('/');
-                        deleteSubtask(key, subPath, subIndex);
-                    });
-                    if (level < 4) {
-                        const subtaskBtn = li.querySelector('.subtask-btn');
-                        if (subtaskBtn) {
-                            subtaskBtn.addEventListener('click', (e) => {
-                                e.stopPropagation();
-                                addSubtask(key, subtaskPath);
-                            });
+        function deletePrompt(key, isAdvanced) {
+            if (confirm("Tem certeza que deseja excluir este prompt?")) {
+                const promptRef = ref(db, `prompts/${key}`);
+                remove(promptRef)
+                    .then(() => {
+                        document.getElementById('success').textContent = "Prompt excluído com sucesso!";
+                        if (isAdvanced) {
+                            performSearch(true);
+                        } else {
+                            showRecentPrompts();
                         }
-                    }
-                    const notesIndicator = li.querySelector('.has-notes');
-                    if (notesIndicator) {
-                        notesIndicator.addEventListener('click', (e) => {
-                            e.stopPropagation();
-                            toggleNotes(li, key, subtaskPath);
-                        });
-                    }
-                    li.querySelector('textarea').addEventListener('change', (e) => {
-                        const pathParts = subtaskPath.split('/').filter(p => p !== '');
-                        const subIndex = parseInt(pathParts.pop());
-                        const subPath = pathParts.join('/');
-                        updateSubtaskNotes(key, subPath, subIndex, e.target);
-                    });
-                    li.querySelector('input[type="checkbox"]').addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        const parentKey = e.target.getAttribute('data-key');
-                        const fullPath = e.target.getAttribute('data-path');
-                        const pathParts = fullPath.split('/').filter(p => p !== '');
-                        const subtaskIndex = parseInt(pathParts.pop());
-                        const subPath = pathParts.join('/');
-                        log(`Checkbox clicado: parentKey=${parentKey}, subPath=${subPath}, subtaskIndex=${subtaskIndex}`);
-                        toggleSubtask(parentKey, subPath, subtaskIndex);
-                    });
-                });
+                    })
+                    .catch(error => log(`Erro ao excluir prompt: ${error.message}`));
             }
         }
 
-        function renderTasks() {
-    onValue(tasksRefShared, (snapshot) => {
-        const tasks = snapshot.val();
-        const taskList = document.getElementById('taskList');
-        taskList.innerHTML = '';
+        document.getElementById('saveEditPromptBtn').addEventListener('click', () => {
+            const text = document.getElementById('editPromptText').value.trim();
+            const func = document.getElementById('editPromptFunction').value.trim();
+            const location = document.getElementById('editPromptLocation').value.trim();
+            const note = document.getElementById('editPromptNote').value.trim();
+            let author = document.getElementById('editPromptAuthor').value.trim();
+            const userEmail = document.getElementById('editPromptUserEmail').value.trim();
+            const categorySelect = document.getElementById('editCategorySelect');
+            const categories = Array.from(categorySelect.selectedOptions).map(option => option.textContent);
+            const hidden = currentUserEmail === "psics.psix.141@gmail.com" && document.getElementById('editHiddenCheckbox').checked;
 
-        if (!tasks) {
-            taskList.innerHTML = '<li>Nenhuma tarefa encontrada.</li>';
-            return;
-        }
-
-        const taskArray = Object.entries(tasks)
-            .filter(([_, task]) => currentCategory === 'all' || task.category === currentCategory)
-            .sort((a, b) => {
-                if (a[1].completed !== b[1].completed) return a[1].completed - b[1].completed;
-                const dateA = a[1].dueDate || '9999-12-31';
-                const dateB = b[1].dueDate || '9999-12-31';
-                if (dateA !== dateB) return dateA.localeCompare(dateB);
-                return b[1].priority - a[1].priority;
-            });
-
-        taskArray.forEach(([key, task]) => {
-            const li = document.createElement('li');
-            li.setAttribute('data-key', key);
-            li.className = task.completed ? 'completed' : '';
-            const isBoldItalic = isPastDue(task.dueDate, task.completed);
-            const hasSubtasks = task.subtasks && task.subtasks.length > 0;
-            const shouldExpand = isToday(task.dueDate) || isTomorrow(task.dueDate);
-            const isExpanded = task.expanded || shouldExpand;
-            const isNotesVisible = task.notesVisible || false;
-
-            li.innerHTML = `
-                <div class="task-row">
-                    ${hasSubtasks ? `<button class="expand-btn">${isExpanded ? '−' : '+'}</button>` : '<span class="expand-placeholder"></span>'}
-                    <input type="checkbox" ${task.completed ? 'checked' : ''} data-key="${key}" data-path="">
-                    <span class="task-text ${isBoldItalic ? 'bold-italic' : ''}">${task.text} | Data: ${formatDate(task.dueDate)} | Prioridade: ${task.priority}</span>
-                    <button class="level-btn up-btn" disabled data-id="${key}">↑</button>
-                    <button class="level-btn down-btn" ${taskArray.length === 1 ? 'disabled' : ''} data-id="${key}">↓</button>
-                    <div class="category-dropdown">
-                        <button class="category-btn">Categoria</button>
-                        <div class="dropdown-content">
-                            <button class="dropdown-item" data-category="mainProjects">Projetos Principais</button>
-                            <button class="dropdown-item" data-category="proposed">Proj. Propostos</button>
-                            <button class="dropdown-item" data-category="inProgress">Proj. em Andamento</button>
-                            <button class="dropdown-item" data-category="future">Proj. Futuros</button>
-                        </div>
-                    </div>
-                    <button class="edit-btn" data-key="${key}">Editar</button>
-                    <button class="delete-btn">Excluir</button>
-                    ${hasSubtasks ? '<button class="subtask-btn">Subtarefa</button>' : '<button class="subtask-btn">Subtarefa</button>'}
-                    ${task.notes && task.notes.trim() !== '' ? '<span class="has-notes">(Contém Nota)</span>' : ''}
-                </div>
-                <div class="notes ${isNotesVisible ? 'visible' : ''}">
-                    <textarea rows="3">${task.notes || ''}</textarea>
-                </div>
-                <div class="subtasks-container ${isExpanded ? 'visible' : ''}"></div>
-            `;
-
-            if (hasSubtasks) {
-                const subtasksContainer = li.querySelector('.subtasks-container');
-                renderSubtasks(key, task, subtasksContainer, '', 1);
+            if (!text || !func) {
+                document.getElementById('error').textContent = "Preencha os campos obrigatórios: Texto do Prompt e Função!";
+                return;
             }
 
-            taskList.appendChild(li);
-
-            li.querySelector('.task-text').addEventListener('click', (e) => {
-                e.stopPropagation();
-                toggleNotes(li, key);
-            });
-            if (hasSubtasks) {
-                li.querySelector('.expand-btn').addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    toggleSubtasks(key, '', li);
-                });
+            if (!author) {
+                author = currentUserEmail;
             }
-            li.querySelector('.up-btn').addEventListener('click', (e) => {
-                e.stopPropagation();
-                moveLevelUp(key);
-            });
-            li.querySelector('.down-btn').addEventListener('click', (e) => {
-                e.stopPropagation();
-                moveLevelDown(key);
-            });
-            const categoryBtn = li.querySelector('.category-btn');
-            categoryBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                toggleCategoryDropdown(categoryBtn.parentElement);
-            });
-            li.querySelectorAll('.dropdown-item').forEach(item => {
-                item.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    const newCategory = item.getAttribute('data-category');
-                    changeCategory(key, newCategory);
-                    item.closest('.dropdown-content').style.display = 'none';
-                });
-            });
-            li.querySelector('.edit-btn').addEventListener('click', (e) => {
-                e.stopPropagation();
-                editTask(key);
-            });
-            li.querySelector('.delete-btn').addEventListener('click', (e) => {
-                e.stopPropagation();
-                deleteTask(key);
-            });
-            const subtaskBtn = li.querySelector('.subtask-btn');
-            if (subtaskBtn) {
-                subtaskBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    addSubtask(key);
-                });
-            }
-            const notesIndicator = li.querySelector('.has-notes');
-            if (notesIndicator) {
-                notesIndicator.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    toggleNotes(li, key);
-                });
-            }
-            li.querySelector('textarea').addEventListener('change', (e) => {
-                updateNotes(key, e.target);
-            });
-            li.querySelector('input[type="checkbox"]').addEventListener('click', (e) => {
-                e.stopPropagation();
-                toggleTask(key);
-            });
-        });
-    });
-}
 
-function exportTasksToTxt() {
-    onValue(tasksRefShared, (snapshot) => {
-        const tasks = snapshot.val();
-        if (!tasks) {
-            document.getElementById('txtNote').value = "Nenhuma tarefa para exportar.";
-            document.getElementById('txtNote').style.display = 'block';
-            return;
-        }
+            const updatedPrompt = {
+                text,
+                function: func,
+                location,
+                note,
+                author,
+                userEmail: userEmail || currentUserEmail,
+                categories: categories.length > 0 ? categories : [],
+                timestamp: Date.now(),
+                hidden: hidden || false
+            };
 
-        let txtContent = `=== Tarefas Exportadas (${currentCategory === 'all' ? 'Todas' : currentCategory}) ===\n\n`;
-        const exportSubtasks = (subtasks, level) => {
-            subtasks.forEach((subtask, index) => {
-                txtContent += `${'  '.repeat(level)}- ${subtask.text} | Data: ${subtask.dueDate || 'Sem data'} | Prioridade: ${subtask.priority || 1} | ${subtask.completed ? '[Concluída]' : ''}\n`;
-                if (subtask.notes) txtContent += `${'  '.repeat(level + 1)}Notas: ${subtask.notes}\n`;
-                if (subtask.subtasks && subtask.subtasks.length > 0) {
-                    exportSubtasks(subtask.subtasks, level + 1);
-                }
-            });
-        };
-
-        Object.entries(tasks)
-            .filter(([_, task]) => currentCategory === 'all' || task.category === currentCategory)
-            .sort((a, b) => {
-                if (a[1].completed !== b[1].completed) return a[1].completed - b[1].completed;
-                const dateA = a[1].dueDate || '9999-12-31';
-                const dateB = b[1].dueDate || '9999-12-31';
-                if (dateA !== dateB) return dateA.localeCompare(dateB);
-                return b[1].priority - a[1].priority;
-            })
-            .forEach(([_, task]) => {
-                txtContent += `- ${task.text} | Data: ${task.dueDate || 'Sem data'} | Prioridade: ${task.priority || 1} | ${task.completed ? '[Concluída]' : ''}\n`;
-                if (task.notes) txtContent += `  Notas: ${task.notes}\n`;
-                if (task.subtasks && task.subtasks.length > 0) {
-                    exportSubtasks(task.subtasks, 1);
-                }
-            });
-
-        document.getElementById('txtNote').value = txtContent;
-        document.getElementById('txtNote').style.display = 'block';
-    });
-}
-
-function deleteCategoryTasks() {
-    if (currentCategory === 'all') {
-        document.getElementById('error').textContent = "Não é possível excluir todas as categorias de uma vez!";
-        return;
-    }
-    if (confirm(`Tem certeza que deseja excluir todas as tarefas da categoria "${currentCategory}"?`)) {
-        onValue(tasksRefShared, (snapshot) => {
-            const tasks = snapshot.val();
-            if (!tasks) return;
-
-            const updates = {};
-            Object.entries(tasks).forEach(([key, task]) => {
-                if (task.category === currentCategory) {
-                    updates[key] = null;
-                }
-            });
-
-            update(tasksRefShared, updates)
+            set(ref(db, `prompts/${editingPromptKey}`), updatedPrompt)
                 .then(() => {
-                    document.getElementById('success').textContent = `Tarefas da categoria "${currentCategory}" excluídas com sucesso!`;
-                    renderTasks();
+                    document.getElementById('success').textContent = "Prompt atualizado com sucesso!";
+                    editingPromptKey = null;
+                    showRecentPrompts();
                 })
-                .catch(error => log(`Erro ao excluir tarefas da categoria: ${error.message}`));
-        }, { onlyOnce: true });
-    }
-}
-
-function sendToComplexTasks() {
-    if (currentCategory === 'all') {
-        document.getElementById('error').textContent = "Selecione uma categoria específica para enviar!";
-        return;
-    }
-
-    onValue(tasksRefShared, (snapshot) => {
-        const tasks = snapshot.val();
-        if (!tasks) return;
-
-        const tasksToSend = {};
-        Object.entries(tasks).forEach(([key, task]) => {
-            if (task.category === currentCategory) {
-                tasksToSend[key] = { ...task, sharedFrom: 'Projetos Compartilhados' };
-            }
+                .catch(error => log(`Erro ao atualizar prompt: ${error.message}`));
         });
 
-        update(tasksRefComplex, tasksToSend)
-            .then(() => {
-                document.getElementById('success').textContent = `Tarefas da categoria "${currentCategory}" enviadas para Projetos Complexos!`;
-            })
-            .catch(error => log(`Erro ao enviar tarefas: ${error.message}`));
-    }, { onlyOnce: true });
-}
+        document.getElementById('doSearchBtn').addEventListener('click', () => performSearch(false));
+        document.getElementById('doSearchBtnTop').addEventListener('click', () => performSearch(false));
+        document.getElementById('doAdvSearchBtn').addEventListener('click', () => performSearch(true));
+        document.getElementById('doAdvSearchBtnTop').addEventListener('click', () => performSearch(true));
+        document.getElementById('searchInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') performSearch(false);
+        });
+        document.getElementById('advSearchInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') performSearch(true);
+        });
 
-function shareTask() {
-    const taskText = document.getElementById('taskInput').value.trim();
-    if (!taskText) {
-        document.getElementById('error').textContent = "Digite uma tarefa para compartilhar!";
-        return;
-    }
+        document.getElementById('clearSearchBtn').addEventListener('click', () => clearSearchFields(false));
+        document.getElementById('clearAdvSearchBtn').addEventListener('click', () => clearSearchFields(true));
 
-    const dueDate = document.getElementById('dueDate').value || null;
-    const priority = parseInt(document.getElementById('priority').value) || 1;
+        function exportSearchToTxt(isAdvanced = false) {
+            const resultsList = document.getElementById(isAdvanced ? 'advSearchResults' : 'searchResults');
+            const txtOutput = document.getElementById(isAdvanced ? 'txtOutputAdv' : 'txtOutput');
+            let content = '';
+            resultsList.querySelectorAll('li').forEach(li => {
+                if (isAdvanced) {
+                    const details = li.querySelector('.adv-prompt-details');
+                    if (details) {
+                        const spans = details.querySelectorAll('span');
+                        spans.forEach(span => {
+                            content += `${span.textContent}\n`;
+                        });
+                        content += '\n';
+                    }
+                } else {
+                    const text = li.querySelector('span').textContent;
+                    content += `${text}\n\n`;
+                }
+            });
+            txtOutput.value = content || 'Nenhum resultado para exportar.';
+            txtOutput.style.display = 'block';
+        }
 
-    const newTask = {
-        text: taskText,
-        dueDate: dueDate,
-        priority: Math.min(Math.max(priority, 1), 1000),
-        notes: "",
-        completed: false,
-        category: currentCategory,
-        subtasks: [],
-        sharedFrom: 'Projetos Compartilhados'
-    };
+        document.getElementById('txtSearchBtn').addEventListener('click', () => exportSearchToTxt(false));
+        document.getElementById('txtAdvSearchBtn').addEventListener('click', () => exportSearchToTxt(true));
 
-    push(tasksRefComplex, newTask)
-        .then(() => {
-            document.getElementById('success').textContent = "Tarefa compartilhada com Projetos Complexos!";
-            resetForm();
-        })
-        .catch(error => log(`Erro ao compartilhar tarefa: ${error.message}`));
-}
+        document.getElementById('backBtn').addEventListener('click', showRecentPrompts);
+        document.getElementById('backBtnStore').addEventListener('click', showRecentPrompts);
+        document.getElementById('backBtnEdit').addEventListener('click', showRecentPrompts);
+        document.getElementById('backBtnCategory').addEventListener('click', showRecentPrompts);
+        document.getElementById('backBtnSearch').addEventListener('click', showRecentPrompts);
+        document.getElementById('backBtnAdvSearch').addEventListener('click', showRecentPrompts);
+        document.getElementById('backBtnAuthorization').addEventListener('click', showRecentPrompts);
 
-document.getElementById('actionButton').addEventListener('click', saveTask);
-document.getElementById('txtBtn').addEventListener('click', exportTasksToTxt);
-document.getElementById('searchBtn').addEventListener('click', searchTasks);
-document.getElementById('shareBtn').addEventListener('click', shareTask);
-document.getElementById('sendToComplexBtn').addEventListener('click', sendToComplexTasks);
-document.getElementById('deleteCategoryBtn').addEventListener('click', deleteCategoryTasks);
-document.getElementById('mainProjectsBtn').addEventListener('click', () => setCategory('mainProjects'));
-document.getElementById('proposedBtn').addEventListener('click', () => setCategory('proposed'));
-document.getElementById('inProgressBtn').addEventListener('click', () => setCategory('inProgress'));
-document.getElementById('futureBtn').addEventListener('click', () => setCategory('future'));
-document.getElementById('allBtn').addEventListener('click', () => setCategory('all'));
-document.getElementById('backBtn').addEventListener('click', () => {
-    document.getElementById('taskInput').value = '';
-    document.getElementById('backBtn').style.display = 'none';
-    renderTasks();
-});
-
-setCategory('mainProjects');
-</script>
+        showRecentPrompts();
+    </script>
 </body>
 </html>
