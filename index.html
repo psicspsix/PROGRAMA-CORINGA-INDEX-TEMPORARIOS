@@ -1187,14 +1187,14 @@
                 }
             };
 
-            // Limpar campos de texto
-            clearValue(`${prefix}SearchInput`);
-            clearValue(`${prefix}SearchPromptText`);
-            clearValue(`${prefix}SearchPromptFunction`);
-            clearValue(`${prefix}SearchPromptLocation`);
-            clearValue(`${prefix}SearchPromptNote`);
-            clearValue(`${prefix}SearchPromptAuthor`);
-            if (isAdvanced) clearValue('advSearchPromptUserEmail');
+            // Limpar campos de texto (corrigidos para IDs em minúsculas para a Pesquisa normal)
+            clearValue(`${prefix}searchInput`);           // Primeiro campo de pesquisa
+            clearValue(`${prefix}searchPromptText`);      // Texto do prompt
+            clearValue(`${prefix}searchPromptFunction`);  // Função do prompt
+            clearValue(`${prefix}searchPromptLocation`);  // Local onde foi utilizado
+            clearValue(`${prefix}searchPromptNote`);      // Palavras-chave
+            clearValue(`${prefix}searchPromptAuthor`);    // Nome do autor
+            if (isAdvanced) clearValue('advSearchPromptUserEmail'); // Apenas para Pesquisa Avançada
 
             // Limpar seleções dos combo boxes
             clearSelect(isAdvanced ? 'advIncludeCategories' : 'includeCategories');
