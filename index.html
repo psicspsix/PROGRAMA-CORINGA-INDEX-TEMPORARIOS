@@ -3,1502 +3,1677 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerenciador de Medicamentos</title>
+    <title>Projetos Compartilhados</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            padding: 20px;
-            background: #1a1a1a;
-            color: #e0e0e0;
-            text-align: center;
-            margin: 0;
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 0; 
+            padding: 0; 
+            background: #1a1a1a; 
+            color: #e0e0e0; 
+            overflow-x: hidden; 
         }
-        #loginScreen, #registerScreen {
-            width: 100%;
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-            background: rgba(26, 26, 26, 0.9);
-            border-radius: 10px;
+        #loginScreen, #appScreen { 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            box-sizing: border-box; 
         }
-        #loginScreen {
-            background-image: url('https://images.unsplash.com/photo-1516321497487-e288fb19713f?q=80&w=1470&auto=format&fit=crop');
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            min-height: 100vh;
-            display: flex;
+        #loginScreen { 
+            background: url('https://images.unsplash.com/photo-1464802686167-b939a6910659?q=80&w=1450&auto=format&fit=crop') no-repeat center center fixed; 
+            background-size: cover; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
             flex-direction: column;
-            justify-content: center;
         }
-        #loginScreen h1 {
-            font-size: 48px;
-            margin-bottom: 4em; /* Reduzido de 7em para 4em */
+        #appScreen { 
+            display: none; 
+            padding: 20px; 
+            box-sizing: border-box; 
         }
-        #loginScreen .input-container {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 2em;
+        .login-container, .register-container { 
+            background: rgba(0, 0, 0, 0.8); 
+            padding: 20px; 
+            border-radius: 10px; 
+            text-align: center; 
+            width: 100%; 
+            max-width: 400px; 
         }
-        #loginScreen .button-container {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
+        .login-container input, .register-container input { 
+            width: 100%; 
+            max-width: 300px; 
+            font-size: 18px; 
+            padding: 10px; 
+            margin: 10px 0; 
+            background: #333; 
+            color: #e0e0e0; 
+            border: 1px solid #555; 
+            border-radius: 5px; 
+            box-sizing: border-box; 
         }
-        #appScreen {
-            width: 100%;
-            margin: 0;
-            padding: 0;
+        .login-container button, .register-container button { 
+            font-size: 18px; 
+            padding: 10px 20px; 
+            margin: 5px; 
+            background: #333; 
+            color: #e0e0e0; 
+            border: 1px solid #555; 
+            border-radius: 5px; 
+            cursor: pointer; 
         }
-        #loginScreen { display: block; }
-        #registerScreen, #appScreen { display: none; }
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 100%;
+        .login-container button:hover, .register-container button:hover { 
+            background: #555; 
         }
-        h1 {
-            color: #ffffff;
-            font-size: 36px;
-            margin: 0;
+        #registerBtn { 
+            display: none; 
         }
-        #currentTime {
-            font-size: 28px;
-            color: #e0e0e0;
+        #registerContainer { 
+            display: none; 
+            margin-top: 20px; 
         }
-        .nav-buttons {
-            margin: 20px 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 100%;
+        #usersList { 
+            margin-top: 20px; 
+            text-align: left; 
+            max-width: 400px; 
         }
-        .report-container {
-            width: 100%;
-            text-align: left;
+        #usersList div { 
+            margin: 10px 0; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
         }
-        .report-line1, .report-line2 {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin: 0;
-            padding: 0;
+        #usersList button { 
+            font-size: 14px; 
+            padding: 5px; 
         }
-        .report-title { margin: 0; padding: 0; }
-        .report-period-buttons { display: flex; margin: 0; padding: 0; }
-        .report-order-chrono, .report-order-type, .report-user-registry, .report-txt {
-            margin: 0 10px 0 0;
-            padding: 15px;
+        #message { 
+            color: #ff5555; 
+            margin-top: 10px; 
         }
-        button, input {
-            font-size: 24px;
-            padding: 15px;
-            margin: 10px 10px 0 0;
-            background: #333;
-            color: #e0e0e0;
-            border: 1px solid #555;
+        .header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            flex-wrap: wrap; 
+            width: 100%; 
         }
-        button:hover { background: #555; }
-        .screen { display: none; width: 100%; }
-        .screen.active { display: block; }
-        ul { list-style-type: none; padding: 0; width: 100%; }
-        #medList li, #userList li, #editMedList li, #deleteMedList li, #reportList li {
-            font-size: 28px;
-            margin: 15px 0;
-            background: #2a2a2a;
-            padding: 20px;
-            border-radius: 10px;
+        h1 { 
+            margin: 0; 
+            color: #ffffff; 
         }
-        #medList li { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
-        #userList li, #editMedList li, #deleteMedList li, #reportList li {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
+        .category-buttons { 
+            display: flex; 
+            gap: 10px; 
+            align-items: center; 
+            flex-wrap: wrap; 
         }
-        .user-row, .report-row, .edit-row, .delete-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 100%;
-            cursor: pointer;
+        input, button { 
+            font-size: 18px; 
+            padding: 10px; 
+            margin: 5px; 
+            background: #333; 
+            color: #e0e0e0; 
+            border: 1px solid #555; 
+            box-sizing: border-box; 
         }
-        .edit-row input[type="text"] { flex: 1; margin-right: 10px; }
-        .edit-row input[type="number"] { width: 150px; margin-right: 10px; }
-        .delete-name { cursor: pointer; flex: 1; text-align: left; }
-        .next-time { font-size: 36px; font-weight: bold; }
-        .same-day { color: #ffff00; }
-        .future-day { color: #1e90ff; }
-        .on-time { color: #00ff00; }
-        .late { color: #ff5555; }
-        #loginError, #registerError, #mainError, #addError, #editError, #deleteError, #reportError, #userError,
-        #loginSuccess, #registerSuccess, #mainSuccess, #addSuccess, #editSuccess, #deleteSuccess, #reportSuccess, #userSuccess {
-            font-size: 24px;
-            margin: 10px 0;
+        #taskInput { 
+            width: 100%; 
+            max-width: 600px; 
         }
-        [id$="Error"] { color: #ff5555; }
-        [id$="Success"] { color: #55ff55; }
-        .user-name, .has-note { cursor: pointer; }
-        .has-note { font-style: italic; color: #aaa; margin-left: 10px; }
-        .user-note, .delete-note, .report-note {
-            display: none;
-            font-size: 20px;
-            margin-top: 10px;
-            color: #e0e0e0;
-            width: 100%;
-            text-align: left;
-            word-wrap: break-word;
-            min-height: 60px;
-            background: #333;
-            border: 1px solid #555;
-            padding: 10px;
-            resize: none;
-            box-sizing: border-box;
+        button:hover { 
+            background: #555; 
         }
-        .status-text { font-size: 24px; margin-left: 10px; }
+        button.active { 
+            background: #555; 
+            font-weight: bold; 
+        }
+        .small-btn { 
+            font-size: 14px; 
+            padding: 5px; 
+            width: 30px; 
+            height: 30px; 
+            line-height: 20px; 
+            text-align: center; 
+        }
+        ul { 
+            list-style-type: none; 
+            padding: 0; 
+            width: 100%; 
+        }
+        li { 
+            font-size: 18px; 
+            margin: 10px 0; 
+            background: #2a2a2a; 
+            padding: 10px; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            width: 100%; 
+            box-sizing: border-box; 
+        }
+        .task-row { 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            flex-wrap: wrap; 
+        }
+        .notes { 
+            display: none; 
+            margin-top: 10px; 
+            padding: 10px; 
+            background: #333; 
+            border-radius: 5px; 
+            width: 100%; 
+            box-sizing: border-box; 
+        }
+        .notes.visible { 
+            display: block; 
+        }
+        textarea { 
+            width: 100%; 
+            background: #444; 
+            color: #e0e0e0; 
+            border: 1px solid #555; 
+            padding: 5px; 
+            box-sizing: border-box; 
+        }
+        .completed { 
+            text-decoration: line-through; 
+            color: #888; 
+        }
+        #error, #success { 
+            text-align: center; 
+            width: 100%; 
+        }
+        #error { 
+            color: #ff5555; 
+        }
+        #success { 
+            color: #55ff55; 
+        }
+        .has-notes { 
+            margin-left: 10px; 
+            font-style: italic; 
+            cursor: pointer; 
+        }
+        .task-text.bold-italic { 
+            font-weight: bold; 
+            font-style: italic; 
+        }
+        .category-dropdown { 
+            position: relative; 
+            display: inline-block; 
+        }
+        .dropdown-content { 
+            display: none; 
+            position: absolute; 
+            background-color: #333; 
+            min-width: 160px; 
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2); 
+            z-index: 1; 
+            border-radius: 5px; 
+        }
+        .dropdown-content button { 
+            width: 100%; 
+            text-align: left; 
+            padding: 10px; 
+            margin: 0; 
+        }
+        .dropdown-content button:hover { 
+            background-color: #555; 
+        }
+        .date-today { 
+            color: #ffff00; 
+        }
+        .date-one-day-past { 
+            color: #1e90ff; 
+        }
+        .date-past { 
+            color: #ff0000; 
+        }
+        .subtask-level-1 { 
+            margin-left: 60px; 
+            background: #3a3a3a; 
+        }
+        .subtask-level-2 { 
+            margin-left: 120px; 
+            background: #4a4a4a; 
+        }
+        .subtask-level-3 { 
+            margin-left: 180px; 
+            background: #5a5a5a; 
+        }
+        .subtask-level-4 { 
+            margin-left: 240px; 
+            background: #6a6a6a; 
+        }
+        .expand-btn { 
+            font-size: 18px; 
+            padding: 0; 
+            width: 20px; 
+            height: 20px; 
+            line-height: 20px; 
+            text-align: center; 
+            cursor: pointer; 
+            background: none; 
+            border: none; 
+            color: #e0e0e0; 
+            margin: 0 10px 0 0; 
+            flex-shrink: 0; 
+        }
+        .expand-placeholder { 
+            width: 20px; 
+            height: 20px; 
+            margin: 0 10px 0 0; 
+            display: inline-block; 
+            flex-shrink: 0; 
+        }
+        .task-row input[type="checkbox"] { 
+            width: 18px; 
+            height: 18px; 
+            margin: 0 10px 0 0; 
+            flex-shrink: 0; 
+        }
+        .subtasks-container { 
+            display: none; 
+            width: 100%; 
+        }
+        .subtasks-container.visible { 
+            display: block; 
+        }
+        .input-row { 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            flex-wrap: wrap; 
+            width: 100%; 
+        }
+        #txtNote { 
+            display: none; 
+            margin: 10px 0; 
+            padding: 10px; 
+            background: #333; 
+            border-radius: 5px; 
+            width: 100%; 
+            min-height: 100px; 
+            resize: vertical; 
+            box-sizing: border-box; 
+        }
+        .level-btn { 
+            font-size: 14px; 
+            padding: 5px; 
+            width: 20px; 
+            height: 20px; 
+            line-height: 10px; 
+            text-align: center; 
+            cursor: pointer; 
+        }
+        .level-btn:disabled { 
+            opacity: 0.5; 
+            cursor: not-allowed; 
+        }
+        #deleteCategoryBtn, #sendToComplexBtn, #shareBtn { 
+            display: none; 
+        }
+        #backBtn { 
+            display: none; 
+        }
     </style>
 </head>
 <body>
-    <!-- Tela de Login -->
     <div id="loginScreen">
-        <h1>Gerenciador de Medicamentos</h1>
-        <div class="input-container">
-            <input type="email" id="emailInput" placeholder="E-mail" autocomplete="off" autocapitalize="none">
-            <input type="password" id="passwordInput" placeholder="Senha" autocomplete="new-password">
+        <div class="login-container">
+            <h2>Projetos Compartilhados</h2>
+            <input type="text" id="userInput" placeholder="Usuário (Nome ou e-mail)">
+            <input type="password" id="passwordInput" placeholder="Senha">
+            <button id="loginBtn">Entrar</button>
+            <button id="registerBtn">Cadastrar</button>
+            <div id="message"></div>
+            <div id="registerContainer" class="register-container">
+                <input type="text" id="newUserInput" placeholder="Novo Usuário (e-mail)">
+                <input type="password" id="newPasswordInput" placeholder="Nova Senha">
+                <button id="submitRegisterBtn">Cadastrar</button>
+            </div>
+            <div id="usersList"></div>
         </div>
-        <div class="button-container">
-            <button id="loginButton">Entrar</button>
-            <button id="registerButton">Cadastrar</button>
-            <button id="resetPasswordButton">Recuperar Senha</button>
-        </div>
-        <div id="loginError"></div>
-        <div id="loginSuccess"></div>
     </div>
-
-    <!-- Tela de Cadastro de Usuário Autenticado -->
-    <div id="registerScreen">
-        <h1>Cadastrar Novo Usuário</h1>
-        <input type="text" id="registerNameInput" placeholder="Nome do Usuário" autocomplete="off">
-        <input type="email" id="registerEmailInput" placeholder="E-mail" autocomplete="off">
-        <input type="password" id="registerPasswordInput" placeholder="Senha" autocomplete="new-password">
-        <button id="saveRegisterButton">Salvar</button>
-        <button id="backFromRegisterButton">Voltar</button>
-        <div id="registerError"></div>
-        <div id="registerSuccess"></div>
-    </div>
-
-    <!-- Tela Principal -->
     <div id="appScreen">
-        <div id="mainScreen" class="screen active">
-            <div class="header">
-                <h1>Gerenciador de Medicamentos</h1>
-                <span id="currentTime"></span>
+        <div class="header">
+            <h1>Projetos Compartilhados</h1>
+            <div class="category-buttons">
+                <button id="mainProjectsBtn">Projetos Principais</button>
+                <button id="proposedBtn">Proj. Propostos</button>
+                <button id="inProgressBtn">Proj. em Andamento</button>
+                <button id="futureBtn">Proj. Futuros</button>
+                <button id="allBtn">Todos</button>
+                <button id="deleteCategoryBtn" class="small-btn">🗑️</button>
             </div>
-            <div class="nav-buttons">
-                <button id="goToUser">Pacientes</button>
-                <button id="goToAdd">Cadastrar Item</button>
-                <button id="goToEdit">Alterar Item</button>
-                <button id="goToDelete">Excluir ou Mudar Status do Item</button>
-                <button id="goToReport">Relatórios</button>
-                <button id="logoutButton">Sair</button>
-            </div>
-            <ul id="medList"></ul>
-            <div id="mainError"></div>
-            <div id="mainSuccess"></div>
         </div>
-
-        <div id="userScreen" class="screen">
-            <h1>Pacientes</h1>
-            <input type="text" id="userNameInput" placeholder="Nome do paciente">
-            <button id="saveUser">Salvar</button>
-            <button id="backFromUser">Voltar</button>
-            <ul id="userList"></ul>
-            <div id="userError"></div>
-            <div id="userSuccess"></div>
+        <div class="input-row">
+            <input type="text" id="taskInput" placeholder="Digite uma tarefa / subtarefa ou termos para realizar uma pesquisa!">
+            <input type="date" id="dueDate" placeholder="Data de término (opcional)">
+            <input type="number" id="priority" min="1" max="1000" placeholder="Prioridade (1-1000)">
+            <button id="actionButton">Adicionar</button>
+            <button id="txtBtn">TXT</button>
+            <button id="searchBtn" class="small-btn">🔍</button>
+            <button id="shareBtn" class="small-btn">↻</button>
+            <button id="sendToComplexBtn" class="small-btn">⍟</button>
+            <button id="backBtn">Voltar</button>
         </div>
-
-        <div id="addScreen" class="screen">
-            <h1>Cadastrar Item</h1>
-            <input type="text" id="addNameInput" placeholder="Nome do item">
-            <input type="number" id="addPeriodInput" placeholder="Periodicidade (horas)">
-            <button id="saveAdd">Salvar</button>
-            <button id="backFromAdd">Voltar</button>
-            <div id="addError"></div>
-            <div id="addSuccess"></div>
-        </div>
-
-        <div id="editScreen" class="screen">
-            <h1>Alterar Item</h1>
-            <ul id="editMedList"></ul>
-            <button id="backFromEdit">Voltar</button>
-            <div id="editError"></div>
-            <div id="editSuccess"></div>
-        </div>
-
-        <div id="deleteScreen" class="screen">
-            <h1>Excluir ou Mudar Status do Item</h1>
-            <ul id="deleteMedList"></ul>
-            <button id="backFromDelete">Voltar</button>
-            <div id="deleteError"></div>
-            <div id="deleteSuccess"></div>
-        </div>
-
-        <div id="reportScreen" class="screen">
-            <div class="report-container">
-                <div class="report-line1">
-                    <h1 class="report-title">RELATÓRIOS</h1>
-                    <button id="chronoOrder" class="report-order-chrono">Ordenamento Cronológico</button>
-                </div>
-                <div class="report-line2">
-                    <div class="report-period-buttons">
-                        <button id="dailyReport">Diário</button>
-                        <button id="weeklyReport">Semanal</button>
-                        <button id="monthlyReport">Mensal</button>
-                        <button id="yearlyReport">Anual</button>
-                    </div>
-                    <button id="userRegistryReport" class="report-user-registry">Registro de Usuários</button>
-                    <button id="txtReport" class="report-txt">TXT</button>
-                    <button id="typeOrder" class="report-order-type">Ordenamento por Tipo de Item</button>
-                </div>
-            </div>
-            <textarea id="reportNote" class="report-note" placeholder="Registros em texto aparecerão aqui ao clicar em TXT"></textarea>
-            <ul id="reportList"></ul>
-            <button id="backFromReport">Voltar</button>
-            <div id="reportError"></div>
-            <div id="reportSuccess"></div>
-        </div>
+        <textarea id="txtNote" placeholder="Conteúdo das tarefas será exibido aqui ao clicar em TXT"></textarea>
+        <div id="error"></div>
+        <div id="success"></div>
+        <ul id="taskList"></ul>
     </div>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getDatabase, ref, onValue, push, update, remove, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, onValue, push, update, remove, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyDan0hha-AIKJ2onO-u79Yf480uyR9DroQ",
-            authDomain: "medicamentos-enf-patricia.firebaseapp.com",
-            projectId: "medicamentos-enf-patricia",
-            storageBucket: "medicamentos-enf-patricia.firebasestorage.app",
-            messagingSenderId: "893304740405",
-            appId: "1:893304740405:web:9ef46f7b6ad808504c2f7c",
-            measurementId: "G-FMTFKEBNN7",
-            databaseURL: "https://medicamentos-enf-patricia-default-rtdb.firebaseio.com"
+        const firebaseConfigShared = {
+            apiKey: "AIzaSyDMRrgMcEvUaiI7sNbmLwy-9Eim13979LY",
+            authDomain: "projetos-compartilhados.firebaseapp.com",
+            databaseURL: "https://projetos-compartilhados-default-rtdb.firebaseio.com",
+            projectId: "projetos-compartilhados",
+            storageBucket: "projetos-compartilhados.firebasestorage.app",
+            messagingSenderId: "517091337770",
+            appId: "1:517091337770:web:596b8c0da2b7c3e45b4553",
+            measurementId: "G-2DSZ3QKRB2"
         };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
-        const auth = getAuth(app);
-        const usersRef = ref(db, 'users');
-        const lastUserRef = ref(db, 'lastUser');
-        const authUsersRef = ref(db, 'authUsers');
-        let currentUserId = null;
-        let currentReportType = 'daily';
-        let currentAuthUser = null;
-        let currentAuthUserName = null;
-        let loggedInUserName = null;
-        let isRegisterClicked = false;
+        const firebaseConfigComplex = {
+            apiKey: "AIzaSyA7EFA0dC1ZPikyJSHuqnhmul-4dnugfp0",
+            authDomain: "projetos-complexos.firebaseapp.com",
+            databaseURL: "https://projetos-complexos-default-rtdb.firebaseio.com",
+            projectId: "projetos-complexos",
+            storageBucket: "projetos-complexos.firebasestorage.app",
+            messagingSenderId: "473821406890",
+            appId: "1:473821406890:web:2b271ae806ecdac18892d3",
+            measurementId: "G-L5Z04Z3HG3"
+        };
 
-        function getMedsRef() {
-            return currentUserId ? ref(db, `users/${currentUserId}/medications`) : ref(db, 'medications');
-        }
+        const appShared = initializeApp(firebaseConfigShared, "sharedApp");
+        const appComplex = initializeApp(firebaseConfigComplex, "complexApp");
+        const auth = getAuth(appShared);
+        const dbShared = getDatabase(appShared);
+        const dbComplex = getDatabase(appComplex);
+        const tasksRefShared = ref(dbShared, 'tasks');
+        const tasksRefComplex = ref(dbComplex, 'tasks');
+        const usersRef = ref(dbShared, 'users');
+        let editingTaskKey = null;
+        let editingSubtask = null;
+        let addingSubtaskToKey = null;
+        let currentCategory = 'mainProjects';
+        let currentUserEmail = null;
 
-        // Elementos DOM para autenticação e cadastro
-        const loginScreen = document.getElementById('loginScreen');
-        const registerScreen = document.getElementById('registerScreen');
-        const appScreen = document.getElementById('appScreen');
-        const emailInput = document.getElementById('emailInput');
-        const passwordInput = document.getElementById('passwordInput');
-        const loginButton = document.getElementById('loginButton');
-        const registerButton = document.getElementById('registerButton');
-        const resetPasswordButton = document.getElementById('resetPasswordButton');
-        const logoutButton = document.getElementById('logoutButton');
-        const loginError = document.getElementById('loginError');
-        const loginSuccess = document.getElementById('loginSuccess');
-        const registerNameInput = document.getElementById('registerNameInput');
-        const registerEmailInput = document.getElementById('registerEmailInput');
-        const registerPasswordInput = document.getElementById('registerPasswordInput');
-        const saveRegisterButton = document.getElementById('saveRegisterButton');
-        const backFromRegisterButton = document.getElementById('backFromRegisterButton');
-        const registerError = document.getElementById('registerError');
-        const registerSuccess = document.getElementById('registerSuccess');
-
-        // Elementos DOM para as telas de pacientes e medicamentos
-        const userNameInput = document.getElementById('userNameInput');
-        const addNameInput = document.getElementById('addNameInput');
-        const addPeriodInput = document.getElementById('addPeriodInput');
-
-        // Função de log
         function log(message) {
             console.log(`[LOG ${new Date().toLocaleTimeString()}]: ${message}`);
         }
 
-        // Função para validar e-mail
-        function isValidEmail(email) {
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            return emailRegex.test(email);
-        }
+        log("Firebase conectado com sucesso!");
 
-        // Função para obter o nome ou e-mail do usuário autenticado por UID
-        function getAuthUserNameByUid(uid) {
-            return new Promise((resolve) => {
-                onValue(ref(db, `authUsers/${uid}`), (snapshot) => {
-                    const user = snapshot.val();
-                    const name = user ? (user.name || user.email) : "Usuário Desconhecido";
-                    log(`Resolvendo UID ${uid} para nome: ${name}`);
-                    resolve(name);
-                }, { onlyOnce: true });
-            });
-        }
+        // Tela de Login e Autenticação
+        const loginScreen = document.getElementById('loginScreen');
+        const appScreen = document.getElementById('appScreen');
+        const loginBtn = document.getElementById('loginBtn');
+        const registerBtn = document.getElementById('registerBtn');
+        const registerContainer = document.getElementById('registerContainer');
+        const submitRegisterBtn = document.getElementById('submitRegisterBtn');
+        const userInput = document.getElementById('userInput');
+        const passwordInput = document.getElementById('passwordInput');
+        const newUserInput = document.getElementById('newUserInput');
+        const newPasswordInput = document.getElementById('newPasswordInput');
+        const messageDiv = document.getElementById('message');
+        const usersList = document.getElementById('usersList');
+        const deleteCategoryBtn = document.getElementById('deleteCategoryBtn');
+        const sendToComplexBtn = document.getElementById('sendToComplexBtn');
+        const shareBtn = document.getElementById('shareBtn');
 
-        // Listener persistente para estado de autenticação
-        onAuthStateChanged(auth, async (user) => {
+        signOut(auth).then(() => {
+            log("Logout inicial realizado para garantir tela de login");
+            loginScreen.style.display = 'flex';
+            appScreen.style.display = 'none';
+        });
+
+        onAuthStateChanged(auth, (user) => {
             if (user) {
-                log(`Usuário autenticado detectado: ${user.email}`);
-                currentAuthUser = user;
-                currentAuthUserName = await getAuthUserNameByUid(user.uid);
-                loggedInUserName = user.email;
-                log(`currentAuthUser definido como: ${currentAuthUser.email}, loggedInUserName: ${loggedInUserName}`);
+                currentUserEmail = user.email;
+                log(`Usuário autenticado: ${currentUserEmail}`);
+                if (currentUserEmail === "psics.psix.141@gmail.com") {
+                    registerBtn.style.display = 'inline-block';
+                    deleteCategoryBtn.style.display = 'inline-block';
+                    sendToComplexBtn.style.display = 'inline-block';
+                    shareBtn.style.display = 'inline-block'; // Botão "↻" visível apenas para este usuário
+                    setTimeout(() => {
+                        registerBtn.style.display = 'none';
+                    }, 3000);
+                } else {
+                    registerBtn.style.display = 'none';
+                    deleteCategoryBtn.style.display = 'none';
+                    sendToComplexBtn.style.display = 'none';
+                    shareBtn.style.display = 'none'; // Botão "↻" oculto para outros usuários
+                }
+                loginScreen.style.display = 'none';
+                appScreen.style.display = 'block';
+                renderTasks();
+                renderUsersList();
             } else {
-                log("Nenhum usuário autenticado detectado.");
-                currentAuthUser = null;
-                currentAuthUserName = null;
-                loggedInUserName = null;
-                loginScreen.style.display = 'block';
+                currentUserEmail = null;
+                loginScreen.style.display = 'flex';
                 appScreen.style.display = 'none';
-                registerScreen.style.display = 'none';
+                deleteCategoryBtn.style.display = 'none';
+                sendToComplexBtn.style.display = 'none';
+                shareBtn.style.display = 'none'; // Botão "↻" oculto ao deslogar
             }
         });
 
-        // Forçar logout ao carregar a página
-        document.addEventListener('DOMContentLoaded', () => {
-            signOut(auth).then(() => {
-                log("Sessão encerrada ao carregar a página.");
-                loginScreen.style.display = 'block';
-                appScreen.style.display = 'none';
-                registerScreen.style.display = 'none';
-            }).catch((error) => {
-                log(`Erro ao forçar logout inicial: ${error.message}`);
-            });
-        });
-
-        // Login
-        loginButton.addEventListener('click', (e) => {
-            e.preventDefault();
-            const email = emailInput.value.trim();
+        loginBtn.addEventListener('click', () => {
+            const email = userInput.value.trim();
             const password = passwordInput.value.trim();
             if (!email || !password) {
-                loginError.textContent = "Preencha e-mail e senha!";
-                return;
-            }
-            if (!isValidEmail(email)) {
-                loginError.textContent = "Digite um e-mail válido (ex.: usuario@dominio.com)!";
+                messageDiv.textContent = "Preencha todos os campos!";
                 return;
             }
             signInWithEmailAndPassword(auth, email, password)
-                .then((userCredential) => {
-                    log(`Login bem-sucedido: ${userCredential.user.email}`);
-                    loginError.textContent = '';
-                    loginSuccess.textContent = "Login realizado com sucesso!";
-                    setTimeout(() => {
-                        if (!isRegisterClicked) {
-                            loginSuccess.textContent = '';
-                            loginScreen.style.display = 'none';
-                            appScreen.style.display = 'block';
-                            renderMainScreen();
-                        }
-                    }, 3000);
-                })
+                .then(() => log("Login bem-sucedido"))
                 .catch((error) => {
-                    loginError.textContent = `Erro ao fazer login: ${error.message}`;
+                    if (error.code === 'auth/user-not-found') {
+                        messageDiv.textContent = 'Favor cadastrar-se primeiro clicando no botão "Cadastrar" abaixo!';
+                        registerBtn.style.display = 'inline-block';
+                        setTimeout(() => registerBtn.style.display = 'none', 3000);
+                    } else if (error.code === 'auth/wrong-password') {
+                        messageDiv.textContent = "Senha incorreta, favor tentar novamente!";
+                    } else {
+                        messageDiv.textContent = "Erro ao entrar: " + error.message;
+                    }
                     log(`Erro ao fazer login: ${error.message}`);
                 });
         });
 
-        // Mostrar tela de cadastro apenas se autenticado
-        registerButton.addEventListener('click', () => {
-            log(`Botão 'Cadastrar' clicado. currentAuthUser: ${currentAuthUser ? currentAuthUser.email : 'null'}`);
-            if (currentAuthUser) {
-                isRegisterClicked = true;
-                loginScreen.style.display = 'none';
-                appScreen.style.display = 'none';
-                registerScreen.style.display = 'block';
-                registerNameInput.value = '';
-                registerEmailInput.value = '';
-                registerPasswordInput.value = '';
-                registerError.textContent = '';
-                registerSuccess.textContent = '';
-                log("Tela de cadastro exibida para usuário autenticado: " + currentAuthUser.email);
-            } else {
-                loginError.textContent = "Faça login primeiro para cadastrar um novo usuário!";
-                log("Tentativa de acessar cadastro sem usuário autenticado.");
-            }
+        registerBtn.addEventListener('click', () => {
+            registerContainer.style.display = 'block';
+            messageDiv.textContent = '';
         });
 
-        // Salvar novo usuário autenticado sem alterar o usuário logado
-        saveRegisterButton.addEventListener('click', () => {
-            const name = registerNameInput.value.trim();
-            const email = registerEmailInput.value.trim();
-            const password = registerPasswordInput.value.trim();
-
-            log(`Tentativa de salvar novo usuário: ${email}. currentAuthUser: ${currentAuthUser ? currentAuthUser.email : 'null'}, loggedInUserName: ${loggedInUserName}`);
-
-            if (!name || !email || !password) {
-                registerError.textContent = "Preencha todos os campos!";
+        submitRegisterBtn.addEventListener('click', () => {
+            const newEmail = newUserInput.value.trim();
+            const newPassword = newPasswordInput.value.trim();
+            if (!newEmail || !newPassword) {
+                messageDiv.textContent = "Preencha todos os campos!";
                 return;
             }
-            if (!isValidEmail(email)) {
-                registerError.textContent = "Digite um e-mail válido (ex.: usuario@dominio.com)!";
-                return;
-            }
-            if (password.length < 6) {
-                registerError.textContent = "A senha deve ter pelo menos 6 caracteres!";
-                return;
-            }
-            if (!currentAuthUser || !loggedInUserName) {
-                registerError.textContent = "Nenhum usuário autenticado! Faça login novamente.";
-                log("Tentativa de cadastro sem usuário autenticado.");
-                registerScreen.style.display = 'none';
-                loginScreen.style.display = 'block';
-                return;
-            }
-
-            const secondaryApp = initializeApp(firebaseConfig, "SecondaryApp");
-            const secondaryAuth = getAuth(secondaryApp);
-
-            createUserWithEmailAndPassword(secondaryAuth, email, password)
+            createUserWithEmailAndPassword(auth, newEmail, newPassword)
                 .then((userCredential) => {
                     const user = userCredential.user;
-                    log(`Novo usuário autenticado ${name} criado com e-mail: ${email}`);
-
-                    return set(ref(db, `authUsers/${user.uid}`), {
-                        name: name,
-                        email: email,
-                        registeredById: currentAuthUser.uid
+                    set(ref(dbShared, `users/${user.uid}`), {
+                        email: newEmail,
+                        password: newPassword
                     }).then(() => {
-                        return update(ref(db, `authUsers/${user.uid}`), {
-                            registeredBy: loggedInUserName
-                        }).then(() => {
-                            registerError.textContent = '';
-                            registerSuccess.textContent = `Usuário ${name} cadastrado com sucesso! Use as credenciais (${email}) para fazer login.`;
-                            
-                            signOut(secondaryAuth).then(() => {
-                                log(`Sessão do novo usuário ${email} encerrada na instância secundária.`);
-                                setTimeout(() => {
-                                    registerSuccess.textContent = '';
-                                    registerScreen.style.display = 'none';
-                                    appScreen.style.display = 'block';
-                                    isRegisterClicked = false;
-                                }, 3000);
-                            }).catch((error) => {
-                                log(`Erro ao deslogar da instância secundária: ${error.message}`);
-                            });
-                        });
-                    }).catch((error) => {
-                        registerError.textContent = "Erro ao salvar dados do usuário: " + error.message;
-                        log(`Erro ao salvar no Realtime Database: ${error.message}`);
+                        messageDiv.textContent = "Usuário cadastrado com sucesso!";
+                        registerContainer.style.display = 'none';
+                        newUserInput.value = '';
+                        newPasswordInput.value = '';
+                        renderUsersList();
                     });
                 })
                 .catch((error) => {
-                    if (error.code === 'auth/email-already-in-use') {
-                        registerError.textContent = "Este e-mail já está em uso. Tente outro ou faça login.";
-                    } else if (error.code === 'auth/invalid-email') {
-                        registerError.textContent = "E-mail inválido! Use o formato correto (ex.: usuario@dominio.com).";
-                    } else {
-                        registerError.textContent = `Erro ao cadastrar: ${error.message}`;
-                    }
+                    messageDiv.textContent = "Erro ao cadastrar: " + error.message;
                     log(`Erro ao cadastrar usuário: ${error.message}`);
-                })
-                .finally(() => {
-                    secondaryApp.delete().catch((error) => {
-                        log(`Erro ao destruir instância secundária: ${error.message}`);
-                    });
                 });
         });
 
-        backFromRegisterButton.addEventListener('click', () => {
-            registerScreen.style.display = 'none';
-            loginScreen.style.display = 'block';
-            isRegisterClicked = false;
-            log("Voltando da tela de cadastro para a tela de login.");
-        });
-
-        // Recuperação de senha
-        resetPasswordButton.addEventListener('click', () => {
-            const email = emailInput.value.trim();
-            if (!email) {
-                loginError.textContent = "Digite seu e-mail para recuperar a senha!";
-                return;
-            }
-            if (!isValidEmail(email)) {
-                loginError.textContent = "Digite um e-mail válido (ex.: usuario@dominio.com)!";
-                return;
-            }
-            sendPasswordResetEmail(auth, email)
-                .then(() => {
-                    loginError.textContent = '';
-                    loginSuccess.textContent = "E-mail de recuperação enviado! Verifique sua caixa de entrada.";
-                    setTimeout(() => loginSuccess.textContent = '', 5000);
-                })
-                .catch((error) => {
-                    loginError.textContent = `Erro ao enviar e-mail de recuperação: ${error.message}`;
-                    log(`Erro ao enviar e-mail de recuperação: ${error.message}`);
-                });
-        });
-
-        // Logout
-        logoutButton.addEventListener('click', () => {
-            signOut(auth)
-                .then(() => {
-                    log("Logout realizado com sucesso.");
-                    loginError.textContent = '';
-                    loginSuccess.textContent = "Logout realizado com sucesso!";
-                    setTimeout(() => {
-                        loginSuccess.textContent = '';
-                        appScreen.style.display = 'none';
-                        loginScreen.style.display = 'block';
-                    }, 2000);
-                })
-                .catch((error) => {
-                    loginError.textContent = `Erro ao fazer logout: ${error.message}`;
-                    log(`Erro ao fazer logout: ${error.message}`);
-                });
-        });
-
-        function updateCurrentTime() {
-            const now = new Date();
-            const hours = String(now.getHours()).padStart(2, '0');
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            document.getElementById('currentTime').textContent = `${hours}:${minutes}`;
-        }
-        setInterval(updateCurrentTime, 60000);
-        updateCurrentTime();
-
-        function showScreen(screenId) {
-            document.querySelectorAll('.screen').forEach(screen => screen.classList.remove('active'));
-            document.getElementById(screenId).classList.add('active');
-            if (screenId === 'userScreen') renderUserScreen();
-            if (screenId === 'editScreen') renderEditScreen();
-            if (screenId === 'deleteScreen') renderDeleteScreen();
-            if (screenId === 'reportScreen') {
-                if (currentReportType === 'daily') renderDailyReport('chrono');
-                else renderReportScreen(currentReportType);
-            }
-            if (screenId === 'mainScreen') renderMainScreen();
-        }
-
-        function formatDateTime(dateTime) {
-            if (!dateTime) return '<span>Aguardando!</span>';
-            const date = new Date(dateTime);
-            const dateLocal = new Date(date.getTime() - 3 * 60 * 60 * 1000);
-            const day = String(dateLocal.getDate()).padStart(2, '0');
-            const month = String(dateLocal.getMonth() + 1).padStart(2, '0');
-            const year = dateLocal.getFullYear();
-            const hours = String(dateLocal.getHours()).padStart(2, '0');
-            const minutes = String(dateLocal.getMinutes()).padStart(2, '0');
-            let className = '';
-
-            const now = new Date();
-            const today = new Date(now);
-            today.setHours(0, 0, 0, 0);
-            const due = new Date(dateLocal);
-            due.setHours(0, 0, 0, 0);
-            const diffDays = Math.floor((due - today) / (24 * 60 * 60 * 1000));
-
-            if (diffDays < 0) {
-                className = 'late';
-            } else if (diffDays === 0) {
-                const nowTime = now.getTime();
-                const dueTime = dateLocal.getTime();
-                const diffMinutes = (nowTime - dueTime) / (60 * 1000);
-                if (diffMinutes > 30) {
-                    className = 'late';
-                } else {
-                    className = 'same-day';
-                }
-            } else if (diffDays === 1) {
-                className = 'future-day';
-            }
-
-            return `<span class="${className}">${hours}:${minutes}</span>`;
-        }
-
-        function getNextTime(lastTaken, periodicity) {
-            if (!lastTaken) return null;
-            const last = new Date(lastTaken);
-            const periodMs = periodicity * 60 * 60 * 1000;
-            const nextTimeMs = last.getTime() + periodMs;
-            const next = new Date(nextTimeMs);
-            return next.toISOString();
-        }
-
-        onValue(lastUserRef, (snapshot) => {
-            const lastUser = snapshot.val();
-            if (lastUser && lastUser.id) {
-                currentUserId = lastUser.id;
-                onValue(ref(db, `users/${currentUserId}`), (userSnapshot) => {
-                    const user = userSnapshot.val();
-                    if (user && user.name) {
-                        const firstName = user.name.split(' ')[0];
-                        document.getElementById('goToUser').textContent = firstName;
-                    }
-                }, { onlyOnce: true });
-                renderMainScreen();
-            }
-        });
-
-        function renderMainScreen() {
-            if (!currentAuthUser) {
-                appScreen.style.display = 'none';
-                loginScreen.style.display = 'block';
-                return;
-            }
-            const medsRef = getMedsRef();
-            onValue(medsRef, (snapshot) => {
-                const meds = snapshot.val() || {};
-                const medList = document.getElementById('medList');
-                medList.innerHTML = meds ? '' : '<li>Nenhum medicamento, alimento ou líquido cadastrado!</li>';
-
-                const medArray = Object.entries(meds)
-                    .filter(([_, med]) => med.enabled !== false)
-                    .map(([key, med]) => ({
-                        key,
-                        med,
-                        nextTime: getNextTime(med.lastTaken, med.periodicity)
-                    }));
-
-                medArray.sort((a, b) => {
-                    if (a.nextTime === null && b.nextTime === null) return 0;
-                    if (a.nextTime === null) return 1;
-                    if (b.nextTime === null) return -1;
-                    return new Date(a.nextTime) - new Date(b.nextTime);
-                });
-
-                medArray.forEach(({ key, med, nextTime }) => {
-                    const li = document.createElement('li');
-                    li.innerHTML = `
-                        ${med.name} | Próximo: <span class="next-time">${formatDateTime(nextTime)}</span>
-                        | Tomado às: <input type="text" id="taken-${key}" value="" placeholder="hhmm" maxlength="4">
-                        <button id="currentTime-${key}">Hora Atual</button>
-                    `;
-                    medList.appendChild(li);
-
-                    li.querySelector(`#taken-${key}`).addEventListener('change', (e) => {
-                        const value = e.target.value;
-                        if (/^\d{4}$/.test(value)) {
-                            const hours = parseInt(value.slice(0, 2));
-                            const minutes = parseInt(value.slice(2, 4));
-                            if (hours >= 0 && hours < 24 && minutes >= 0 && minutes < 60) {
-                                const localDate = new Date();
-                                localDate.setHours(hours, minutes, 0, 0);
-                                const utcDate = new Date(localDate.getTime() + 3 * 60 * 60 * 1000);
-                                const newLastTaken = utcDate.toISOString();
-                                update(ref(db, `users/${currentUserId}/medications/${key}`), { 
-                                    lastTaken: newLastTaken,
-                                    history: med.history ? [...med.history, { taken: newLastTaken, notes: "", loggedBy: loggedInUserName || currentAuthUser.email }] : [{ taken: newLastTaken, notes: "", loggedBy: loggedInUserName || currentAuthUser.email }]
-                                }).then(() => {
-                                    e.target.value = '';
-                                }).catch((error) => {
-                                    document.getElementById('mainError').textContent = "Erro ao registrar: " + error.message;
-                                    log(`Erro ao registrar medicamento: ${error.message}`);
-                                });
-                            } else {
-                                document.getElementById('mainError').textContent = "Horário inválido!";
-                            }
-                        } else {
-                            document.getElementById('mainError').textContent = "Digite hhmm (ex.: 1556)!";
-                        }
-                    });
-
-                    li.querySelector(`#currentTime-${key}`).addEventListener('click', () => {
-                        const now = new Date();
-                        const hours = String(now.getHours()).padStart(2, '0');
-                        const minutes = String(now.getMinutes()).padStart(2, '0');
-                        const value = `${hours}${minutes}`;
-                        const localDate = new Date();
-                        localDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
-                        const utcDate = new Date(localDate.getTime() + 3 * 60 * 60 * 1000);
-                        const newLastTaken = utcDate.toISOString();
-                        update(ref(db, `users/${currentUserId}/medications/${key}`), { 
-                            lastTaken: newLastTaken,
-                            history: med.history ? [...med.history, { taken: newLastTaken, notes: "", loggedBy: loggedInUserName || currentAuthUser.email }] : [{ taken: newLastTaken, notes: "", loggedBy: loggedInUserName || currentAuthUser.email }]
-                        }).then(() => {
-                            document.getElementById(`taken-${key}`).value = '';
-                        }).catch((error) => {
-                            document.getElementById('mainError').textContent = "Erro ao registrar: " + error.message;
-                            log(`Erro ao registrar medicamento com hora atual: ${error.message}`);
-                        });
-                    });
-                });
-            });
-        }
-
-        function addUser() {
-            const nameInput = document.getElementById('userNameInput');
-            const name = nameInput.value.trim();
-
-            log("Iniciando addUser para: " + name);
-
-            if (!name) {
-                document.getElementById('userError').textContent = "Preencha o nome do paciente!";
-                log("Tentativa de adicionar paciente sem nome.");
-                return;
-            }
-
-            if (!currentAuthUser) {
-                document.getElementById('userError').textContent = "Usuário não autenticado! Faça login novamente.";
-                log("Tentativa de adicionar paciente sem autenticação.");
-                return;
-            }
-
-            log("Usuário autenticado: " + currentAuthUser.email + ". Tentando adicionar paciente: " + name);
-
-            log("Executando push para /users...");
-            push(usersRef, {
-                name: name,
-                note: "",
-                registeredBy: loggedInUserName || currentAuthUser.email,
-                registeredById: currentAuthUser.uid
-            }).then((newUserRef) => {
-                const userId = newUserRef.key;
-                log(`Novo paciente criado com ID: ${userId}`);
-
-                log("Executando set para /lastUser...");
-                return set(lastUserRef, { id: userId }).then(() => {
-                    log("lastUser atualizado com sucesso para ID: " + userId);
-                    currentUserId = userId;
-                    nameInput.value = '';
-                    document.getElementById('userError').textContent = '';
-                    document.getElementById('userSuccess').textContent = "Paciente cadastrado com sucesso!";
-                    setTimeout(() => document.getElementById('userSuccess').textContent = '', 2000);
-                    showScreen('mainScreen');
-                });
-            }).catch((error) => {
-                log("Erro durante a operação no Firebase: " + error.message);
-                document.getElementById('userError').textContent = "Erro ao cadastrar paciente: " + error.message;
-            });
-        }
-
-        function renderUserScreen() {
+        function renderUsersList() {
             onValue(usersRef, (snapshot) => {
-                const users = snapshot.val() || {};
-                const userList = document.getElementById('userList');
-                userList.innerHTML = '';
-
-                const userArray = Object.entries(users).sort((a, b) => 
-                    a[1].name.localeCompare(b[1].name)
-                );
-
-                userArray.forEach(([key, user]) => {
-                    const li = document.createElement('li');
-                    li.innerHTML = `
-                        <div class="user-row">
-                            <span class="user-name">${user.name}</span>
+                const users = snapshot.val();
+                usersList.innerHTML = '<h3>Usuários Cadastrados</h3>';
+                if (users) {
+                    Object.entries(users).forEach(([uid, userData]) => {
+                        const userDiv = document.createElement('div');
+                        userDiv.innerHTML = `
+                            ${userData.email} | Senha: ${userData.password}
                             <div>
-                                <button id="editUser-${key}">Editar</button>
-                                <button id="deleteUser-${key}">Excluir</button>
-                                ${user.note ? '<span class="has-note">(Contém Nota)</span>' : ''}
+                                <button class="alter-btn" data-uid="${uid}">Alterar</button>
+                                <button class="delete-btn" data-uid="${uid}">Excluir</button>
                             </div>
-                        </div>
-                        <textarea id="note-${key}" class="user-note" placeholder="Digite uma nota aqui">${user.note || ''}</textarea>
-                    `;
-                    userList.appendChild(li);
+                        `;
+                        usersList.appendChild(userDiv);
 
-                    const userNameSpan = li.querySelector('.user-name');
-                    const hasNoteSpan = li.querySelector('.has-note');
-                    const noteTextarea = document.getElementById(`note-${key}`);
-
-                    function toggleNote() {
-                        noteTextarea.style.display = noteTextarea.style.display === 'block' ? 'none' : 'block';
-                        set(lastUserRef, { id: key }).then(() => {
-                            const firstName = user.name.split(' ')[0];
-                            document.getElementById('goToUser').textContent = firstName;
-                            currentUserId = key;
-                            renderMainScreen();
-                        });
-                        noteTextarea.focus();
-                    }
-
-                    userNameSpan.addEventListener('click', toggleNote);
-                    if (hasNoteSpan) hasNoteSpan.addEventListener('click', toggleNote);
-
-                    noteTextarea.addEventListener('blur', () => {
-                        update(ref(db, `users/${key}`), { note: noteTextarea.value });
-                    });
-                    noteTextarea.addEventListener('keydown', (e) => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                            e.preventDefault();
-                            update(ref(db, `users/${key}`), { note: noteTextarea.value });
-                            noteTextarea.blur();
-                        }
-                    });
-
-                    document.getElementById(`editUser-${key}`).addEventListener('click', () => {
-                        const newName = prompt("Digite o novo nome:", user.name);
-                        if (newName) {
-                            const newNote = prompt("Digite uma nova nota (opcional):", user.note || "");
-                            update(ref(db, `users/${key}`), { 
-                                name: newName,
-                                note: newNote || ""
-                            });
-                        }
-                    });
-
-                    document.getElementById(`deleteUser-${key}`).addEventListener('click', () => {
-                        if (confirm("Tem certeza que deseja excluir este paciente? Isso excluirá todos os medicamentos associados!")) {
-                            remove(ref(db, `users/${key}`)).then(() => {
-                                if (currentUserId === key) {
-                                    set(lastUserRef, null);
-                                    document.getElementById('goToUser').textContent = "Pacientes";
-                                    currentUserId = null;
-                                    renderMainScreen();
-                                }
-                            });
-                        }
-                    });
-                });
-            });
-        }
-
-        function addMedication() {
-            if (!currentUserId) {
-                document.getElementById('addError').textContent = "Selecione um paciente primeiro!";
-                log("Tentativa de adicionar medicamento sem paciente selecionado.");
-                return;
-            }
-            const nameInput = document.getElementById('addNameInput');
-            const periodInput = document.getElementById('addPeriodInput');
-            const name = nameInput.value.trim();
-            const periodicity = parseInt(periodInput.value);
-
-            if (!name || isNaN(periodicity) || periodicity <= 0) {
-                document.getElementById('addError').textContent = "Preencha nome e periodicidade válida!";
-                log("Tentativa de adicionar medicamento com dados inválidos.");
-                return;
-            }
-
-            const medsRef = getMedsRef();
-            push(medsRef, {
-                name,
-                periodicity,
-                lastTaken: null,
-                enabled: true,
-                history: [],
-                note: ""
-            }).then(() => {
-                nameInput.value = '';
-                periodInput.value = '';
-                document.getElementById('addError').textContent = '';
-                document.getElementById('addSuccess').textContent = "Item cadastrado com sucesso!";
-                log(`Medicamento ${name} cadastrado para o paciente ${currentUserId}.`);
-                setTimeout(() => document.getElementById('addSuccess').textContent = '', 2000);
-                showScreen('mainScreen');
-            }).catch((error) => {
-                document.getElementById('addError').textContent = "Erro ao cadastrar: " + error.message;
-                log(`Erro ao cadastrar medicamento: ${error.message}`);
-            });
-        }
-
-        function renderEditScreen() {
-            const medsRef = getMedsRef();
-            onValue(medsRef, (snapshot) => {
-                const meds = snapshot.val() || {};
-                const editList = document.getElementById('editMedList');
-                editList.innerHTML = '';
-
-                const medArray = Object.entries(meds).sort((a, b) => a[1].name.localeCompare(b[1].name));
-
-                medArray.forEach(([key, med]) => {
-                    const li = document.createElement('li');
-                    li.innerHTML = `
-                        <div class="edit-row">
-                            <input type="text" id="editName-${key}" value="${med.name}">
-                            <input type="number" id="editPeriod-${key}" value="${med.periodicity}">
-                            <button id="saveEdit-${key}">Salvar</button>
-                        </div>
-                    `;
-                    editList.appendChild(li);
-
-                    const editNameInput = document.getElementById(`editName-${key}`);
-                    const editPeriodInput = document.getElementById(`editPeriod-${key}`);
-                    const saveButton = document.getElementById(`saveEdit-${key}`);
-
-                    saveButton.addEventListener('click', () => saveEdit(key));
-
-                    editNameInput.addEventListener('keydown', (e) => {
-                        if (e.key === 'Enter') {
-                            e.preventDefault();
-                            saveEdit(key);
-                        }
-                    });
-                    editPeriodInput.addEventListener('keydown', (e) => {
-                        if (e.key === 'Enter') {
-                            e.preventDefault();
-                            saveEdit(key);
-                        }
-                    });
-                });
-            });
-        }
-
-        function saveEdit(key) {
-            const name = document.getElementById(`editName-${key}`).value.trim();
-            const periodicity = parseInt(document.getElementById(`editPeriod-${key}`).value);
-            if (!name || isNaN(periodicity) || periodicity <= 0) {
-                document.getElementById('editError').textContent = "Preencha nome e periodicidade válida!";
-                return;
-            }
-            update(ref(db, `users/${currentUserId}/medications/${key}`), { name, periodicity })
-                .then(() => {
-                    document.getElementById('editError').textContent = '';
-                    document.getElementById('editSuccess').textContent = "Item atualizado com sucesso!";
-                    setTimeout(() => document.getElementById('editSuccess').textContent = '', 2000);
-                    showScreen('mainScreen');
-                })
-                .catch((error) => {
-                    document.getElementById('editError').textContent = "Erro ao atualizar: " + error.message;
-                    log(`Erro ao atualizar medicamento: ${error.message}`);
-                });
-        }
-
-        function renderDeleteScreen() {
-            const medsRef = getMedsRef();
-            onValue(medsRef, (snapshot) => {
-                const meds = snapshot.val() || {};
-                const deleteList = document.getElementById('deleteMedList');
-                deleteList.innerHTML = '';
-
-                const medArray = Object.entries(meds).sort((a, b) => a[1].name.localeCompare(b[1].name));
-
-                medArray.forEach(([key, med]) => {
-                    const status = med.enabled !== false ? "Habilitado" : "Desabilitado";
-                    const li = document.createElement('li');
-                    li.innerHTML = `
-                        <div class="delete-row">
-                            <span class="delete-name">${med.name} | Periodicidade: ${med.periodicity}h</span>
-                            <div>
-                                <button id="enable-${key}">Habilitar</button>
-                                <button id="disable-${key}">Desabilitar</button>
-                                <button id="delete-${key}">Excluir</button>
-                                <span class="status-text">(${status})</span>
-                                ${med.note ? '<span class="has-note">(Contém Nota)</span>' : ''}
-                            </div>
-                        </div>
-                        <textarea id="note-${key}" class="delete-note" placeholder="Digite uma nota aqui">${med.note || ''}</textarea>
-                    `;
-                    deleteList.appendChild(li);
-
-                    const deleteNameSpan = li.querySelector('.delete-name');
-                    const hasNoteSpan = li.querySelector('.has-note');
-                    const noteTextarea = document.getElementById(`note-${key}`);
-
-                    function toggleNote(e) {
-                        e.stopPropagation();
-                        noteTextarea.style.display = noteTextarea.style.display === 'block' ? 'none' : 'block';
-                        noteTextarea.focus();
-                    }
-
-                    deleteNameSpan.addEventListener('click', toggleNote);
-                    if (hasNoteSpan) hasNoteSpan.addEventListener('click', toggleNote);
-
-                    noteTextarea.addEventListener('blur', () => {
-                        update(ref(db, `users/${currentUserId}/medications/${key}`), { note: noteTextarea.value });
-                    });
-                    noteTextarea.addEventListener('keydown', (e) => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                            e.preventDefault();
-                            update(ref(db, `users/${currentUserId}/medications/${key}`), { note: noteTextarea.value });
-                            noteTextarea.blur();
-                        }
-                    });
-
-                    document.getElementById(`enable-${key}`).addEventListener('click', () => enableItem(key));
-                    document.getElementById(`disable-${key}`).addEventListener('click', () => disableItem(key));
-                    document.getElementById(`delete-${key}`).addEventListener('click', () => deleteItem(key));
-                });
-            });
-        }
-
-        function enableItem(key) {
-            update(ref(db, `users/${currentUserId}/medications/${key}`), { enabled: true });
-            document.getElementById('deleteSuccess').textContent = "Item habilitado com sucesso!";
-            setTimeout(() => document.getElementById('deleteSuccess').textContent = '', 2000);
-            showScreen('mainScreen');
-        }
-
-        function disableItem(key) {
-            update(ref(db, `users/${currentUserId}/medications/${key}`), { enabled: false });
-            document.getElementById('deleteSuccess').textContent = "Item desabilitado com sucesso!";
-            setTimeout(() => document.getElementById('deleteSuccess').textContent = '', 2000);
-            renderDeleteScreen();
-        }
-
-        function deleteItem(key) {
-            remove(ref(db, `users/${currentUserId}/medications/${key}`));
-            document.getElementById('deleteSuccess').textContent = "Item excluído com sucesso!";
-            setTimeout(() => document.getElementById('deleteSuccess').textContent = '', 2000);
-            renderDeleteScreen();
-        }
-
-        function editHistory(key, index, sortedHistory, currentTaken) {
-            const takenLocal = new Date(new Date(currentTaken).getTime() - 3 * 60 * 60 * 1000);
-            const day = String(takenLocal.getDate()).padStart(2, '0');
-            const month = String(takenLocal.getMonth() + 1).padStart(2, '0');
-            const year = takenLocal.getFullYear();
-            const hours = String(takenLocal.getHours()).padStart(2, '0');
-            const minutes = String(takenLocal.getMinutes()).padStart(2, '0');
-            const currentValue = `${day}${month}${year}${hours}${minutes}`;
-
-            const newTime = prompt("Digite a nova data e horário (ddmmyyyyhhmm):", currentValue);
-            if (newTime && /^\d{12}$/.test(newTime)) {
-                const day = parseInt(newTime.slice(0, 2));
-                const month = parseInt(newTime.slice(2, 4)) - 1;
-                const year = parseInt(newTime.slice(4, 8));
-                const hours = parseInt(newTime.slice(8, 10));
-                const minutes = parseInt(newTime.slice(10, 12));
-
-                if (day >= 1 && day <= 31 && month >= 0 && month <= 11 && 
-                    year >= 2000 && year <= 9999 && 
-                    hours >= 0 && hours < 24 && minutes >= 0 && minutes < 60) {
-                    const localDate = new Date(year, month, day, hours, minutes, 0, 0);
-                    const utcDate = new Date(localDate.getTime() + 3 * 60 * 60 * 1000);
-                    const newTaken = utcDate.toISOString();
-
-                    onValue(ref(db, `users/${currentUserId}/medications/${key}`), (snapshot) => {
-                        const med = snapshot.val();
-                        if (med.history) {
-                            const updatedHistory = [...med.history];
-                            const historyIndex = updatedHistory.findIndex(item => item.taken === currentTaken);
-                            if (historyIndex !== -1) {
-                                const currentNotes = updatedHistory[historyIndex].notes || "";
-                                const currentLoggedBy = updatedHistory[historyIndex].loggedBy || (loggedInUserName || currentAuthUser.email);
-                                updatedHistory[historyIndex] = { taken: newTaken, notes: currentNotes, loggedBy: currentLoggedBy };
-                                const isLastEntry = historyIndex === updatedHistory.length - 1;
-                                const updates = { history: updatedHistory };
-                                if (isLastEntry) {
-                                    updates.lastTaken = newTaken;
-                                }
-                                update(ref(db, `users/${currentUserId}/medications/${key}`), updates).then(() => {
-                                    if (currentReportType === 'daily') renderDailyReport('chrono');
-                                    else renderReportScreen(currentReportType);
-                                    if (isLastEntry) {
-                                        renderMainScreen();
-                                        document.getElementById('reportSuccess').textContent = "Registro editado e tela inicial atualizada!";
-                                    } else {
-                                        document.getElementById('reportSuccess').textContent = "Registro editado com sucesso!";
-                                    }
-                                    setTimeout(() => document.getElementById('reportSuccess').textContent = '', 2000);
-                                }).catch((error) => {
-                                    document.getElementById('reportError').textContent = "Erro ao atualizar: " + error.message;
-                                    log(`Erro ao atualizar histórico: ${error.message}`);
-                                });
+                        userDiv.querySelector('.alter-btn').addEventListener('click', () => {
+                            const newPassword = prompt("Digite a nova senha para " + userData.email);
+                            if (newPassword) {
+                                update(ref(dbShared, `users/${uid}`), { password: newPassword })
+                                    .then(() => {
+                                        messageDiv.textContent = "Senha alterada com sucesso!";
+                                        renderUsersList();
+                                    })
+                                    .catch(error => log(`Erro ao alterar senha: ${error.message}`));
                             }
-                        }
-                    }, { onlyOnce: true });
-                } else {
-                    document.getElementById('reportError').textContent = "Data ou horário inválido! Use ddmmyyyyhhmm.";
-                }
-            } else {
-                document.getElementById('reportError').textContent = "Digite ddmmyyyyhhmm (ex.: 260220250122)!";
-            }
-        }
+                        });
 
-        function deleteHistory(key, index) {
-            onValue(ref(db, `users/${currentUserId}/medications/${key}`), (snapshot) => {
-                const med = snapshot.val();
-                if (med.history && med.history[index]) {
-                    const updatedHistory = [...med.history];
-                    updatedHistory.splice(index, 1);
-                    const newLastTaken = updatedHistory.length > 0 ? updatedHistory[updatedHistory.length - 1].taken : null;
-                    update(ref(db, `users/${currentUserId}/medications/${key}`), { 
-                        history: updatedHistory,
-                        lastTaken: newLastTaken
-                    }).then(() => {
-                        if (currentReportType === 'daily') renderDailyReport('chrono');
-                        else renderReportScreen(currentReportType);
-                        document.getElementById('reportSuccess').textContent = "Registro excluído com sucesso!";
-                        setTimeout(() => document.getElementById('reportSuccess').textContent = '', 2000);
-                        renderMainScreen();
-                    }).catch((error) => {
-                        document.getElementById('reportError').textContent = "Erro ao excluir: " + error.message;
-                        log(`Erro ao excluir histórico: ${error.message}`);
+                        userDiv.querySelector('.delete-btn').addEventListener('click', () => {
+                            if (confirm(`Tem certeza que deseja excluir ${userData.email}?`)) {
+                                remove(ref(dbShared, `users/${uid}`))
+                                    .then(() => {
+                                        messageDiv.textContent = "Usuário excluído com sucesso!";
+                                        renderUsersList();
+                                    })
+                                    .catch(error => log(`Erro ao excluir usuário: ${error.message}`));
+                            }
+                        });
                     });
+                } else {
+                    usersList.innerHTML += '<p>Nenhum usuário cadastrado.</p>';
                 }
             }, { onlyOnce: true });
         }
 
-        function renderReportScreen(type, order = 'chrono') {
-            const medsRef = getMedsRef();
-            onValue(medsRef, (snapshot) => {
-                const meds = snapshot.val() || {};
-                const reportList = document.getElementById('reportList');
-                reportList.innerHTML = '';
-                const now = new Date();
-                const today = new Date(now.getTime() - 3 * 60 * 60 * 1000);
-                today.setHours(0, 0, 0, 0);
-
-                let allEntries = [];
-                Object.entries(meds).forEach(([key, med]) => {
-                    if (med.history && med.history.length > 0) {
-                        med.history.forEach((entry, index) => {
-                            const takenDate = new Date(entry.taken);
-                            const takenLocal = new Date(takenDate.getTime() - 3 * 60 * 60 * 1000);
-                            const takenLocalDate = new Date(takenLocal);
-                            takenLocalDate.setHours(0, 0, 0, 0);
-                            let shouldInclude = false;
-                            if (type === 'daily') {
-                                shouldInclude = takenLocalDate.getTime() === today.getTime();
-                            } else if (type === 'weekly') {
-                                const weekAgo = new Date(now - 7 * 24 * 60 * 60 * 1000);
-                                shouldInclude = takenLocal >= weekAgo;
-                            } else if (type === 'monthly') {
-                                const monthAgo = new Date(now - 30 * 24 * 60 * 60 * 1000);
-                                shouldInclude = takenLocal >= monthAgo;
-                            } else if (type === 'yearly') {
-                                const yearAgo = new Date(now - 365 * 24 * 60 * 60 * 1000);
-                                shouldInclude = takenLocal >= yearAgo;
-                            }
-                            if (shouldInclude) {
-                                allEntries.push({ key, med, taken: entry.taken, notes: entry.notes || "", loggedBy: entry.loggedBy || (loggedInUserName || currentAuthUser.email), index });
-                            }
-                        });
-                    }
-                });
-
-                if (order === 'chrono') {
-                    allEntries.sort((a, b) => new Date(a.taken) - new Date(b.taken));
-                } else if (order === 'type') {
-                    allEntries.sort((a, b) => {
-                        const nameCompare = a.med.name.localeCompare(b.med.name);
-                        if (nameCompare !== 0) return nameCompare;
-                        return new Date(a.taken) - new Date(b.taken);
-                    });
-                }
-
-                allEntries.forEach(({ key, med, taken, notes, loggedBy, index }) => {
-                    const li = document.createElement('li');
-                    const takenLocal = new Date(new Date(taken).getTime() - 3 * 60 * 60 * 1000);
-                    const periodMs = med.periodicity * 60 * 60 * 1000;
-                    let expectedLocal;
-                    if (index === 0) {
-                        expectedLocal = null;
-                    } else {
-                        const previousEntry = med.history[index - 1];
-                        const previousTaken = new Date(previousEntry.taken);
-                        const expected = new Date(previousTaken.getTime() + periodMs);
-                        expectedLocal = new Date(expected.getTime() - 3 * 60 * 60 * 1000);
-                    }
-                    const diff = index === 0 || !expectedLocal ? 0 : Math.abs(takenLocal - expectedLocal);
-                    const onTime = index === 0 || diff <= 30 * 60 * 1000;
-                    li.innerHTML = `
-                        <div class="report-row">
-                            ${med.name} | Tomado: <span class="${onTime ? 'on-time' : 'late'}">${takenLocal.toLocaleString('pt-BR', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
-                            | Esperado: ${index === 0 || !expectedLocal ? 'N/A' : expectedLocal.toLocaleString('pt-BR', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' })}
-                            | Registrado por: ${loggedBy}
-                            <div>
-                                <button id="editHist-${key}-${index}">Editar</button>
-                                <button id="delHist-${key}-${index}">Excluir</button>
-                                ${notes ? '<span class="has-note">(Contém Nota)</span>' : ''}
-                            </div>
-                        </div>
-                        <textarea id="note-${key}-${index}" class="user-note" placeholder="Digite uma nota aqui">${notes}</textarea>
-                    `;
-                    reportList.appendChild(li);
-
-                    const reportRow = li.querySelector('.report-row');
-                    const hasNoteSpan = li.querySelector('.has-note');
-                    const noteTextarea = document.getElementById(`note-${key}-${index}`);
-
-                    function toggleNote(e) {
-                        e.stopPropagation();
-                        noteTextarea.style.display = noteTextarea.style.display === 'block' ? 'none' : 'block';
-                        noteTextarea.focus();
-                    }
-
-                    reportRow.addEventListener('click', toggleNote);
-                    if (hasNoteSpan) hasNoteSpan.addEventListener('click', toggleNote);
-
-                    noteTextarea.addEventListener('blur', () => {
-                        const updatedHistory = [...med.history];
-                        updatedHistory[index] = { taken: taken, notes: noteTextarea.value, loggedBy: loggedBy };
-                        update(ref(db, `users/${currentUserId}/medications/${key}`), { history: updatedHistory });
-                    });
-                    noteTextarea.addEventListener('keydown', (e) => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                            e.preventDefault();
-                            const updatedHistory = [...med.history];
-                            updatedHistory[index] = { taken: taken, notes: noteTextarea.value, loggedBy: loggedBy };
-                            update(ref(db, `users/${currentUserId}/medications/${key}`), { history: updatedHistory });
-                            noteTextarea.blur();
-                        }
-                    });
-
-                    document.getElementById(`editHist-${key}-${index}`).addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        editHistory(key, index, allEntries.map(e => e.taken), taken);
-                    });
-                    document.getElementById(`delHist-${key}-${index}`).addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        deleteHistory(key, index);
-                    });
-                });
-
-                if (!reportList.children.length) {
-                    reportList.innerHTML = '<li>Nenhum registro encontrado!</li>';
-                }
-            });
+        // Funções do Aplicativo
+        function wait(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
         }
 
-        function renderDailyReport(order = 'chrono') {
-            const medsRef = getMedsRef();
-            onValue(medsRef, (snapshot) => {
-                const meds = snapshot.val() || {};
-                const reportList = document.getElementById('reportList');
-                reportList.innerHTML = '';
-                const now = new Date();
-                const today = new Date(now);
-                today.setHours(0, 0, 0, 0);
+        function scrollToInput() {
+            const taskInput = document.getElementById('taskInput');
+            const targetPosition = taskInput.getBoundingClientRect().top + window.pageYOffset - 20;
+            const startPosition = window.pageYOffset;
+            const distance = targetPosition - startPosition;
+            const duration = 1000;
+            let startTime = null;
 
-                let allEntries = [];
-                Object.entries(meds).forEach(([key, med]) => {
-                    if (med.history && med.history.length > 0) {
-                        med.history.forEach((entry, index) => {
-                            const takenDate = new Date(entry.taken);
-                            const takenLocal = new Date(takenDate.getTime() - 3 * 60 * 60 * 1000);
-                            const takenLocalDate = new Date(takenLocal);
-                            takenLocalDate.setHours(0, 0, 0, 0);
-                            if (takenLocalDate.getTime() === today.getTime()) {
-                                allEntries.push({ key, med, taken: entry.taken, notes: entry.notes || "", loggedBy: entry.loggedBy || (loggedInUserName || currentAuthUser.email), index });
-                            }
-                        });
-                    }
-                });
+            log(`Iniciando rolagem para o input: posição calculada=${targetPosition}, posição atual=${startPosition}`);
 
-                if (order === 'chrono') {
-                    allEntries.sort((a, b) => new Date(a.taken) - new Date(b.taken));
-                } else if (order === 'type') {
-                    allEntries.sort((a, b) => {
-                        const nameCompare = a.med.name.localeCompare(b.med.name);
-                        if (nameCompare !== 0) return nameCompare;
-                        return new Date(a.taken) - new Date(b.taken);
-                    });
+            function animateScroll(currentTime) {
+                if (!startTime) startTime = currentTime;
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const ease = progress * (2 - progress);
+                window.scrollTo(0, startPosition + distance * ease);
+
+                if (progress < 1) {
+                    requestAnimationFrame(animateScroll);
+                } else {
+                    log(`Rolagem para o input concluída: posição=${targetPosition}`);
                 }
+            }
 
-                allEntries.forEach(({ key, med, taken, notes, loggedBy, index }) => {
-                    const li = document.createElement('li');
-                    const takenLocal = new Date(new Date(taken).getTime() - 3 * 60 * 60 * 1000);
-                    const periodMs = med.periodicity * 60 * 60 * 1000;
-                    let expectedLocal;
-                    if (index === 0) {
-                        expectedLocal = null;
-                    } else {
-                        const previousEntry = med.history[index - 1];
-                        const previousTaken = new Date(previousEntry.taken);
-                        expectedLocal = new Date(previousTaken.getTime() + periodMs - 3 * 60 * 60 * 1000);
-                    }
-                    const diff = index === 0 || !expectedLocal ? 0 : Math.abs(takenLocal - expectedLocal);
-                    const onTime = index === 0 || diff <= 30 * 60 * 1000;
-                    li.innerHTML = `
-                        <div class="report-row">
-                            ${med.name} | Tomado: <span class="${onTime ? 'on-time' : 'late'}">${takenLocal.toLocaleString('pt-BR', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
-                            | Esperado: ${index === 0 || !expectedLocal ? 'N/A' : expectedLocal.toLocaleString('pt-BR', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' })}
-                            | Registrado por: ${loggedBy}
-                            <div>
-                                <button id="editHist-${key}-${index}">Editar</button>
-                                <button id="delHist-${key}-${index}">Excluir</button>
-                                ${notes ? '<span class="has-note">(Contém Nota)</span>' : ''}
-                            </div>
-                        </div>
-                        <textarea id="note-${key}-${index}" class="user-note" placeholder="Digite uma nota aqui">${notes}</textarea>
-                    `;
-                    reportList.appendChild(li);
-
-                    const reportRow = li.querySelector('.report-row');
-                    const hasNoteSpan = li.querySelector('.has-note');
-                    const noteTextarea = document.getElementById(`note-${key}-${index}`);
-
-                    function toggleNote(e) {
-                        e.stopPropagation();
-                        noteTextarea.style.display = noteTextarea.style.display === 'block' ? 'none' : 'block';
-                        noteTextarea.focus();
-                    }
-
-                    reportRow.addEventListener('click', toggleNote);
-                    if (hasNoteSpan) hasNoteSpan.addEventListener('click', toggleNote);
-
-                    noteTextarea.addEventListener('blur', () => {
-                        const updatedHistory = [...med.history];
-                        updatedHistory[index] = { taken: taken, notes: noteTextarea.value, loggedBy: loggedBy };
-                        update(ref(db, `users/${currentUserId}/medications/${key}`), { history: updatedHistory });
-                    });
-                    noteTextarea.addEventListener('keydown', (e) => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                            e.preventDefault();
-                            const updatedHistory = [...med.history];
-                            updatedHistory[index] = { taken: taken, notes: noteTextarea.value, loggedBy: loggedBy };
-                            update(ref(db, `users/${currentUserId}/medications/${key}`), { history: updatedHistory });
-                            noteTextarea.blur();
-                        }
-                    });
-
-                    document.getElementById(`editHist-${key}-${index}`).addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        editHistory(key, index, allEntries.map(e => e.taken), taken);
-                    });
-                    document.getElementById(`delHist-${key}-${index}`).addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        deleteHistory(key, index);
-                    });
-                });
-
-                if (!reportList.children.length) {
-                    reportList.innerHTML = '<li>Nenhum registro encontrado!</li>';
-                }
-            });
+            requestAnimationFrame(animateScroll);
         }
 
-        function renderUserRegistryReport() {
-            const reportList = document.getElementById('reportList');
-            reportList.innerHTML = '';
+        async function scrollToTarget(key, path = '') {
+            log(`Iniciando scrollToTarget para key=${key}, path=${path}`);
+            await wait(4000);
 
-            onValue(authUsersRef, (snapshot) => {
-                const authUsers = snapshot.val() || {};
-                log(`Dados brutos de authUsers: ${JSON.stringify(authUsers)}`);
-                
-                if (!authUsers) {
-                    reportList.innerHTML = '<li>Nenhum usuário autenticado encontrado!</li>';
+            const findElementWithRetry = async (retries = 15, delay = 500) => {
+                const expandAndFindElement = async () => {
+                    const rootElement = document.querySelector(`li[data-key="${key}"]`);
+                    if (!rootElement) {
+                        log(`Erro: Elemento raiz não encontrado para key=${key}`);
+                        return null;
+                    }
+                    log(`Elemento raiz encontrado: key=${key}`);
+
+                    if (!path) return rootElement;
+
+                    const parts = path.split('/').filter(p => p !== '');
+                    let currentElement = rootElement;
+                    let currentPath = key;
+
+                    for (let i = 0; i < parts.length; i++) {
+                        const subtaskIndex = parseInt(parts[i]);
+                        const subtasksContainer = currentElement.querySelector('.subtasks-container');
+                        const expandBtn = currentElement.querySelector('.expand-btn');
+
+                        if (subtasksContainer && expandBtn) {
+                            if (!subtasksContainer.classList.contains('visible')) {
+                                subtasksContainer.classList.add('visible');
+                                expandBtn.textContent = '−';
+                                updateExpansionState(key, currentPath, true);
+                                log(`Expandido: ${currentPath}`);
+                                await wait(500);
+                            }
+                        } else {
+                            log(`Erro: Container ou botão de expansão não encontrado em ${currentPath}`);
+                            return rootElement;
+                        }
+
+                        const targetSubtask = subtasksContainer.querySelector(`li[data-subtask-path="${currentPath}/${subtaskIndex}"]`);
+                        if (!targetSubtask) {
+                            log(`Erro: Subtarefa não encontrada no path=${currentPath}/${subtaskIndex}`);
+                            return null;
+                        }
+                        currentElement = targetSubtask;
+                        currentPath += `/${subtaskIndex}`;
+                        log(`Subtarefa encontrada: ${currentPath}`);
+                    }
+
+                    return currentElement;
+                };
+
+                let targetElement = null;
+                let attempts = 0;
+
+                while (attempts < retries) {
+                    targetElement = await expandAndFindElement();
+                    if (targetElement) {
+                        const rect = targetElement.getBoundingClientRect();
+                        if (rect.top > 0) {
+                            log(`Elemento alvo encontrado e visível após ${attempts} tentativas: top=${rect.top}`);
+                            break;
+                        } else {
+                            log(`Tentativa ${attempts + 1}: Elemento encontrado, mas não visível (top=${rect.top}), esperando ${delay}ms`);
+                        }
+                    } else {
+                        log(`Tentativa ${attempts + 1}: Elemento não encontrado, esperando ${delay}ms`);
+                    }
+                    await wait(delay);
+                    attempts++;
+                }
+
+                if (!targetElement) {
+                    log(`Erro: Elemento alvo não encontrado após ${retries} tentativas para key=${key}, path=${path}`);
+                } else if (targetElement.getBoundingClientRect().top <= 0) {
+                    log(`Erro: Elemento encontrado, mas ainda não visível (top=0) após ${retries} tentativas`);
+                }
+
+                return targetElement;
+            };
+
+            const targetElement = await findElementWithRetry();
+            if (targetElement) {
+                await wait(300);
+                const rect = targetElement.getBoundingClientRect();
+                const scrollPosition = rect.top + window.pageYOffset - 50;
+                log(`Calculando rolagem: top=${rect.top}, pageYOffset=${window.pageYOffset}, scrollPosition=${scrollPosition}`);
+
+                targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                await wait(1000);
+
+                log(`Rolagem concluída para ${path ? `subtarefa em ${key}/${path}` : `tarefa em ${key}`}`);
+            } else {
+                log(`Falha ao rolar: elemento não encontrado ou não visível após retries para key=${key}, path=${path}`);
+                const rootElement = document.querySelector(`li[data-key="${key}"]`);
+                if (rootElement) {
+                    const rect = rootElement.getBoundingClientRect();
+                    const scrollPosition = rect.top + window.pageYOffset - 50;
+                    rootElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    log(`Fallback: Rolagem para raiz em ${key}, scrollPosition=${scrollPosition}`);
+                } else {
+                    log(`Fallback falhou: elemento raiz ${key} não encontrado`);
+                }
+            }
+        }
+
+        function updateExpansionState(key, path, isExpanded) {
+            const taskRef = ref(dbShared, `tasks/${key}`);
+            onValue(taskRef, (snapshot) => {
+                const task = snapshot.val();
+                if (!path) {
+                    task.expanded = isExpanded;
+                } else {
+                    const parts = path.split('/').filter(p => p !== '').slice(1);
+                    let current = task;
+                    for (const index of parts) {
+                        current = current.subtasks[parseInt(index)];
+                    }
+                    current.expanded = isExpanded;
+                }
+                update(taskRef, task)
+                    .then(() => log(`Estado de expansão atualizado para ${path || key}: ${isExpanded}`))
+                    .catch(error => log(`Erro ao atualizar estado de expansão: ${error.message}`));
+            }, { onlyOnce: true });
+        }
+
+        function updateNotesVisibility(key, path, isVisible) {
+            const taskRef = ref(dbShared, `tasks/${key}`);
+            onValue(taskRef, (snapshot) => {
+                const task = snapshot.val();
+                if (!path) {
+                    task.notesVisible = isVisible;
+                } else {
+                    const parts = path.split('/').filter(p => p !== '');
+                    let current = task;
+                    for (const index of parts) {
+                        current = current.subtasks[parseInt(index)];
+                    }
+                    current.notesVisible = isVisible;
+                }
+                update(taskRef, task)
+                    .then(() => log(`Estado de visibilidade das notas atualizado para ${path || key}: ${isVisible}`))
+                    .catch(error => log(`Erro ao atualizar estado de visibilidade das notas: ${error.message}`));
+            }, { onlyOnce: true });
+        }
+
+        function saveTask(taskKey = null) {
+            const taskInput = document.getElementById('taskInput');
+            const dueDateInput = document.getElementById('dueDate');
+            const priorityInput = document.getElementById('priority');
+            const taskText = taskInput.value.trim();
+            let dueDate = dueDateInput.value || null;
+            const priority = parseInt(priorityInput.value) || 1;
+
+            log(`saveTask chamado: taskText="${taskText}", editingTaskKey=${editingTaskKey}, editingSubtask=${JSON.stringify(editingSubtask)}, addingSubtaskToKey=${JSON.stringify(addingSubtaskToKey)}`);
+
+            if (taskText === '') {
+                document.getElementById('error').textContent = "Preencha a tarefa!";
+                log("Erro: Tarefa vazia");
+                return;
+            }
+
+            const validateSubtaskConstraints = (parentTask, newDueDate, newPriority) => {
+                if (!parentTask) {
+                    log("Erro: parentTask é undefined");
+                    return true;
+                }
+                if (newDueDate && parentTask.dueDate && newDueDate > parentTask.dueDate) {
+                    document.getElementById('error').textContent = "Data da subtarefa não pode ser posterior à da tarefa!";
+                    log("Erro: Data da subtarefa posterior à tarefa");
+                    return false;
+                }
+                if (parentTask.priority !== undefined && newPriority > parentTask.priority) {
+                    document.getElementById('error').textContent = "Prioridade da subtarefa não pode ser maior que a da tarefa!";
+                    log("Erro: Prioridade da subtarefa maior que a tarefa");
+                    return false;
+                }
+                return true;
+            };
+
+            if (editingSubtask) {
+                const { parentKey, path, index } = editingSubtask;
+                const taskRef = ref(dbShared, `tasks/${parentKey}`);
+                log(`Editando subtarefa: parentKey=${parentKey}, path=${path}, index=${index}`);
+                onValue(taskRef, (snapshot) => {
+                    const task = snapshot.val();
+                    const subtasks = path ? getNestedSubtasks(task, path) : task.subtasks;
+                    const parentTask = path ? getParentTask(task, path) : task;
+                    if (!validateSubtaskConstraints(parentTask, dueDate, priority)) return;
+
+                    subtasks[index] = {
+                        text: taskText,
+                        dueDate: dueDate,
+                        priority: Math.min(Math.max(priority, 1), 1000),
+                        notes: subtasks[index].notes || "",
+                        completed: subtasks[index].completed || false,
+                        subtasks: subtasks[index].subtasks || [],
+                        expanded: subtasks[index].expanded || false,
+                        notesVisible: subtasks[index].notesVisible || false
+                    };
+                    log(`Subtarefa atualizada: ${JSON.stringify(subtasks[index])}`);
+                    update(taskRef, task).then(() => {
+                        document.getElementById('success').textContent = "Subtarefa atualizada com sucesso!";
+                        const fullPath = path ? `${path}/${index}` : `${index}`;
+                        scrollToTarget(parentKey, fullPath);
+                        resetForm();
+                    }).catch((error) => {
+                        document.getElementById('error').textContent = "Erro ao atualizar subtarefa: " + error.message;
+                        log(`Erro ao atualizar subtarefa: ${error.message}`);
+                    });
+                }, { onlyOnce: true });
+            } else if (addingSubtaskToKey) {
+                const { key, path } = addingSubtaskToKey;
+                const taskRef = ref(dbShared, `tasks/${key}`);
+                log(`Adicionando subtarefa: key=${key}, path=${path}`);
+                onValue(taskRef, (snapshot) => {
+                    const task = snapshot.val();
+                    if (!task) {
+                        document.getElementById('error').textContent = "Tarefa pai não encontrada!";
+                        log(`Erro: Tarefa pai não encontrada para key=${key}`);
+                        return;
+                    }
+
+                    const parentTask = path ? getParentTask(task, path) : task;
+                    if (!validateSubtaskConstraints(parentTask, dueDate, priority)) return;
+
+                    const newSubtask = {
+                        text: taskText,
+                        dueDate: dueDate,
+                        priority: Math.min(Math.max(priority, 1), 1000),
+                        notes: "",
+                        completed: false,
+                        subtasks: [],
+                        expanded: false,
+                        notesVisible: false
+                    };
+
+                    let newIndex;
+                    if (!path) {
+                        task.subtasks = task.subtasks || [];
+                        newIndex = task.subtasks.length;
+                        task.subtasks.push(newSubtask);
+                    } else {
+                        const parts = path.split('/').filter(p => p !== '');
+                        let current = task;
+                        for (let i = 0; i < parts.length; i++) {
+                            const index = parseInt(parts[i]);
+                            if (!current.subtasks) current.subtasks = [];
+                            if (i === parts.length - 1) {
+                                current.subtasks[index].subtasks = current.subtasks[index].subtasks || [];
+                                newIndex = current.subtasks[index].subtasks.length;
+                                current.subtasks[index].subtasks.push(newSubtask);
+                            } else {
+                                current = current.subtasks[index];
+                            }
+                        }
+                    }
+
+                    log(`Nova subtarefa adicionada: ${JSON.stringify(newSubtask)}`);
+                    update(taskRef, task).then(() => {
+                        document.getElementById('success').textContent = "Subtarefa adicionada com sucesso!";
+                        const newPath = path ? `${path}/${newIndex}` : `${newIndex}`;
+                        scrollToTarget(key, newPath);
+                        resetForm();
+                    }).catch((error) => {
+                        document.getElementById('error').textContent = "Erro ao adicionar subtarefa: " + error.message;
+                        log(`Erro ao adicionar subtarefa: ${error.message}`);
+                    });
+                }, { onlyOnce: true });
+            } else if (editingTaskKey) {
+                const taskRef = ref(dbShared, `tasks/${editingTaskKey}`);
+                log(`Editando tarefa: key=${editingTaskKey}`);
+                onValue(taskRef, (snapshot) => {
+                    const currentTask = snapshot.val();
+                    const updatedTask = {
+                        text: taskText,
+                        dueDate: dueDate,
+                        priority: Math.min(Math.max(priority, 1), 1000),
+                        notes: currentTask.notes || "",
+                        completed: currentTask.completed || false,
+                        category: currentCategory,
+                        subtasks: currentTask.subtasks || [],
+                        expanded: currentTask.expanded || false,
+                        notesVisible: currentTask.notesVisible || false
+                    };
+                    set(taskRef, updatedTask).then(() => {
+                        document.getElementById('success').textContent = "Tarefa atualizada com sucesso!";
+                        scrollToTarget(editingTaskKey);
+                        resetForm();
+                    }).catch((error) => {
+                        document.getElementById('error').textContent = "Erro ao atualizar: " + error.message;
+                        log(`Erro ao atualizar tarefa: ${error.message}`);
+                    });
+                }, { onlyOnce: true });
+            } else {
+                log("Adicionando nova tarefa");
+                push(tasksRefShared, {
+                    text: taskText,
+                    dueDate: dueDate,
+                    priority: Math.min(Math.max(priority, 1), 1000),
+                    notes: "",
+                    completed: false,
+                    category: currentCategory,
+                    subtasks: [],
+                    expanded: false,
+                    notesVisible: false
+                }).then((newTaskRef) => {
+                    document.getElementById('success').textContent = "Tarefa adicionada com sucesso!";
+                    scrollToTarget(newTaskRef.key);
+                    resetForm();
+                }).catch((error) => {
+                    document.getElementById('error').textContent = "Erro ao adicionar: " + error.message;
+                    log(`Erro ao adicionar tarefa: ${error.message}`);
+                });
+            }
+        }
+
+        function resetForm() {
+            document.getElementById('taskInput').value = '';
+            document.getElementById('dueDate').value = '';
+            document.getElementById('priority').value = '';
+            document.getElementById('actionButton').textContent = 'Adicionar';
+            document.getElementById('error').textContent = '';
+            document.getElementById('txtNote').style.display = 'none';
+            document.getElementById('backBtn').style.display = 'none';
+            editingTaskKey = null;
+            editingSubtask = null;
+            addingSubtaskToKey = null;
+            renderTasks();
+            log("Formulário resetado");
+        }
+
+        function editTask(key) {
+            const taskRef = ref(dbShared, `tasks/${key}`);
+            log(`editTask chamado para key=${key}`);
+            onValue(taskRef, (snapshot) => {
+                const task = snapshot.val();
+                if (!task) {
+                    log(`Erro: Tarefa com key=${key} não encontrada`);
+                    document.getElementById('error').textContent = "Tarefa não encontrada!";
+                    return;
+                }
+                document.getElementById('taskInput').value = task.text;
+                document.getElementById('dueDate').value = task.dueDate || '';
+                document.getElementById('priority').value = task.priority || '';
+                document.getElementById('actionButton').textContent = 'Salvar';
+                editingTaskKey = key;
+                scrollToInput();
+                document.getElementById('taskInput').focus();
+                log(`Dados carregados para edição: text="${task.text}", dueDate="${task.dueDate}", priority=${task.priority}`);
+            }, { onlyOnce: true });
+        }
+
+        function addSubtask(key, path = '') {
+            log(`Preparando para adicionar subtarefa: parentKey=${key}, path=${path}`);
+            document.getElementById('taskInput').value = '';
+            document.getElementById('dueDate').value = '';
+            document.getElementById('priority').value = '';
+            document.getElementById('actionButton').textContent = 'Adicionar Subtarefa';
+            addingSubtaskToKey = { key, path };
+            scrollToInput();
+            document.getElementById('taskInput').focus();
+        }
+
+        function editSubtask(parentKey, path, index) {
+            const taskRef = ref(dbShared, `tasks/${parentKey}`);
+            log(`editSubtask chamado: parentKey=${parentKey}, path=${path}, index=${index}`);
+            onValue(taskRef, (snapshot) => {
+                const task = snapshot.val();
+                const subtasks = path ? getNestedSubtasks(task, path) : task.subtasks;
+                const subtask = subtasks[index];
+                document.getElementById('taskInput').value = subtask.text;
+                document.getElementById('dueDate').value = subtask.dueDate || '';
+                document.getElementById('priority').value = subtask.priority || '';
+                document.getElementById('actionButton').textContent = 'Salvar Subtarefa';
+                editingSubtask = { parentKey, path, index };
+                scrollToInput();
+                document.getElementById('taskInput').focus();
+                log(`Dados da subtarefa carregados: text="${subtask.text}", dueDate="${subtask.dueDate}", priority=${subtask.priority}`);
+            }, { onlyOnce: true });
+        }
+
+        function toggleTask(key) {
+            log(`toggleTask chamado: key=${key}`);
+            const taskRef = ref(dbShared, `tasks/${key}`);
+            onValue(taskRef, (snapshot) => {
+                const task = snapshot.val();
+                update(taskRef, { completed: !task.completed })
+                    .then(() => log(`Tarefa ${key} atualizada no Firebase: completed=${!task.completed}`))
+                    .catch(error => log(`Erro ao atualizar tarefa: ${error.message}`));
+            }, { onlyOnce: true });
+        }
+
+        function toggleSubtask(parentKey, path, subtaskIndex) {
+            log(`toggleSubtask chamado: parentKey=${parentKey}, path=${path}, subtaskIndex=${subtaskIndex}`);
+            const taskRef = ref(dbShared, `tasks/${parentKey}`);
+            onValue(taskRef, (snapshot) => {
+                const task = snapshot.val();
+                let subtasks = task.subtasks || [];
+
+                if (!path) {
+                    if (!subtasks[subtaskIndex]) {
+                        log(`Erro: Subtarefa no índice ${subtaskIndex} não encontrada em ${parentKey}`);
+                        return;
+                    }
+                    subtasks[subtaskIndex].completed = !subtasks[subtaskIndex].completed;
+                } else {
+                    const pathParts = path.split('/').map(Number);
+                    let currentLevel = subtasks;
+                    for (let i = 0; i < pathParts.length; i++) {
+                        if (!currentLevel[pathParts[i]]) {
+                            log(`Erro: Caminho inválido em ${parentKey}/${path} no índice ${pathParts[i]}`);
+                            return;
+                        }
+                        if (i === pathParts.length - 1) {
+                            if (!currentLevel[pathParts[i]].subtasks || !currentLevel[pathParts[i]].subtasks[subtaskIndex]) {
+                                log(`Erro: Subtarefa no índice ${subtaskIndex} não encontrada em ${parentKey}/${path}`);
+                                return;
+                            }
+                            currentLevel[pathParts[i]].subtasks[subtaskIndex].completed = !currentLevel[pathParts[i]].subtasks[subtaskIndex].completed;
+                        } else {
+                            currentLevel = currentLevel[pathParts[i]].subtasks;
+                        }
+                    }
+                }
+
+                update(taskRef, { subtasks })
+                    .then(() => log(`Subtarefa atualizada no Firebase: ${parentKey}/${path ? path + '/' : ''}${subtaskIndex}`))
+                    .catch(error => log(`Erro ao atualizar subtarefa: ${error.message}`));
+            }, { onlyOnce: true });
+        }
+
+        function deleteTask(key) {
+            if (confirm("Tem certeza que deseja excluir esta tarefa?")) {
+                remove(ref(dbShared, `tasks/${key}`))
+                    .then(() => log(`Tarefa excluída com sucesso: ${key}`))
+                    .catch(error => log(`Erro ao excluir tarefa: ${error.message}`));
+            }
+        }
+
+        function deleteSubtask(parentKey, path, index) {
+            if (confirm("Tem certeza que deseja excluir esta subtarefa?")) {
+                const taskRef = ref(dbShared, `tasks/${parentKey}`);
+                onValue(taskRef, (snapshot) => {
+                    const task = snapshot.val();
+                    const subtasks = path ? getNestedSubtasks(task, path) : task.subtasks;
+                    subtasks.splice(index, 1);
+                    update(taskRef, task)
+                        .then(() => log(`Subtarefa excluída com sucesso: ${parentKey}/${path}/${index}`))
+                        .catch(error => log(`Erro ao excluir subtarefa: ${error.message}`));
+                }, { onlyOnce: true });
+            }
+        }
+
+        function toggleNotes(li, key, path = '') {
+            const notesDiv = li.querySelector('.notes');
+            const isVisible = !notesDiv.classList.contains('visible');
+            notesDiv.classList.toggle('visible');
+            updateNotesVisibility(key, path, isVisible);
+        }
+
+        function updateNotes(key, textarea) {
+            const taskRef = ref(dbShared, `tasks/${key}`);
+            update(taskRef, { notes: textarea.value })
+                .then(() => log(`Notas atualizadas para tarefa: ${key}`))
+                .catch(error => log(`Erro ao atualizar notas: ${error.message}`));
+        }
+
+        function updateSubtaskNotes(parentKey, path, index, textarea) {
+            const taskRef = ref(dbShared, `tasks/${parentKey}`);
+            onValue(taskRef, (snapshot) => {
+                const task = snapshot.val();
+                const subtasks = path ? getNestedSubtasks(task, path) : task.subtasks;
+                subtasks[index].notes = textarea.value;
+                update(taskRef, task)
+                    .then(() => log(`Notas da subtarefa atualizadas: ${parentKey}/${path}/${index}`))
+                    .catch(error => log(`Erro ao atualizar notas da subtarefa: ${error.message}`));
+            }, { onlyOnce: true });
+        }
+
+        function toggleCategoryDropdown(dropdown) {
+            const content = dropdown.querySelector('.dropdown-content');
+            content.style.display = content.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function toggleSubtasks(key, path, li) {
+            const fullPath = path ? `${key}/${path}` : key;
+            const subtasksContainer = li.querySelector('.subtasks-container');
+            const expandBtn = li.querySelector('.expand-btn');
+            const isExpanded = !subtasksContainer.classList.contains('visible');
+            if (isExpanded) {
+                subtasksContainer.classList.add('visible');
+                expandBtn.textContent = '−';
+            } else {
+                subtasksContainer.classList.remove('visible');
+                expandBtn.textContent = '+';
+            }
+            updateExpansionState(key, fullPath, isExpanded);
+        }
+
+        function changeCategory(key, newCategory) {
+            const taskRef = ref(dbShared, `tasks/${key}`);
+            update(taskRef, { category: newCategory })
+                .then(() => log(`Categoria da tarefa ${key} alterada para ${newCategory}`))
+                .catch(error => log(`Erro ao alterar categoria: ${error.message}`));
+        }
+
+        function moveLevelUp(key, path = '') {
+            log(`moveLevelUp chamado: key=${key}, path=${path}`);
+            const taskRef = ref(dbShared, `tasks/${key}`);
+            onValue(taskRef, (snapshot) => {
+                const task = snapshot.val();
+                if (!task) {
+                    log(`Erro: Tarefa ${key} não encontrada`);
+                    return;
+                }
+                const parts = path.split('/').filter(p => p !== '');
+                const level = parts.length;
+
+                if (level === 0) {
+                    log(`Tarefa principal ${key} não pode subir mais (nível 0)`);
                     return;
                 }
 
-                const userArray = Object.entries(authUsers).map(([uid, user]) => ({
-                    uid,
-                    name: user.name || user.email,
-                    email: user.email,
-                    registeredBy: user.registeredBy || "Usuário Desconhecido"
-                }));
+                const subtaskIndex = parseInt(parts[parts.length - 1]);
+                let currentSubtasks = level === 1 ? task.subtasks : getNestedSubtasks(task, parts.slice(0, -1).join('/'));
+                
+                if (!currentSubtasks || !Array.isArray(currentSubtasks) || subtaskIndex >= currentSubtasks.length) {
+                    log(`Erro: Subtarefas inválidas ou índice fora do intervalo em ${key}/${path}`);
+                    return;
+                }
 
-                log(`Array de usuários para o relatório: ${JSON.stringify(userArray)}`);
+                const subtaskToMove = currentSubtasks[subtaskIndex];
 
-                userArray.sort((a, b) => a.name.localeCompare(b.name));
+                if (level === 1) {
+                    currentSubtasks.splice(subtaskIndex, 1);
+                    push(tasksRefShared, { ...subtaskToMove, category: task.category })
+                        .then((newTaskRef) => {
+                            log(`Subtarefa ${key}/${path} promovida a tarefa principal com key ${newTaskRef.key}`);
+                            update(taskRef, task);
+                            scrollToTarget(newTaskRef.key);
+                        })
+                        .catch(error => log(`Erro ao promover subtarefa: ${error.message}`));
+                } else {
+                    const parentPath = parts.slice(0, -2).join('/');
+                    const parentSubtasks = parentPath ? getNestedSubtasks(task, parentPath) : task.subtasks;
+                    
+                    if (!parentSubtasks || !Array.isArray(parentSubtasks)) {
+                        log(`Erro: ParentSubtasks inválido em ${key}/${parentPath}`);
+                        return;
+                    }
 
-                userArray.forEach(({ name, email, registeredBy }) => {
-                    const li = document.createElement('li');
-                    li.innerHTML = `
-                        <div class="report-row">
-                            <span>${name} | E-mail: ${email} | Cadastrado por: ${registeredBy}</span>
-                        </div>
-                    `;
-                    reportList.appendChild(li);
-                });
-
-                if (!reportList.children.length) {
-                    reportList.innerHTML = '<li>Nenhum usuário autenticado encontrado!</li>';
+                    currentSubtasks.splice(subtaskIndex, 1);
+                    parentSubtasks.push(subtaskToMove);
+                    update(taskRef, task)
+                        .then(() => {
+                            log(`Subtarefa ${key}/${path} subiu de nível ${level} para ${level - 1}`);
+                            const newPath = parentPath ? `${parentPath}/${parentSubtasks.length - 1}` : `${parentSubtasks.length - 1}`;
+                            scrollToTarget(key, newPath);
+                        })
+                        .catch(error => log(`Erro ao subir nível: ${error.message}`));
                 }
             }, { onlyOnce: true });
-            log("Relatório de registro de usuários renderizado.");
         }
 
-        function generateTxtReport() {
-            const reportList = document.getElementById('reportList');
-            const reportNote = document.getElementById('reportNote');
-            let textContent = "";
+        function moveLevelDown(key, path = '') {
+            log(`moveLevelDown chamado: key=${key}, path=${path}`);
+            const taskRef = ref(dbShared, `tasks/${key}`);
+            onValue(taskRef, (snapshot) => {
+                const task = snapshot.val();
+                if (!task) {
+                    log(`Erro: Tarefa ${key} não encontrada`);
+                    return;
+                }
+                const parts = path.split('/').filter(p => p !== '');
+                const level = parts.length;
 
-            if (currentReportType === 'userRegistry') {
-                const userItems = reportList.querySelectorAll('li');
-                if (userItems.length === 0) {
-                    textContent = "Nenhum usuário autenticado encontrado!";
+                if (level === 0) {
+                    onValue(tasksRefShared, (tasksSnapshot) => {
+                        const allTasks = tasksSnapshot.val();
+                        if (!allTasks) {
+                            log(`Erro: Nenhuma tarefa encontrada no banco de dados`);
+                            return;
+                        }
+                        const taskArray = Object.entries(allTasks)
+                            .filter(([_, t]) => currentCategory === 'all' || t.category === currentCategory)
+                            .sort((a, b) => {
+                                if (a[1].completed !== b[1].completed) return a[1].completed - b[1].completed;
+                                const dateA = a[1].dueDate || '9999-12-31';
+                                const dateB = b[1].dueDate || '9999-12-31';
+                                if (dateA !== dateB) return dateA.localeCompare(dateB);
+                                return b[1].priority - a[1].priority;
+                            });
+                        const taskIndex = taskArray.findIndex(([k]) => k === key);
+                        if (taskArray.length === 1) {
+                            log(`Tarefa ${key} é a única, botão deve estar desabilitado`);
+                            return;
+                        }
+                        let targetKey, newIndex;
+                        if (taskIndex > 0) {
+                            targetKey = taskArray[taskIndex - 1][0];
+                            log(`Tarefa ${key} será subordinada à tarefa acima: ${targetKey}`);
+                        } else {
+                            targetKey = taskArray[taskIndex + 1][0];
+                            log(`Tarefa ${key} é a primeira, será subordinada à tarefa abaixo: ${targetKey}`);
+                        }
+                        const targetRef = ref(dbShared, `tasks/${targetKey}`);
+                        onValue(targetRef, (targetSnapshot) => {
+                            const targetTask = targetSnapshot.val();
+                            targetTask.subtasks = targetTask.subtasks || [];
+                            newIndex = targetTask.subtasks.length;
+                            targetTask.subtasks.push({ ...task });
+                            update(targetRef, targetTask)
+                                .then(() => {
+                                    remove(taskRef);
+                                    log(`Tarefa ${key} desceu para subtarefa de ${targetKey} no índice ${newIndex}`);
+                                    scrollToTarget(targetKey, `${newIndex}`);
+                                })
+                                .catch(error => log(`Erro ao descer tarefa: ${error.message}`));
+                        }, { onlyOnce: true });
+                    }, { onlyOnce: true });
                 } else {
-                    textContent = "Registro de Usuários:\n";
-                    userItems.forEach((item) => {
-                        const text = item.querySelector('.report-row span').textContent;
-                        textContent += `${text}\n`;
-                    });
+                    const parentSubtasks = level === 1 ? task.subtasks : getNestedSubtasks(task, parts.slice(0, -1).join('/'));
+                    const subtaskIndex = parseInt(parts[parts.length - 1]);
+
+                    if (!parentSubtasks || !Array.isArray(parentSubtasks) || subtaskIndex >= parentSubtasks.length) {
+                        log(`Erro: Subtarefas inválidas ou índice fora do intervalo em ${key}/${path}`);
+                        return;
+                    }
+
+                    if (parentSubtasks.length === 1) {
+                        log(`Subtarefa ${key}/${path} é a única no nível ${level}, botão deve estar desabilitado`);
+                        return;
+                    }
+
+                    const subtaskToMove = parentSubtasks[subtaskIndex];
+                    let targetIndex;
+                    if (subtaskIndex > 0) {
+                        targetIndex = subtaskIndex - 1;
+                        log(`Subtarefa ${key}/${path} será subordinada à subtarefa acima: índice ${targetIndex}`);
+                    } else {
+                        targetIndex = subtaskIndex + 1;
+                        log(`Subtarefa ${key}/${path} é a primeira, será subordinada à subtarefa abaixo: índice ${targetIndex}`);
+                    }
+
+                    parentSubtasks[targetIndex].subtasks = parentSubtasks[targetIndex].subtasks || [];
+                    const newIndex = parentSubtasks[targetIndex].subtasks.length;
+                    parentSubtasks[targetIndex].subtasks.push(subtaskToMove);
+                    parentSubtasks.splice(subtaskIndex, 1);
+                    update(taskRef, task)
+                        .then(() => {
+                            log(`Subtarefa ${key}/${path} desceu de nível ${level} para ${level + 1}`);
+                            const newPath = `${parts.slice(0, -1).join('/')}/${targetIndex}/${newIndex}`;
+                            scrollToTarget(key, newPath);
+                        })
+                        .catch(error => log(`Erro ao descer nível: ${error.message}`));
                 }
-            } else {
-                const medItems = reportList.querySelectorAll('li');
-                if (medItems.length === 0) {
-                    textContent = "Nenhum registro encontrado!";
-                } else {
-                    textContent = `Relatório ${currentReportType === 'daily' ? 'Diário' : currentReportType === 'weekly' ? 'Semanal' : currentReportType === 'monthly' ? 'Mensal' : 'Anual'}:\n`;
-                    medItems.forEach((item) => {
-                        const row = item.querySelector('.report-row');
-                        const nameAndTime = row.childNodes[0].textContent.trim() + " " + row.querySelector('span').textContent;
-                        const expected = row.childNodes[2].textContent.trim();
-                        const loggedBy = row.childNodes[4].textContent.trim();
-                        const notes = item.querySelector('.user-note').value ? `Notas: ${item.querySelector('.user-note').value}` : "";
-                        textContent += `${nameAndTime} | ${expected} | ${loggedBy}${notes ? ' | ' + notes : ''}\n`;
-                    });
-                }
+            }, { onlyOnce: true });
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return 'Sem data';
+            const [year, month, day] = dateStr.split('-');
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const due = new Date(year, month - 1, day);
+            due.setHours(0, 0, 0, 0);
+            const oneDayMs = 24 * 60 * 60 * 1000;
+            let className = '';
+
+            log(`Formatando data: Hoje=${today.toLocaleDateString()}, Due=${due.toLocaleDateString()}`);
+
+            if (due.getTime() === today.getTime()) {
+                className = 'date-today';
+            } else if (due.getTime() === today.getTime() + oneDayMs) {
+                className = 'date-one-day-past';
+            } else if (due.getTime() <= today.getTime() - oneDayMs) {
+                className = 'date-past';
             }
 
-            reportNote.value = textContent;
-            reportNote.style.display = 'block';
-            log("Relatório TXT gerado com base nos registros exibidos.");
+            return `<span class="${className}">${day}/${month}/${year}</span>`;
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('goToUser').addEventListener('click', () => showScreen('userScreen'));
-            document.getElementById('goToAdd').addEventListener('click', () => showScreen('addScreen'));
-            document.getElementById('goToEdit').addEventListener('click', () => showScreen('editScreen'));
-            document.getElementById('goToDelete').addEventListener('click', () => showScreen('deleteScreen'));
-            document.getElementById('goToReport').addEventListener('click', () => showScreen('reportScreen'));
-            document.getElementById('saveUser').addEventListener('click', addUser);
-            document.getElementById('backFromUser').addEventListener('click', () => showScreen('mainScreen'));
-            document.getElementById('saveAdd').addEventListener('click', addMedication);
-            document.getElementById('backFromAdd').addEventListener('click', () => showScreen('mainScreen'));
-            document.getElementById('backFromEdit').addEventListener('click', () => showScreen('mainScreen'));
-            document.getElementById('backFromDelete').addEventListener('click', () => showScreen('mainScreen'));
-            document.getElementById('backFromReport').addEventListener('click', () => showScreen('mainScreen'));
-            document.getElementById('dailyReport').addEventListener('click', () => {
-                currentReportType = 'daily';
-                renderDailyReport('chrono');
-            });
-            document.getElementById('weeklyReport').addEventListener('click', () => {
-                currentReportType = 'weekly';
-                renderReportScreen('weekly');
-            });
-            document.getElementById('monthlyReport').addEventListener('click', () => {
-                currentReportType = 'monthly';
-                renderReportScreen('monthly');
-            });
-            document.getElementById('yearlyReport').addEventListener('click', () => {
-                currentReportType = 'yearly';
-                renderReportScreen('yearly');
-            });
-            document.getElementById('chronoOrder').addEventListener('click', () => {
-                if (currentReportType === 'daily') renderDailyReport('chrono');
-                else renderReportScreen(currentReportType, 'chrono');
-            });
-            document.getElementById('typeOrder').addEventListener('click', () => {
-                if (currentReportType === 'daily') renderDailyReport('type');
-                else renderReportScreen(currentReportType, 'type');
-            });
-            document.getElementById('userRegistryReport').addEventListener('click', () => {
-                currentReportType = 'userRegistry';
-                renderUserRegistryReport();
-            });
-            document.getElementById('txtReport').addEventListener('click', generateTxtReport);
+        function isToday(dueDate) {
+            if (!dueDate) return false;
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const due = new Date(dueDate);
+            due.setHours(0, 0, 0, 0);
+            return due.getTime() === today.getTime();
+        }
 
-            userNameInput.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    addUser();
-                }
-            });
+        function isTomorrow(dueDate) {
+            if (!dueDate) return false;
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const due = new Date(dueDate);
+            due.setHours(0, 0, 0, 0);
+            const oneDayMs = 24 * 60 * 60 * 1000;
+            return due.getTime() === today.getTime() + oneDayMs;
+        }
 
-            addNameInput.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    addMedication();
+        function isPastDue(dueDate, completed) {
+            if (!dueDate || completed) return false;
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const due = new Date(dueDate);
+            due.setHours(0, 0, 0, 0);
+            return due.getTime() < today.getTime();
+        }
+
+        function setCategory(category) {
+            currentCategory = category;
+            document.querySelectorAll('.category-buttons button').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`${category}Btn`).classList.add('active');
+            renderTasks();
+        }
+
+        function getNestedSubtasks(task, path) {
+            if (!path) return task.subtasks || [];
+            const parts = path.split('/').filter(p => p !== '');
+            let current = task;
+            for (const index of parts) {
+                if (!current.subtasks || !Array.isArray(current.subtasks) || parseInt(index) >= current.subtasks.length) {
+                    log(`Erro: Caminho inválido em getNestedSubtasks para path=${path}`);
+                    return [];
                 }
-            });
-            addPeriodInput.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    addMedication();
+                current = current.subtasks[parseInt(index)];
+            }
+            return current.subtasks || [];
+        }
+
+        function getParentTask(task, path) {
+            const parts = path.split('/').filter(p => p !== '');
+            let current = task;
+            for (let i = 0; i < parts.length - 1; i++) {
+                current = current.subtasks[parseInt(parts[i])];
+            }
+            return current;
+        }
+
+        function searchTasks() {
+            const searchText = document.getElementById('taskInput').value.trim().toLowerCase();
+            if (!searchText) {
+                document.getElementById('error').textContent = "Digite um texto para pesquisar!";
+                log("Erro: Texto de pesquisa vazio");
+                return;
+            }
+
+            log(`Pesquisando por: "${searchText}"`);
+            onValue(tasksRefShared, (snapshot) => {
+                const tasks = snapshot.val();
+                const taskList = document.getElementById('taskList');
+                taskList.innerHTML = '';
+                let found = false;
+
+                const searchInTask = (task, key, path = '') => {
+                    const taskText = task.text.toLowerCase();
+                    const notesText = (task.notes || '').toLowerCase();
+                    if (taskText.includes(searchText) || notesText.includes(searchText)) {
+                        renderTaskMatch(key, task, path);
+                        return true;
+                    }
+                    if (task.subtasks) {
+                        task.subtasks.forEach((subtask, index) => {
+                            const subPath = path ? `${path}/${index}` : `${index}`;
+                            if (searchInTask(subtask, key, subPath)) found = true;
+                        });
+                    }
+                    return found;
+                };
+
+                const renderTaskMatch = (key, task, path) => {
+                    const li = document.createElement('li');
+                    const level = path.split('/').filter(p => p !== '').length;
+                    li.className = `subtask-level-${level} ${task.completed ? 'completed' : ''}`;
+                    if (level === 0) li.setAttribute('data-key', key);
+                    else li.setAttribute('data-subtask-path', `${key}/${path}`);
+                    const isBoldItalic = isPastDue(task.dueDate, task.completed);
+                    const hasSubtasks = task.subtasks && task.subtasks.length > 0;
+                    const isExpanded = task.expanded || isToday(task.dueDate) || isTomorrow(task.dueDate);
+                    const isNotesVisible = task.notesVisible || false;
+
+                    li.innerHTML = `
+                        <div class="task-row">
+                            ${hasSubtasks ? `<button class="expand-btn">${isExpanded ? '−' : '+'}</button>` : '<span class="expand-placeholder"></span>'}
+                            <input type="checkbox" ${task.completed ? 'checked' : ''} data-key="${key}" data-path="${path}">
+                            <span class="task-text ${isBoldItalic ? 'bold-italic' : ''}">${task.text} | Data: ${formatDate(task.dueDate)} | Prioridade: ${task.priority}</span>
+                            <button class="level-btn up-btn" ${level === 0 ? 'disabled' : ''} data-id="${key}/${path}">↑</button>
+                            <button class="level-btn down-btn" data-id="${key}/${path}">↓</button>
+                            <div class="category-dropdown">
+                                <button class="category-btn">Categoria</button>
+                                <div class="dropdown-content">
+                                    <button class="dropdown-item" data-category="mainProjects">Projetos Principais</button>
+                                    <button class="dropdown-item" data-category="proposed">Proj. Propostos</button>
+                                    <button class="dropdown-item" data-category="inProgress">Proj. em Andamento</button>
+                                    <button class="dropdown-item" data-category="future">Proj. Futuros</button>
+                                </div>
+                            </div>
+                            <button class="edit-btn" data-key="${key}">Editar</button>
+                            <button class="delete-btn">Excluir</button>
+                            ${level < 4 ? '<button class="subtask-btn">Subtarefa</button>' : ''}
+                            ${task.notes && task.notes.trim() !== '' ? '<span class="has-notes">(Contém Nota)</span>' : ''}
+                        </div>
+                        <div class="notes ${isNotesVisible ? 'visible' : ''}">
+                            <textarea rows="3">${task.notes || ''}</textarea>
+                        </div>
+                        <div class="subtasks-container ${isExpanded ? 'visible' : ''}"></div>
+                    `;
+
+                    if (hasSubtasks) {
+                        const subtasksContainer = li.querySelector('.subtasks-container');
+                        renderSubtasks(key, task, subtasksContainer, path, level + 1);
+                    }
+                    taskList.appendChild(li);
+                    found = true;
+
+                    li.querySelector('.task-text').addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        toggleNotes(li, key, path);
+                    });
+                    if (hasSubtasks) {
+                        li.querySelector('.expand-btn').addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            toggleSubtasks(key, path, li);
+                        });
+                    }
+                    li.querySelector('.up-btn').addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        moveLevelUp(key, path);
+                    });
+                    li.querySelector('.down-btn').addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        moveLevelDown(key, path);
+                    });
+                    const categoryBtn = li.querySelector('.category-btn');
+                    categoryBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        toggleCategoryDropdown(categoryBtn.parentElement);
+                    });
+                    li.querySelectorAll('.dropdown-item').forEach(item => {
+                        item.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            const newCategory = item.getAttribute('data-category');
+                            changeCategory(key, newCategory);
+                            item.closest('.dropdown-content').style.display = 'none';
+                        });
+                    });
+                    li.querySelector('.edit-btn').addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const taskKey = e.target.getAttribute('data-key');
+                        level === 0 ? editTask(taskKey) : editSubtask(key, path.split('/').slice(0, -1).join('/'), parseInt(path.split('/').pop()));
+                    });
+                    li.querySelector('.delete-btn').addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        level === 0 ? deleteTask(key) : deleteSubtask(key, path.split('/').slice(0, -1).join('/'), parseInt(path.split('/').pop()));
+                    });
+                    if (level < 4) {
+                        const subtaskBtn = li.querySelector('.subtask-btn');
+                        if (subtaskBtn) {
+                            subtaskBtn.addEventListener('click', (e) => {
+                                e.stopPropagation();
+                                addSubtask(key, path);
+                            });
+                        }
+                    }
+                    const notesIndicator = li.querySelector('.has-notes');
+                    if (notesIndicator) {
+                        notesIndicator.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            toggleNotes(li, key, path);
+                        });
+                    }
+                    li.querySelector('textarea').addEventListener('change', (e) => {
+                        level === 0 ? updateNotes(key, e.target) : updateSubtaskNotes(key, path.split('/').slice(0, -1).join('/'), parseInt(path.split('/').pop()), e.target);
+                    });
+                    li.querySelector('input[type="checkbox"]').addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const parentKey = e.target.getAttribute('data-key');
+                        const fullPath = e.target.getAttribute('data-path');
+                        const pathParts = fullPath.split('/').filter(p => p !== '');
+                        const subtaskIndex = parseInt(pathParts.pop()) || 0;
+                        const subPath = pathParts.join('/');
+                        log(`Checkbox clicado: parentKey=${parentKey}, subPath=${subPath}, subtaskIndex=${subtaskIndex}`);
+                        if (level === 0) {
+                            toggleTask(parentKey);
+                        } else {
+                            toggleSubtask(parentKey, subPath, subtaskIndex);
+                        }
+                    });
+                };
+
+                if (tasks) {
+                    Object.entries(tasks).forEach(([key, task]) => {
+                        if (searchInTask(task, key)) found = true;
+                    });
                 }
-            });
-        });
-    </script>
-</body>
-</html>
+
+                if (!found) {
+                    taskList.innerHTML = '<li>Nenhuma tarefa encontrada.</li>';
+                    log("Nenhuma correspondência encontrada na pesquisa");
+                } else {
+                    document.getElementById('success').textContent = "Resultados da pesquisa exibidos!";
+                    document.getElementById('backBtn').style.display = 'inline-block';
+                    log("Resultados da pesquisa renderizados com sucesso");
+                }
+            }, { onlyOnce: true });
+        }
+
+        function renderSubtasks(key, task, container, path = '', level) {
+            if (task.subtasks && task.subtasks.length > 0) {
+                const subtasksWithOriginalIndex = task.subtasks.map((subtask, originalIndex) => ({
+                    subtask,
+                    originalIndex
+                }));
+
+                subtasksWithOriginalIndex.sort((a, b) => {
+                    const dateA = a.subtask.dueDate || '9999-12-31';
+                    const dateB = b.subtask.dueDate || '9999-12-31';
+                    if (dateA !== dateB) return dateA.localeCompare(dateB);
+                    return b.subtask.priority - a.subtask.priority;
+                });
+
+                subtasksWithOriginalIndex.forEach(({ subtask, originalIndex }) => {
+                    const subtaskPath = path ? `${path}/${originalIndex}` : `${originalIndex}`;
+                    log(`Renderizando subtarefa: key=${key}, path=${subtaskPath}, level=${level}, text="${subtask.text}", priority=${subtask.priority}, originalIndex=${originalIndex}`);
+                    const li = document.createElement('li');
+                    li.className = `subtask-level-${level} ${subtask.completed ? 'completed' : ''}`;
+                    li.setAttribute('data-subtask-path', `${key}/${subtaskPath}`);
+                    const isBoldItalic = isPastDue(subtask.dueDate, subtask.completed);
+                    const hasSubtasks = subtask.subtasks && subtask.subtasks.length > 0;
+                    const shouldExpand = isToday(subtask.dueDate) || isTomorrow(subtask.dueDate);
+                    const isExpanded = subtask.expanded || shouldExpand;
+                    const isNotesVisible = subtask.notesVisible || false;
+
+                    li.innerHTML = `
+                        <div class="task-row">
+                            ${hasSubtasks ? `<button class="expand-btn">${isExpanded ? '−' : '+'}</button>` : '<span class="expand-placeholder"></span>'}
+                            <input type="checkbox" ${subtask.completed ? 'checked' : ''} data-key="${key}" data-path="${subtaskPath}">
+                            <span class="task-text ${isBoldItalic ? 'bold-italic' : ''}">${subtask.text} | Data: ${formatDate(subtask.dueDate)} | Prioridade: ${subtask.priority}</span>
+                            <button class="level-btn up-btn" data-id="${key}/${subtaskPath}">↑</button>
+                            <button class="level-btn down-btn" data-id="${key}/${subtaskPath}">↓</button>
+                            <button class="edit-btn" data-key="${key}" data-path="${subtaskPath}">Editar</button>
+                            <button class="delete-btn">Excluir</button>
+                            ${level < 4 ? '<button class="subtask-btn">Subtarefa</button>' : ''}
+                            ${subtask.notes && subtask.notes.trim() !== '' ? '<span class="has-notes">(Contém Nota)</span>' : ''}
+                        </div>
+                        <div class="notes ${isNotesVisible ? 'visible' : ''}">
+                            <textarea rows="3">${subtask.notes || ''}</textarea>
+                        </div>
+                        <div class="subtasks-container ${isExpanded ? 'visible' : ''}"></div>
+                    `;
+
+                    if (hasSubtasks) {
+                        const subtasksContainer = li.querySelector('.subtasks-container');
+                        renderSubtasks(key, subtask, subtasksContainer, subtaskPath, level + 1);
+                    }
+
+                    container.appendChild(li);
+
+                    li.querySelector('.task-text').addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        toggleNotes(li, key, subtaskPath);
+                    });
+                    if (hasSubtasks) {
+                        li.querySelector('.expand-btn').addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            toggleSubtasks(key, subtaskPath, li);
+                        });
+                    }
+                    li.querySelector('.up-btn').addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        moveLevelUp(key, subtaskPath);
+                    });
+                    li.querySelector('.down-btn').addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        moveLevelDown(key, subtaskPath);
+                    });
+                    li.querySelector('.edit-btn').addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const parentKey = e.target.getAttribute('data-key');
+                        const fullPath = e.target.getAttribute('data-path');
+                        const pathParts = fullPath.split('/').filter(p => p !== '');
+                        const subIndex = parseInt(pathParts.pop());
+                        const subPath = pathParts.join('/');
+                        log(`Botão Editar clicado: parentKey=${parentKey}, subPath=${subPath}, subIndex=${subIndex}`);
+                        editSubtask(parentKey, subPath, subIndex);
+                    });
+                    li.querySelector('.delete-btn').addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const pathParts = subtaskPath.split('/').filter(p => p !== '');
+                        const subIndex = parseInt(pathParts.pop());
+                        const subPath = pathParts.join('/');
+                        deleteSubtask(key, subPath, subIndex);
+                    });
+                    if (level < 4) {
+                        const subtaskBtn = li.querySelector('.subtask-btn');
+                        if (subtaskBtn) {
+                            subtaskBtn.addEventListener('click', (e) => {
+                                e.stopPropagation();
+                                addSubtask(key, subtaskPath);
+                            });
+                        }
+                    }
+                    const notesIndicator = li.querySelector('.has-notes');
+                    if (notesIndicator) {
+                        notesIndicator.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            toggleNotes(li, key, subtaskPath);
+                        });
+                    }
+                    li.querySelector('textarea').addEventListener('change', (e) => {
+                        const pathParts = subtaskPath.split('/').filter(p => p !== '');
+                        const subIndex = parseInt(pathParts.pop());
+                        const subPath = pathParts.join('/');
+                        updateSubtaskNotes(key, subPath, subIndex, e.target);
+                    });
+                    li.querySelector('input[type="checkbox"]').addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const parentKey = e.target.getAttribute('data-key');
+                        const fullPath = e.target.getAttribute('data-path');
+                        const pathParts = fullPath.split('/').filter(p => p !== '');
+                        const subtaskIndex = parseInt(pathParts.pop());
+                        const subPath = pathParts.join('/');
+                        log(`Checkbox clicado: parentKey=${parentKey}, subPath=${subPath}, subtaskIndex=${subtaskIndex}`);
+                        toggleSubtask(parentKey, subPath, subtaskIndex);
+                    });
+                });
+            }
+        }
+
+        function renderTasks() {
+            onValue(tasksRefShared, (snapshot) => {
+                const tasks = snapshot.val();
+                const taskList = document.getElementById('taskList');
+                taskList.innerHTML = '';
+
+                if (!tasks) {
+                    taskList.innerHTML = '<li>Nenhuma tarefa encontrada.</li>';
+                    return;
+                }
+
+                const taskArray = Object.entries(tasks)
+                    .filter(([_, task]) => currentCategory === 'all' || task.category === currentCategory)
+                    .sort((a, b) => {
+                        if (a[1].completed !== b[1].completed) return a[1].completed - b[1].completed;
+                        const dateA = a[1].dueDate || '9999-12-31';
+                        const dateB = b[1].dueDate || '9999-12-31';
+                        if (dateA !== dateB) return dateA.localeCompare(dateB);
+                        return b[1].priority - a[1].priority;
+                    });
+
+                taskArray.forEach(([key, task]) => {
+                    const li = document.createElement('li');
+                    li.setAttribute('data-key', key);
+                    li.className = task.completed ? 'completed' : '';
+                    const isBoldItalic = isPastDue(task.dueDate, task.completed);
+                    const hasSubtasks = task.subtasks && task.subtasks.length > 0;
+                    const shouldExpand = isToday(task.dueDate) || isTomorrow(task.dueDate);
+                    const isExpanded = task.expanded || shouldExpand;
+                    const isNotesVisible = task.notesVisible || false;
+
+                    li.innerHTML = `
+                        <div class="task-row">
+                            ${hasSubtasks ? `<button class="expand-btn">${isExpanded ? '−' : '+'}</button>` : '<span class="expand-placeholder"></span>'}
+                            <input type="checkbox" ${task.completed ? 'checked' : ''} data-key="${key}" data-path="">
+                            <span class="task-text ${isBoldItalic ? 'bold-italic' : ''}">${task.text} | Data: ${formatDate(task.dueDate)} | Prioridade: ${task.priority}</span>
+                            <button class="level-btn up-btn" disabled data-id="${key}">↑</button>
+                            <button class="level-btn down-btn" ${taskArray.length === 1 ? 'disabled' : ''} data-id="${key}">↓</button>
+                            <div class="category-dropdown">
+                                <button class="category-btn">Categoria</button>
+                                <div class="dropdown-content">
+                                    <button class="dropdown-item" data-category="mainProjects">Projetos Principais</button>
+                                    <button class="dropdown-item" data-category="proposed">Proj. Propostos</button>
+                                    <button class="dropdown-item" data-category="inProgress">Proj. em Andamento</button>
+                                    <button class="dropdown-item" data-category="future">Proj. Futuros</button>
+                                </div
