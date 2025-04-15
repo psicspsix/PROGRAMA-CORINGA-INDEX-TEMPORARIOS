@@ -22,7 +22,7 @@
             border-radius: 10px;
         }
         #loginScreen {
-            background-image: url('https://images.unsplash.com/photo-1584982751601-97dcc096659c?q=80&w=1470&auto=format&fit=crop');
+            background-image: url('https://images.unsplash.com/photo-1585435557343-3b0929fb6be1?q=80&w=1470&auto=format&fit=crop');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
@@ -30,6 +30,20 @@
             display: flex;
             flex-direction: column;
             justify-content: center;
+        }
+        #loginScreen h1 {
+            margin-bottom: 7em; /* Aproximadamente 7 linhas para descer os campos */
+        }
+        #loginScreen .input-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 2em; /* Duas linhas abaixo para os botões */
+        }
+        #loginScreen .button-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
         }
         #appScreen {
             width: 100%;
@@ -148,11 +162,15 @@
     <!-- Tela de Login -->
     <div id="loginScreen">
         <h1>Gerenciador de Medicamentos</h1>
-        <input type="email" id="emailInput" placeholder="E-mail" autocomplete="off" autocapitalize="none">
-        <input type="password" id="passwordInput" placeholder="Senha" autocomplete="new-password">
-        <button id="loginButton">Entrar</button>
-        <button id="registerButton">Cadastrar</button>
-        <button id="resetPasswordButton">Recuperar Senha</button>
+        <div class="input-container">
+            <input type="email" id="emailInput" placeholder="E-mail" autocomplete="off" autocapitalize="none">
+            <input type="password" id="passwordInput" placeholder="Senha" autocomplete="new-password">
+        </div>
+        <div class="button-container">
+            <button id="loginButton">Entrar</button>
+            <button id="registerButton">Cadastrar</button>
+            <button id="resetPasswordButton">Recuperar Senha</button>
+        </div>
         <div id="loginError"></div>
         <div id="loginSuccess"></div>
     </div>
@@ -280,7 +298,7 @@
         let loggedInUserName = null;
         let isRegisterClicked = false;
 
-        function getMedsRef() {
+        function getM  getMedsRef() {
             return currentUserId ? ref(db, `users/${currentUserId}/medications`) : ref(db, 'medications');
         }
 
