@@ -22,7 +22,7 @@
             border-radius: 10px;
         }
         #loginScreen {
-            background-image: url('https://images.unsplash.com/photo-1620482533010-8e6e3f1d76ae?q=80&w=1470&auto=format&fit=crop');
+            background-image: url('https://images.unsplash.com/photo-1516321497487-e288fb19713f?q=80&w=1470&auto=format&fit=crop');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
@@ -32,8 +32,8 @@
             justify-content: center;
         }
         #loginScreen h1 {
-            font-size: 48px; /* Título maior */
-            margin-bottom: 7em;
+            font-size: 48px;
+            margin-bottom: 4em; /* Reduzido de 7em para 4em */
         }
         #loginScreen .input-container {
             display: flex;
@@ -457,7 +457,7 @@
             }
             if (!currentAuthUser || !loggedInUserName) {
                 registerError.textContent = "Nenhum usuário autenticado! Faça login novamente.";
-                log("Tentativa de cadastro W sem usuário autenticado.");
+                log("Tentativa de cadastro sem usuário autenticado.");
                 registerScreen.style.display = 'none';
                 loginScreen.style.display = 'block';
                 return;
