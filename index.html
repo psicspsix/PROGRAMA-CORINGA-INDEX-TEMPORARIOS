@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Frases e Citações</title>
+    <title>Prompts para IAs</title>
     <style>
         body { 
             font-family: Arial, sans-serif; 
@@ -22,7 +22,7 @@
             box-sizing: border-box; 
         }
         #loginScreen { 
-            background: url('https://images.unsplash.com/photo-1614730321146-b6fa6a46bcb4?q=80&w=1470&auto=format&fit=crop') no-repeat center center fixed; 
+            background: url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1470&auto=format&fit=crop') no-repeat center center fixed; 
             background-size: cover; 
             display: flex; 
             justify-content: center; 
@@ -164,10 +164,10 @@
             gap: 10px; 
             align-items: flex-start; 
         }
-        #phraseText, #editPhraseText { 
+        #promptText, #editPromptText { 
             height: 150px; 
         }
-        #phraseContext, #editPhraseContext { 
+        #promptFunction, #editPromptFunction { 
             height: 100px; 
         }
         .location-note-container { 
@@ -176,11 +176,11 @@
             gap: 10px; 
             width: 100%; 
         }
-        #phraseLocation, #editPhraseLocation, #phraseNote, #editPhraseNote { 
+        #promptLocation, #editPromptLocation, #promptNote, #editPromptNote { 
             height: 50px; 
             width: 50%; 
         }
-        #phraseAuthor, #editPhraseAuthor { 
+        #promptAuthor, #editPromptAuthor { 
             width: 33.33%; 
             background: #000; 
             color: #fff; 
@@ -189,7 +189,7 @@
             border-radius: 5px; 
             font-size: 20px; 
         }
-        #phraseUserEmail, #editPhraseUserEmail { 
+        #promptUserEmail, #editPromptUserEmail { 
             width: 25%; 
             background: #000; 
             color: #fff; 
@@ -198,7 +198,7 @@
             border-radius: 5px; 
             font-size: 20px; 
         }
-        #searchPhraseAuthor { 
+        #searchPromptAuthor { 
             width: 33.33%; 
             background: #000; 
             color: #fff; 
@@ -207,7 +207,7 @@
             border-radius: 5px; 
             font-size: 20px; 
         }
-        #advSearchPhraseAuthor, #advSearchPhraseUserEmail { 
+        #advSearchPromptAuthor, #advSearchPromptUserEmail { 
             width: calc(66% + 50mm); 
             height: 100px; 
             background: #000; 
@@ -218,12 +218,12 @@
             font-size: 20px; 
             box-sizing: border-box; 
         }
-        #phraseAuthor.admin, #editPhraseAuthor.admin { 
+        #promptAuthor.admin, #editPromptAuthor.admin { 
             width: 25%; 
         }
-        #phraseAuthor::placeholder, #editPhraseAuthor::placeholder, #searchPhraseAuthor::placeholder, 
-        #phraseUserEmail::placeholder, #editPhraseUserEmail::placeholder, 
-        #advSearchPhraseAuthor::placeholder, #advSearchPhraseUserEmail::placeholder { 
+        #promptAuthor::placeholder, #editPromptAuthor::placeholder, #searchPromptAuthor::placeholder, 
+        #promptUserEmail::placeholder, #editPromptUserEmail::placeholder, 
+        #advSearchPromptAuthor::placeholder, #advSearchPromptUserEmail::placeholder { 
             font-size: 20px; 
             color: #888; 
         }
@@ -310,7 +310,7 @@
             align-items: center; 
             gap: 10px; 
         }
-        #hiddenCheckbox, #advSearchHiddenCheckbox, #editHiddenCheckbox, #searchAllPhrasesCheckbox { 
+        #hiddenCheckbox, #advSearchHiddenCheckbox, #editHiddenCheckbox, #searchAllPromptsCheckbox { 
             width: 20px; 
             height: 20px; 
         }
@@ -323,17 +323,12 @@
             width: auto; 
             align-self: flex-start; 
         }
-        #importScreen textarea { 
-            width: 100%; 
-            height: 200px; 
-            resize: vertical; 
-        }
     </style>
 </head>
 <body>
     <div id="loginScreen">
         <div class="login-container">
-            <h2>Frases e Citações</h2>
+            <h2>Prompts para IAs</h2>
             <input type="text" id="userInput" placeholder="Usuário (e-mail)">
             <input type="password" id="passwordInput" placeholder="Senha">
             <button id="loginBtn">Entrar</button>
@@ -349,37 +344,36 @@
     </div>
     <div id="appScreen">
         <div class="header">
-            <h1>Frases e Citações</h1>
+            <h1>Prompts para IAs</h1>
             <div class="menu">
-                <button id="storePhraseBtn">Cadastro de Frase</button>
+                <button id="storePromptBtn">Cadastro de Prompt</button>
                 <button id="categoryBtn">Cadastro de Categoria</button>
-                <button id="importBtn">Importações</button>
                 <button id="searchBtn">Pesquisa</button>
                 <button id="advancedSearchBtn" style="display: none;">Pesquisa Avançada</button>
                 <button id="authorizationBtn" style="display: none;">Autorizações</button>
             </div>
         </div>
         <div id="mainContent">
-            <div id="recentPhrases">
-                <h2>Últimas Frases Armazenadas</h2>
-                <ul id="phraseList"></ul>
+            <div id="recentPrompts">
+                <h2>Últimos Prompts Armazenados</h2>
+                <ul id="promptList"></ul>
                 <button id="backBtn" style="display: none;">Voltar</button>
             </div>
-            <div id="storePhraseScreen" style="display: none;">
+            <div id="storePromptScreen" style="display: none;">
                 <div class="input-row">
-                    <textarea id="phraseText" placeholder="Digite a frase ou citação"></textarea>
-                    <textarea id="phraseContext" placeholder="Descreva o contexto no qual ela pode ser ou foi empregada"></textarea>
+                    <textarea id="promptText" placeholder="Digite o texto do prompt"></textarea>
+                    <textarea id="promptFunction" placeholder="Descreva a função do prompt"></textarea>
                     <div class="location-note-container">
-                        <textarea id="phraseLocation" placeholder="Locais em que você já a utilizou"></textarea>
-                        <textarea id="phraseNote" placeholder="Digite as palavras-chaves"></textarea>
+                        <textarea id="promptLocation" placeholder="Local em que foi utilizado (IA testada)"></textarea>
+                        <textarea id="promptNote" placeholder="Digite as palavras-chaves"></textarea>
                     </div>
-                    <div class="prompt-container" id="storePhraseContainer">
-                        <input type="text" id="phraseAuthor" placeholder="Nome do Autor">
-                        <input type="text" id="phraseUserEmail" placeholder="E-mail do Usuário" style="display: none;">
+                    <div class="prompt-container" id="storePromptContainer">
+                        <input type="text" id="promptAuthor" placeholder="Nome do Autor">
+                        <input type="text" id="promptUserEmail" placeholder="E-mail do Usuário" style="display: none;">
                         <select id="categorySelect" multiple></select>
                     </div>
                     <div class="checkbox-container">
-                        <button id="savePhraseBtn">Salvar Frase</button>
+                        <button id="savePromptBtn">Salvar Prompt</button>
                         <div id="hiddenCheckboxContainer" style="display: none;">
                             <input type="checkbox" id="hiddenCheckbox">
                             <label for="hiddenCheckbox">Oculto</label>
@@ -388,21 +382,21 @@
                 </div>
                 <button id="backBtnStore">Voltar</button>
             </div>
-            <div id="editPhraseScreen" style="display: none;">
+            <div id="editPromptScreen" style="display: none;">
                 <div class="input-row">
-                    <textarea id="editPhraseText" placeholder="Digite a frase ou citação"></textarea>
-                    <textarea id="editPhraseContext" placeholder="Descreva o contexto no qual ela pode ser ou foi empregada"></textarea>
+                    <textarea id="editPromptText" placeholder="Digite o texto do prompt"></textarea>
+                    <textarea id="editPromptFunction" placeholder="Descreva a função do prompt"></textarea>
                     <div class="location-note-container">
-                        <textarea id="editPhraseLocation" placeholder="Locais em que você já a utilizou"></textarea>
-                        <textarea id="editPhraseNote" placeholder="Digite as palavras-chaves"></textarea>
+                        <textarea id="editPromptLocation" placeholder="Local em que foi utilizado (IA testada)"></textarea>
+                        <textarea id="editPromptNote" placeholder="Digite as palavras-chaves"></textarea>
                     </div>
                     <div class="prompt-container">
-                        <input type="text" id="editPhraseAuthor" placeholder="Nome do Autor">
-                        <input type="text" id="editPhraseUserEmail" placeholder="E-mail do Usuário">
+                        <input type="text" id="editPromptAuthor" placeholder="Nome do Autor">
+                        <input type="text" id="editPromptUserEmail" placeholder="E-mail do Usuário">
                         <select id="editCategorySelect" multiple></select>
                     </div>
                     <div class="checkbox-container">
-                        <button id="saveEditPhraseBtn">Salvar Alterações</button>
+                        <button id="saveEditPromptBtn">Salvar Alterações</button>
                         <div id="editHiddenCheckboxContainer" style="display: none;">
                             <input type="checkbox" id="editHiddenCheckbox">
                             <label for="editHiddenCheckbox">Oculto</label>
@@ -423,32 +417,19 @@
                     <ul id="categoryList"></ul>
                 </div>
             </div>
-            <div id="importScreen" style="display: none;">
-                <div class="input-row">
-                    <button id="importSameLineBtn">Importação por arquivo TXT com autor no mesmo parágrafo</button>
-                    <button id="importSameLineNoteBtn">Importar por campo de nota</button>
-                    <textarea id="importSameLineNote" style="display: none;"></textarea>
-                    <button id="submitSameLineNote" style="display: none;">Incluir frases e citações</button>
-                    <button id="importNextLineBtn">Importação por arquivo TXT com o autor em outra linha</button>
-                    <button id="importNextLineNoteBtn">Importar por campo de nota</button>
-                    <textarea id="importNextLineNote" style="display: none;"></textarea>
-                    <button id="submitNextLineNote" style="display: none;">Incluir frases e citações</button>
-                </div>
-                <button id="backBtnImport">Voltar</button>
-            </div>
             <div id="searchScreen" style="display: none;">
                 <div class="search-container">
                     <input type="text" id="searchInput" placeholder="Digite o texto para pesquisa">
                     <button id="doSearchBtnTop" class="search-btn-small">Pesquisar</button>
                     <div class="input-row">
-                        <textarea id="searchPhraseText" placeholder="Digite a frase ou citação"></textarea>
-                        <textarea id="searchPhraseContext" placeholder="Descreva o contexto no qual ela pode ser ou foi empregada"></textarea>
+                        <textarea id="searchPromptText" placeholder="Digite o texto do prompt"></textarea>
+                        <textarea id="searchPromptFunction" placeholder="Descreva a função do prompt"></textarea>
                         <div class="location-note-container">
-                            <textarea id="searchPhraseLocation" placeholder="Locais em que você já a utilizou"></textarea>
-                            <textarea id="searchPhraseNote" placeholder="Digite as palavras-chaves"></textarea>
+                            <textarea id="searchPromptLocation" placeholder="Local em que foi utilizado (IA testada)"></textarea>
+                            <textarea id="searchPromptNote" placeholder="Digite as palavras-chaves"></textarea>
                         </div>
                         <div class="prompt-container">
-                            <input type="text" id="searchPhraseAuthor" placeholder="Nome do Autor">
+                            <input type="text" id="searchPromptAuthor" placeholder="Nome do Autor">
                             <div class="combo-box">
                                 <label>Incluir Categorias:</label>
                                 <select id="includeCategories" multiple></select>
@@ -458,9 +439,9 @@
                                 <select id="excludeCategories" multiple></select>
                             </div>
                         </div>
-                        <div id="searchAllPhrasesCheckboxContainer" class="checkbox-container" style="display: none;">
-                            <input type="checkbox" id="searchAllPhrasesCheckbox">
-                            <label for="searchAllPhrasesCheckbox">Pesquisar nas frases de todos os usuários</label>
+                        <div id="searchAllPromptsCheckboxContainer" class="checkbox-container" style="display: none;">
+                            <input type="checkbox" id="searchAllPromptsCheckbox">
+                            <label for="searchAllPromptsCheckbox">Pesquisar nos prompts de todos os usuários</label>
                         </div>
                     </div>
                     <div class="checkbox-container">
@@ -478,16 +459,16 @@
                     <input type="text" id="advSearchInput" placeholder="Digite o texto para pesquisa avançada">
                     <button id="doAdvSearchBtnTop" class="search-btn-small">Pesquisar</button>
                     <div class="input-row">
-                        <textarea id="advSearchPhraseText" placeholder="Digite a frase ou citação"></textarea>
-                        <textarea id="advSearchPhraseContext" placeholder="Descreva o contexto no qual ela pode ser ou foi empregada"></textarea>
+                        <textarea id="advSearchPromptText" placeholder="Digite o texto do prompt"></textarea>
+                        <textarea id="advSearchPromptFunction" placeholder="Descreva a função do prompt"></textarea>
                         <div class="location-note-container">
-                            <textarea id="advSearchPhraseLocation" placeholder="Locais em que você já a utilizou"></textarea>
-                            <textarea id="advSearchPhraseNote" placeholder="Digite as palavras-chaves"></textarea>
+                            <textarea id="advSearchPromptLocation" placeholder="Local em que foi utilizado (IA testada)"></textarea>
+                            <textarea id="advSearchPromptNote" placeholder="Digite as palavras-chaves"></textarea>
                         </div>
                         <div class="prompt-container">
                             <div class="adv-search-author-container">
-                                <input type="text" id="advSearchPhraseAuthor" placeholder="Nome do Autor">
-                                <input type="text" id="advSearchPhraseUserEmail" placeholder="E-mail do Usuário">
+                                <input type="text" id="advSearchPromptAuthor" placeholder="Nome do Autor">
+                                <input type="text" id="advSearchPromptUserEmail" placeholder="E-mail do Usuário">
                             </div>
                             <div class="combo-box">
                                 <label>Incluir Categorias:</label>
@@ -532,24 +513,24 @@
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         const firebaseConfig = {
-            apiKey: "AIzaSyDRpR_8BzOWgWLZwbHGH1YStyaB_PjrO6U",
-            authDomain: "gerenciador-de-frases-citacoes.firebaseapp.com",
-            projectId: "gerenciador-de-frases-citacoes",
-            storageBucket: "gerenciador-de-frases-citacoes.firebasestorage.app",
-            messagingSenderId: "464800861207",
-            appId: "1:464800861207:web:5632eee79acf2dbc606052",
-            measurementId: "G-7FLQXET8S4"
+            apiKey: "AIzaSyDZ8rtMXtSztcePnSh6sSe9yl3wyJ9GaNs",
+            authDomain: "gerenciador-de-prompts-de-ias.firebaseapp.com",
+            projectId: "gerenciador-de-prompts-de-ias",
+            storageBucket: "gerenciador-de-prompts-de-ias.firebasestorage.app",
+            messagingSenderId: "902314577084",
+            appId: "1:902314577084:web:a97afc0081d83b048894b9",
+            measurementId: "G-5C0RJFG1GH"
         };
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getDatabase(app);
-        const phrasesRef = ref(db, 'phrases');
+        const promptsRef = ref(db, 'prompts');
         const categoriesRef = ref(db, 'categories');
         const usersRef = ref(db, 'users');
         let currentUserEmail = null;
-        let editingPhraseKey = null;
-        let canSearchAllPhrases = false;
+        let editingPromptKey = null;
+        let canSearchAllPrompts = false;
 
         function log(message) {
             console.log(`[LOG ${new Date().toLocaleTimeString()}]: ${message}`);
@@ -587,11 +568,11 @@
                 const userRef = ref(db, `users/${user.uid}`);
                 onValue(userRef, (snapshot) => {
                     const userData = snapshot.val();
-                    canSearchAllPhrases = userData?.canSearchAllPhrases || false;
-                    if (canSearchAllPhrases && currentUserEmail !== "psics.psix.141@gmail.com") {
-                        document.getElementById('searchAllPhrasesCheckboxContainer').style.display = 'flex';
+                    canSearchAllPrompts = userData?.canSearchAllPrompts || false;
+                    if (canSearchAllPrompts && currentUserEmail !== "psics.psix.141@gmail.com") {
+                        document.getElementById('searchAllPromptsCheckboxContainer').style.display = 'flex';
                     } else {
-                        document.getElementById('searchAllPhrasesCheckboxContainer').style.display = 'none';
+                        document.getElementById('searchAllPromptsCheckboxContainer').style.display = 'none';
                     }
                 }, { onlyOnce: true });
 
@@ -602,8 +583,8 @@
                     document.getElementById('hiddenCheckboxContainer').style.display = 'flex';
                     document.getElementById('advSearchHiddenCheckboxContainer').style.display = 'flex';
                     document.getElementById('editHiddenCheckboxContainer').style.display = 'flex';
-                    document.getElementById('phraseUserEmail').style.display = 'inline-block';
-                    document.getElementById('phraseAuthor').classList.add('admin');
+                    document.getElementById('promptUserEmail').style.display = 'inline-block';
+                    document.getElementById('promptAuthor').classList.add('admin');
                     document.getElementById('categorySelect').classList.add('admin');
                 } else {
                     searchBtn.style.display = 'inline-block';
@@ -612,16 +593,16 @@
                     document.getElementById('hiddenCheckboxContainer').style.display = 'none';
                     document.getElementById('advSearchHiddenCheckboxContainer').style.display = 'none';
                     document.getElementById('editHiddenCheckboxContainer').style.display = 'none';
-                    document.getElementById('phraseUserEmail').style.display = 'none';
-                    document.getElementById('phraseAuthor').classList.remove('admin');
+                    document.getElementById('promptUserEmail').style.display = 'none';
+                    document.getElementById('promptAuthor').classList.remove('admin');
                     document.getElementById('categorySelect').classList.remove('admin');
                 }
                 loginScreen.style.display = 'none';
                 appScreen.style.display = 'block';
-                showRecentPhrases();
+                showRecentPrompts();
             } else {
                 currentUserEmail = null;
-                canSearchAllPhrases = false;
+                canSearchAllPrompts = false;
                 loginScreen.style.display = 'flex';
                 appScreen.style.display = 'none';
                 searchBtn.style.display = 'inline-block';
@@ -674,7 +655,7 @@
                     set(ref(db, `users/${user.uid}`), {
                         email: newEmail,
                         password: newPassword,
-                        canSearchAllPhrases: false
+                        canSearchAllPrompts: false
                     }).then(() => {
                         messageDiv.textContent = "Usuário cadastrado com sucesso!";
                         registerContainer.style.display = 'none';
@@ -731,89 +712,88 @@
             }, { onlyOnce: true });
         }
 
-        function showRecentPhrases() {
-            showScreen('recentPhrases');
-            onValue(phrasesRef, (snapshot) => {
-                const phrases = snapshot.val();
-                const phraseList = document.getElementById('phraseList');
-                phraseList.innerHTML = '';
-                if (!phrases) {
-                    phraseList.innerHTML = '<li>Nenhuma frase armazenada ainda.</li>';
+        function showRecentPrompts() {
+            showScreen('recentPrompts');
+            onValue(promptsRef, (snapshot) => {
+                const prompts = snapshot.val();
+                const promptList = document.getElementById('promptList');
+                promptList.innerHTML = '';
+                if (!prompts) {
+                    promptList.innerHTML = '<li>Nenhum prompt armazenado ainda.</li>';
                     return;
                 }
-                let userPhrases;
+                let userPrompts;
                 if (currentUserEmail === "psics.psix.141@gmail.com") {
-                    userPhrases = Object.entries(phrases)
+                    userPrompts = Object.entries(prompts)
                         .sort((a, b) => b[1].timestamp - a[1].timestamp)
                         .slice(0, 10);
                 } else {
-                    userPhrases = Object.entries(phrases)
-                        .filter(([_, phrase]) => phrase.userEmail === currentUserEmail)
+                    userPrompts = Object.entries(prompts)
+                        .filter(([_, prompt]) => prompt.userEmail === currentUserEmail)
                         .sort((a, b) => b[1].timestamp - a[1].timestamp)
                         .slice(0, 10);
                 }
-                userPhrases.forEach(([key, phrase]) => {
-                    const categoriesText = Array.isArray(phrase.categories) ? phrase.categories.join(', ') : 'Sem categorias';
+                userPrompts.forEach(([key, prompt]) => {
+                    const categoriesText = Array.isArray(prompt.categories) ? prompt.categories.join(', ') : 'Sem categorias';
                     const li = document.createElement('li');
                     li.innerHTML = `
                         <div class="prompt-row">
-                            <span>${phrase.text} | Autor: ${phrase.author} | Categorias: ${categoriesText}</span>
-                            <button class="copy-btn" data-text="${encodeURIComponent(phrase.text)}">Copiar</button>
+                            <span>${prompt.text} | Autor: ${prompt.author} | Categorias: ${categoriesText}</span>
+                            <button class="copy-btn">Copiar</button>
                             ${currentUserEmail === "psics.psix.141@gmail.com" ? `
                                 <button class="edit-btn" data-key="${key}">Editar</button>
                                 <button class="delete-btn" data-key="${key}">Excluir</button>
                             ` : ''}
                         </div>
                     `;
-                    phraseList.appendChild(li);
-                    li.querySelector('.copy-btn').addEventListener('click', (e) => {
-                        const text = decodeURIComponent(e.target.getAttribute('data-text'));
-                        navigator.clipboard.writeText(text);
-                        document.getElementById('success').textContent = "Frase copiada para a área de transferência!";
+                    promptList.appendChild(li);
+                    li.querySelector('.copy-btn').addEventListener('click', () => {
+                        navigator.clipboard.writeText(prompt.text);
+                        document.getElementById('success').textContent = "Prompt copiado para a área de transferência!";
                     });
                     if (currentUserEmail === "psics.psix.141@gmail.com") {
                         li.querySelector('.edit-btn').addEventListener('click', (e) => {
                             const key = e.target.getAttribute('data-key');
-                            editPhrase(key);
+                            editPrompt(key);
                         });
                         li.querySelector('.delete-btn').addEventListener('click', (e) => {
                             const key = e.target.getAttribute('data-key');
-                            deletePhrase(key, false);
+                            deletePrompt(key, false);
                         });
                     }
                 });
             }, { onlyOnce: true });
         }
 
-        document.getElementById('storePhraseBtn').addEventListener('click', () => {
-            showScreen('storePhraseScreen');
+        document.getElementById('storePromptBtn').addEventListener('click', () => {
+            showScreen('storePromptScreen');
             loadCategories(document.getElementById('categorySelect'));
-            document.getElementById('phraseUserEmail').value = currentUserEmail;
+            document.getElementById('promptUserEmail').value = currentUserEmail;
         });
 
-        document.getElementById('savePhraseBtn').addEventListener('click', () => {
-            const text = document.getElementById('phraseText').value.trim();
-            const context = document.getElementById('phraseContext').value.trim();
-            const location = document.getElementById('phraseLocation').value.trim();
-            const note = document.getElementById('phraseNote').value.trim();
-            let author = document.getElementById('phraseAuthor').value.trim();
-            const userEmail = document.getElementById('phraseUserEmail').value.trim();
+        document.getElementById('savePromptBtn').addEventListener('click', () => {
+            const text = document.getElementById('promptText').value.trim();
+            const func = document.getElementById('promptFunction').value.trim();
+            const location = document.getElementById('promptLocation').value.trim();
+            const note = document.getElementById('promptNote').value.trim();
+            let author = document.getElementById('promptAuthor').value.trim();
+            const userEmail = document.getElementById('promptUserEmail').value.trim();
             const categorySelect = document.getElementById('categorySelect');
             const categories = Array.from(categorySelect.selectedOptions).map(option => option.textContent) || [];
             const hidden = currentUserEmail === "psics.psix.141@gmail.com" && document.getElementById('hiddenCheckbox').checked;
 
-            if (!text) {
-                document.getElementById('error').textContent = "Preencha o campo obrigatório: Texto da Frase!";
+            if (!text || !func) {
+                document.getElementById('error').textContent = "Preencha os campos obrigatórios: Texto do Prompt e Função!";
                 return;
             }
 
             if (!author) {
-                author = "Desconhecido";
+                author = currentUserEmail;
             }
 
-            const newPhrase = {
+            const newPrompt = {
                 text,
-                context,
+                function: func,
                 location,
                 note,
                 author,
@@ -823,19 +803,19 @@
                 hidden: hidden || false
             };
 
-            push(phrasesRef, newPhrase)
+            push(promptsRef, newPrompt)
                 .then(() => {
-                    document.getElementById('success').textContent = "Frase armazenada com sucesso!";
-                    document.getElementById('phraseText').value = '';
-                    document.getElementById('phraseContext').value = '';
-                    document.getElementById('phraseLocation').value = '';
-                    document.getElementById('phraseNote').value = '';
-                    document.getElementById('phraseAuthor').value = '';
-                    document.getElementById('phraseUserEmail').value = currentUserEmail;
+                    document.getElementById('success').textContent = "Prompt armazenado com sucesso!";
+                    document.getElementById('promptText').value = '';
+                    document.getElementById('promptFunction').value = '';
+                    document.getElementById('promptLocation').value = '';
+                    document.getElementById('promptNote').value = '';
+                    document.getElementById('promptAuthor').value = '';
+                    document.getElementById('promptUserEmail').value = currentUserEmail;
                     categorySelect.selectedIndex = -1;
                     if (hidden) document.getElementById('hiddenCheckbox').checked = false;
                 })
-                .catch(error => log(`Erro ao armazenar frase: ${error.message}`));
+                .catch(error => log(`Erro ao armazenar prompt: ${error.message}`));
         });
 
         document.getElementById('categoryBtn').addEventListener('click', () => {
@@ -941,7 +921,8 @@
                 saveBtn.removeEventListener('click', saveCategoryDefault);
                 saveBtn.dataset.key = key;
                 saveBtn.addEventListener('click', editCategoryHandler);
-                document.getElementById('categoryScreen').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                document.getElementById('categoryName').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                setTimeout(() => document.getElementById('categoryName').focus(), 300);
             }, { onlyOnce: true });
         }
 
@@ -957,148 +938,11 @@
             }
         }
 
-        document.getElementById('importBtn').addEventListener('click', () => {
-            showScreen('importScreen');
-            document.getElementById('importSameLineNote').style.display = 'none';
-            document.getElementById('submitSameLineNote').style.display = 'none';
-            document.getElementById('importNextLineNote').style.display = 'none';
-            document.getElementById('submitNextLineNote').style.display = 'none';
-        });
-
-        document.getElementById('importSameLineBtn').addEventListener('click', () => {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = '.txt';
-            input.onchange = (e) => {
-                const file = e.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = (event) => {
-                        const content = event.target.result;
-                        importPhrasesSameLine(content);
-                    };
-                    reader.readAsText(file);
-                }
-            };
-            input.click();
-        });
-
-        document.getElementById('importSameLineNoteBtn').addEventListener('click', () => {
-            const note = document.getElementById('importSameLineNote');
-            const submitBtn = document.getElementById('submitSameLineNote');
-            note.style.display = 'block';
-            submitBtn.style.display = 'block';
-            note.value = '';
-        });
-
-        document.getElementById('submitSameLineNote').addEventListener('click', () => {
-            const content = document.getElementById('importSameLineNote').value.trim();
-            if (content) {
-                importPhrasesSameLine(content);
-                document.getElementById('importSameLineNote').value = '';
-            } else {
-                document.getElementById('error').textContent = "Digite algo no campo de nota para importar!";
-            }
-        });
-
-        function importPhrasesSameLine(content) {
-            const paragraphs = content.split(/\n\s*\n/).filter(p => p.trim());
-            paragraphs.forEach(paragraph => {
-                const trimmed = paragraph.trim();
-                const lastDotIndex = trimmed.lastIndexOf('.');
-                let text, author;
-                if (lastDotIndex !== -1 && lastDotIndex < trimmed.length - 1) {
-                    text = trimmed.substring(0, lastDotIndex + 1).trim();
-                    author = trimmed.substring(lastDotIndex + 1).trim();
-                } else {
-                    text = trimmed;
-                    author = "Desconhecido";
-                }
-                const newPhrase = {
-                    text,
-                    context: '',
-                    location: '',
-                    note: '',
-                    author,
-                    userEmail: currentUserEmail,
-                    categories: [],
-                    timestamp: Date.now(),
-                    hidden: false
-                };
-                push(phrasesRef, newPhrase)
-                    .catch(error => log(`Erro ao importar frase: ${error.message}`));
-            });
-            document.getElementById('success').textContent = `${paragraphs.length} frases importadas com sucesso!`;
-        }
-
-        document.getElementById('importNextLineBtn').addEventListener('click', () => {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = '.txt';
-            input.onchange = (e) => {
-                const file = e.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = (event) => {
-                        const content = event.target.result;
-                        importPhrasesNextLine(content);
-                    };
-                    reader.readAsText(file);
-                }
-            };
-            input.click();
-        });
-
-        document.getElementById('importNextLineNoteBtn').addEventListener('click', () => {
-            const note = document.getElementById('importNextLineNote');
-            const submitBtn = document.getElementById('submitNextLineNote');
-            note.style.display = 'block';
-            submitBtn.style.display = 'block';
-            note.value = '';
-        });
-
-        document.getElementById('submitNextLineNote').addEventListener('click', () => {
-            const content = document.getElementById('importNextLineNote').value.trim();
-            if (content) {
-                importPhrasesNextLine(content);
-                document.getElementById('importNextLineNote').value = '';
-            } else {
-                document.getElementById('error').textContent = "Digite algo no campo de nota para importar!";
-            }
-        });
-
-        function importPhrasesNextLine(content) {
-            const blocks = content.split(/\n\s*\n/).filter(b => b.trim());
-            let count = 0;
-            blocks.forEach(block => {
-                const lines = block.split('\n').filter(line => line.trim());
-                if (lines.length >= 1) {
-                    const text = lines[0].trim();
-                    const author = lines.length > 1 && lines[1].trim() ? lines[1].trim() : "Desconhecido";
-                    const newPhrase = {
-                        text,
-                        context: '',
-                        location: '',
-                        note: '',
-                        author,
-                        userEmail: currentUserEmail,
-                        categories: [],
-                        timestamp: Date.now(),
-                        hidden: false
-                    };
-                    push(phrasesRef, newPhrase)
-                        .then(() => count++)
-                        .catch(error => log(`Erro ao importar frase: ${error.message}`));
-                }
-            });
-            document.getElementById('success').textContent = `${count} frases importadas com sucesso!`;
-        }
-
         document.getElementById('searchBtn').addEventListener('click', () => {
             showScreen('searchScreen');
             loadCategories(document.getElementById('includeCategories'));
             loadCategories(document.getElementById('excludeCategories'));
-            document.getElementById('searchAllPhrasesCheckbox').checked = false;
+            document.getElementById('searchAllPromptsCheckbox').checked = false;
         });
 
         document.getElementById('advancedSearchBtn').addEventListener('click', () => {
@@ -1131,15 +975,15 @@
                         <div class="prompt-row">
                             <span>${user.email}</span>
                             <div class="checkbox-container">
-                                <input type="checkbox" id="perm_${uid}" ${user.canSearchAllPhrases ? 'checked' : ''}>
-                                <label for="perm_${uid}">Permissão para pesquisar todas as frases</label>
+                                <input type="checkbox" id="perm_${uid}" ${user.canSearchAllPrompts ? 'checked' : ''}>
+                                <label for="perm_${uid}">Permissão para pesquisar todos os prompts</label>
                                 ${user.email !== "psics.psix.141@gmail.com" ? `<button class="delete-user-btn" data-uid="${uid}">Excluir</button>` : ''}
                             </div>
                         </div>
                     `;
                     userList.appendChild(li);
                     li.querySelector(`#perm_${uid}`).addEventListener('change', (e) => {
-                        set(ref(db, `users/${uid}/canSearchAllPhrases`), e.target.checked)
+                        set(ref(db, `users/${uid}/canSearchAllPrompts`), e.target.checked)
                             .then(() => log(`Permissão atualizada para ${user.email}`))
                             .catch(error => log(`Erro ao atualizar permissão: ${error.message}`));
                     });
@@ -1154,21 +998,21 @@
         }
 
         function deleteUser(uid) {
-            if (confirm("Tem certeza que deseja excluir este usuário? Isso também excluirá todas as suas frases.")) {
+            if (confirm("Tem certeza que deseja excluir este usuário? Isso também excluirá todos os seus prompts.")) {
                 const userRef = ref(db, `users/${uid}`);
-                const userPhrasesRef = ref(db, 'phrases');
-                onValue(userPhrasesRef, (snapshot) => {
-                    const phrases = snapshot.val();
-                    if (phrases) {
-                        const userPhrases = Object.entries(phrases).filter(([_, phrase]) => phrase.userEmail === currentUserEmail);
-                        userPhrases.forEach(([key, _]) => {
-                            remove(ref(db, `phrases/${key}`));
+                const userPromptsRef = ref(db, 'prompts');
+                onValue(userPromptsRef, (snapshot) => {
+                    const prompts = snapshot.val();
+                    if (prompts) {
+                        const userPrompts = Object.entries(prompts).filter(([_, prompt]) => prompt.userEmail === currentUserEmail);
+                        userPrompts.forEach(([key, _]) => {
+                            remove(ref(db, `prompts/${key}`));
                         });
                     }
                 }, { onlyOnce: true });
                 remove(userRef)
                     .then(() => {
-                        document.getElementById('success').textContent = "Usuário e suas frases excluídos com sucesso!";
+                        document.getElementById('success').textContent = "Usuário e seus prompts excluídos com sucesso!";
                         loadUserList();
                     })
                     .catch(error => log(`Erro ao excluir usuário: ${error.message}`));
@@ -1177,18 +1021,18 @@
 
         function performSearch(isAdvanced = false) {
             const input = document.getElementById(isAdvanced ? 'advSearchInput' : 'searchInput').value.trim().toLowerCase();
-            const phraseText = document.getElementById(isAdvanced ? 'advSearchPhraseText' : 'searchPhraseText').value.trim().toLowerCase();
-            const phraseContext = document.getElementById(isAdvanced ? 'advSearchPhraseContext' : 'searchPhraseContext').value.trim().toLowerCase();
-            const phraseLocation = document.getElementById(isAdvanced ? 'advSearchPhraseLocation' : 'searchPhraseLocation').value.trim().toLowerCase();
-            const phraseNote = document.getElementById(isAdvanced ? 'advSearchPhraseNote' : 'searchPhraseNote').value.trim().toLowerCase();
-            const phraseAuthor = document.getElementById(isAdvanced ? 'advSearchPhraseAuthor' : 'searchPhraseAuthor').value.trim().toLowerCase();
-            const phraseUserEmail = isAdvanced ? document.getElementById('advSearchPhraseUserEmail').value.trim().toLowerCase() : '';
+            const promptText = document.getElementById(isAdvanced ? 'advSearchPromptText' : 'searchPromptText').value.trim().toLowerCase();
+            const promptFunction = document.getElementById(isAdvanced ? 'advSearchPromptFunction' : 'searchPromptFunction').value.trim().toLowerCase();
+            const promptLocation = document.getElementById(isAdvanced ? 'advSearchPromptLocation' : 'searchPromptLocation').value.trim().toLowerCase();
+            const promptNote = document.getElementById(isAdvanced ? 'advSearchPromptNote' : 'searchPromptNote').value.trim().toLowerCase();
+            const promptAuthor = document.getElementById(isAdvanced ? 'advSearchPromptAuthor' : 'searchPromptAuthor').value.trim().toLowerCase();
+            const promptUserEmail = isAdvanced ? document.getElementById('advSearchPromptUserEmail').value.trim().toLowerCase() : '';
             const includeSelect = document.getElementById(isAdvanced ? 'advIncludeCategories' : 'includeCategories');
             const excludeSelect = document.getElementById(isAdvanced ? 'advExcludeCategories' : 'excludeCategories');
             const includeCategories = Array.from(includeSelect.selectedOptions).map(opt => opt.textContent);
             const excludeCategories = Array.from(excludeSelect.selectedOptions).map(opt => opt.textContent);
             const includeHidden = isAdvanced && currentUserEmail === "psics.psix.141@gmail.com" && document.getElementById('advSearchHiddenCheckbox').checked;
-            const searchAllPhrases = !isAdvanced && canSearchAllPhrases && document.getElementById('searchAllPhrasesCheckbox').checked;
+            const searchAllPrompts = !isAdvanced && canSearchAllPrompts && document.getElementById('searchAllPromptsCheckbox').checked;
             const resultsList = document.getElementById(isAdvanced ? 'advSearchResults' : 'searchResults');
 
             if (includeCategories.length > 0 && excludeCategories.length > 0 && includeCategories.some(cat => excludeCategories.includes(cat))) {
@@ -1196,77 +1040,77 @@
                 return;
             }
 
-            onValue(phrasesRef, (snapshot) => {
-                const phrases = snapshot.val();
+            onValue(promptsRef, (snapshot) => {
+                const prompts = snapshot.val();
                 resultsList.innerHTML = '';
-                if (!phrases) {
-                    resultsList.innerHTML = '<li>Nenhuma frase encontrada.</li>';
+                if (!prompts) {
+                    resultsList.innerHTML = '<li>Nenhum prompt encontrado.</li>';
                     scrollToResults(isAdvanced);
                     return;
                 }
 
-                const hasCriteria = input || phraseText || phraseContext || phraseLocation || phraseNote || phraseAuthor || (isAdvanced && phraseUserEmail) || includeCategories.length > 0 || excludeCategories.length > 0;
+                const hasCriteria = input || promptText || promptFunction || promptLocation || promptNote || promptAuthor || (isAdvanced && promptUserEmail) || includeCategories.length > 0 || excludeCategories.length > 0;
 
-                const filteredPhrases = Object.entries(phrases)
-                    .filter(([_, phrase]) => {
-                        if (!isAdvanced && !searchAllPhrases && phrase.userEmail !== currentUserEmail) return false;
-                        if (!isAdvanced && phrase.hidden && phrase.userEmail === "psics.psix.141@gmail.com") return false;
-                        if (isAdvanced && currentUserEmail !== "psics.psix.141@gmail.com" && phrase.hidden) return false;
+                const filteredPrompts = Object.entries(prompts)
+                    .filter(([_, prompt]) => {
+                        if (!isAdvanced && !searchAllPrompts && prompt.userEmail !== currentUserEmail) return false;
+                        if (!isAdvanced && prompt.hidden && prompt.userEmail === "psics.psix.141@gmail.com") return false;
+                        if (isAdvanced && currentUserEmail !== "psics.psix.141@gmail.com" && prompt.hidden) return false;
 
                         if (isAdvanced && includeHidden && !hasCriteria) {
-                            return phrase.hidden && phrase.userEmail === "psics.psix.141@gmail.com";
+                            return prompt.hidden && prompt.userEmail === "psics.psix.141@gmail.com";
                         }
 
                         if (!hasCriteria && !includeHidden) return false;
 
                         const generalMatch = !input || (
-                            phrase.text.toLowerCase().includes(input) ||
-                            (phrase.context && phrase.context.toLowerCase().includes(input)) ||
-                            (phrase.location && phrase.location.toLowerCase().includes(input)) ||
-                            (phrase.note && phrase.note.toLowerCase().includes(input)) ||
-                            phrase.author.toLowerCase().includes(input) ||
-                            (phrase.categories && phrase.categories.some(cat => cat.toLowerCase().includes(input))) ||
-                            phrase.userEmail.toLowerCase().includes(input)
+                            prompt.text.toLowerCase().includes(input) ||
+                            prompt.function.toLowerCase().includes(input) ||
+                            prompt.location.toLowerCase().includes(input) ||
+                            (prompt.note && prompt.note.toLowerCase().includes(input)) ||
+                            prompt.author.toLowerCase().includes(input) ||
+                            (prompt.categories && prompt.categories.some(cat => cat.toLowerCase().includes(input))) ||
+                            prompt.userEmail.toLowerCase().includes(input)
                         );
 
                         const specificMatch = (
-                            (!phraseText || phrase.text.toLowerCase().includes(phraseText)) &&
-                            (!phraseContext || (phrase.context && phrase.context.toLowerCase().includes(phraseContext))) &&
-                            (!phraseLocation || (phrase.location && phrase.location.toLowerCase().includes(phraseLocation))) &&
-                            (!phraseNote || (phrase.note && phrase.note.toLowerCase().includes(phraseNote))) &&
-                            (!phraseAuthor || phrase.author.toLowerCase().includes(phraseAuthor)) &&
-                            (!phraseUserEmail || phrase.userEmail.toLowerCase().includes(phraseUserEmail))
+                            (!promptText || prompt.text.toLowerCase().includes(promptText)) &&
+                            (!promptFunction || prompt.function.toLowerCase().includes(promptFunction)) &&
+                            (!promptLocation || prompt.location.toLowerCase().includes(promptLocation)) &&
+                            (!promptNote || (prompt.note && prompt.note.toLowerCase().includes(promptNote))) &&
+                            (!promptAuthor || prompt.author.toLowerCase().includes(promptAuthor)) &&
+                            (!promptUserEmail || prompt.userEmail.toLowerCase().includes(promptUserEmail))
                         );
 
-                        const includeMatch = includeCategories.length === 0 || (Array.isArray(phrase.categories) && phrase.categories.some(cat => includeCategories.includes(cat)));
-                        const excludeMatch = excludeCategories.length === 0 || !(Array.isArray(phrase.categories) && phrase.categories.some(cat => excludeCategories.includes(cat)));
+                        const includeMatch = includeCategories.length === 0 || (Array.isArray(prompt.categories) && prompt.categories.some(cat => includeCategories.includes(cat)));
+                        const excludeMatch = excludeCategories.length === 0 || !(Array.isArray(prompt.categories) && prompt.categories.some(cat => excludeCategories.includes(cat)));
 
                         if (isAdvanced && includeHidden && hasCriteria) {
                             return generalMatch && specificMatch && includeMatch && excludeMatch;
                         }
 
-                        if (phrase.hidden && phrase.userEmail === "psics.psix.141@gmail.com" && !includeHidden) return false;
+                        if (prompt.hidden && prompt.userEmail === "psics.psix.141@gmail.com" && !includeHidden) return false;
 
                         return generalMatch && specificMatch && includeMatch && excludeMatch;
                     })
                     .sort((a, b) => b[1].timestamp - a[1].timestamp);
 
-                filteredPhrases.forEach(([key, phrase]) => {
-                    const categoriesText = Array.isArray(phrase.categories) ? phrase.categories.join(', ') : 'Sem categorias';
+                filteredPrompts.forEach(([key, prompt]) => {
+                    const categoriesText = Array.isArray(prompt.categories) ? prompt.categories.join(', ') : 'Sem categorias';
                     const li = document.createElement('li');
                     if (isAdvanced) {
                         li.innerHTML = `
                             <div class="prompt-row">
                                 <div class="adv-prompt-details">
-                                    <span>Texto: ${phrase.text}</span>
-                                    <span>Contexto: ${phrase.context || ''}</span>
-                                    <span>Local: ${phrase.location || ''}</span>
-                                    <span>Palavras-chave: ${phrase.note || ''}</span>
-                                    <span>Autor: ${phrase.author}</span>
-                                    <span>E-mail: ${phrase.userEmail}</span>
+                                    <span>Texto: ${prompt.text}</span>
+                                    <span>Função: ${prompt.function}</span>
+                                    <span>Local: ${prompt.location}</span>
+                                    <span>Palavras-chave: ${prompt.note || ''}</span>
+                                    <span>Autor: ${prompt.author}</span>
+                                    <span>E-mail: ${prompt.userEmail}</span>
                                     <span>Categorias: ${categoriesText}</span>
                                 </div>
-                                <button class="copy-btn" data-text="${encodeURIComponent(phrase.text)}">Copiar</button>
+                                <button class="copy-btn">Copiar</button>
                                 <button class="edit-btn" data-key="${key}">Editar</button>
                                 ${currentUserEmail === "psics.psix.141@gmail.com" ? `<button class="delete-btn" data-key="${key}">Excluir</button>` : ''}
                             </div>
@@ -1274,8 +1118,8 @@
                     } else {
                         li.innerHTML = `
                             <div class="prompt-row">
-                                <span>${phrase.text} | Autor: ${phrase.author}</span>
-                                <button class="copy-btn" data-text="${encodeURIComponent(phrase.text)}">Copiar</button>
+                                <span>${prompt.text} | Autor: ${prompt.author}</span>
+                                <button class="copy-btn">Copiar</button>
                                 ${currentUserEmail === "psics.psix.141@gmail.com" ? `
                                     <button class="edit-btn" data-key="${key}">Editar</button>
                                     <button class="delete-btn" data-key="${key}">Excluir</button>
@@ -1284,25 +1128,24 @@
                         `;
                     }
                     resultsList.appendChild(li);
-                    li.querySelector('.copy-btn').addEventListener('click', (e) => {
-                        const text = decodeURIComponent(e.target.getAttribute('data-text'));
-                        navigator.clipboard.writeText(text);
-                        document.getElementById('success').textContent = "Frase copiada para a área de transferência!";
+                    li.querySelector('.copy-btn').addEventListener('click', () => {
+                        navigator.clipboard.writeText(prompt.text);
+                        document.getElementById('success').textContent = "Prompt copiado para a área de transferência!";
                     });
                     if (currentUserEmail === "psics.psix.141@gmail.com") {
                         li.querySelector('.edit-btn').addEventListener('click', (e) => {
                             const key = e.target.getAttribute('data-key');
-                            editPhrase(key);
+                            editPrompt(key);
                         });
                         li.querySelector('.delete-btn').addEventListener('click', (e) => {
                             const key = e.target.getAttribute('data-key');
-                            deletePhrase(key, isAdvanced);
+                            deletePrompt(key, isAdvanced);
                         });
                     }
                 });
 
-                if (filteredPhrases.length === 0) {
-                    resultsList.innerHTML = '<li>Nenhuma frase encontrada.</li>';
+                if (filteredPrompts.length === 0) {
+                    resultsList.innerHTML = '<li>Nenhum prompt encontrado.</li>';
                 } else {
                     document.getElementById('success').textContent = "Resultados exibidos!";
                 }
@@ -1319,6 +1162,7 @@
             log(`Limpando campos da ${isAdvanced ? 'Pesquisa Avançada' : 'Pesquisa'} para ${currentUserEmail}`);
             const prefix = isAdvanced ? 'advSearch' : 'search';
 
+            // Função auxiliar para limpar campo se ele existir
             const clearValue = (id) => {
                 const element = document.getElementById(id);
                 if (element) {
@@ -1329,10 +1173,12 @@
                 }
             };
 
+            // Função auxiliar para limpar seleções de combo box
             const clearSelect = (id) => {
                 const element = document.getElementById(id);
                 if (element) {
                     element.selectedIndex = -1;
+                    // Forçar desmarcação de todas as opções
                     for (let option of element.options) {
                         option.selected = false;
                     }
@@ -1342,25 +1188,29 @@
                 }
             };
 
-            clearValue(`${prefix}Input`);
-            clearValue(`${prefix}PhraseText`);
-            clearValue(`${prefix}PhraseContext`);
-            clearValue(`${prefix}PhraseLocation`);
-            clearValue(`${prefix}PhraseNote`);
-            clearValue(`${prefix}PhraseAuthor`);
-            if (isAdvanced) clearValue('advSearchPhraseUserEmail');
+            // Limpar campos de texto com IDs corretos
+            clearValue(`${prefix}Input`);           // Pesquisa: searchInput, Avançada: advSearchInput
+            clearValue(`${prefix}PromptText`);      // Pesquisa: searchPromptText, Avançada: advSearchPromptText
+            clearValue(`${prefix}PromptFunction`);  // Pesquisa: searchPromptFunction, Avançada: advSearchPromptFunction
+            clearValue(`${prefix}PromptLocation`);  // Pesquisa: searchPromptLocation, Avançada: advSearchPromptLocation
+            clearValue(`${prefix}PromptNote`);      // Pesquisa: searchPromptNote, Avançada: advSearchPromptNote
+            clearValue(`${prefix}PromptAuthor`);    // Pesquisa: searchPromptAuthor, Avançada: advSearchPromptAuthor
+            if (isAdvanced) clearValue('advSearchPromptUserEmail'); // Apenas para Pesquisa Avançada
 
+            // Limpar seleções dos combo boxes
             clearSelect(isAdvanced ? 'advIncludeCategories' : 'includeCategories');
             clearSelect(isAdvanced ? 'advExcludeCategories' : 'excludeCategories');
 
-            if (!isAdvanced && canSearchAllPhrases && currentUserEmail !== "psics.psix.141@gmail.com") {
-                const checkbox = document.getElementById('searchAllPhrasesCheckbox');
+            // Limpar checkbox da Pesquisa, se aplicável
+            if (!isAdvanced && canSearchAllPrompts && currentUserEmail !== "psics.psix.141@gmail.com") {
+                const checkbox = document.getElementById('searchAllPromptsCheckbox');
                 if (checkbox) {
                     checkbox.checked = false;
-                    log("Checkbox searchAllPhrasesCheckbox limpo");
+                    log("Checkbox searchAllPromptsCheckbox limpo");
                 }
             }
 
+            // Limpar checkbox da Pesquisa Avançada, se aplicável
             if (isAdvanced && currentUserEmail === "psics.psix.141@gmail.com") {
                 const hiddenCheckbox = document.getElementById('advSearchHiddenCheckbox');
                 if (hiddenCheckbox) {
@@ -1369,6 +1219,7 @@
                 }
             }
 
+            // Limpar resultados e saída de texto
             const results = document.getElementById(isAdvanced ? 'advSearchResults' : 'searchResults');
             const txtOutput = document.getElementById(isAdvanced ? 'txtOutputAdv' : 'txtOutput');
             if (results) {
@@ -1380,9 +1231,13 @@
                 log(`Saída de texto ${isAdvanced ? 'txtOutputAdv' : 'txtOutput'} ocultada`);
             }
 
+            // Exibir mensagem de sucesso
             document.getElementById('success').textContent = "Campos limpos com sucesso!";
+
+            // Forçar rolagem para o topo
             window.scrollTo({ top: 0, behavior: 'smooth' });
 
+            // Forçar atualização do DOM
             const screen = document.getElementById(isAdvanced ? 'advancedSearchScreen' : 'searchScreen');
             screen.style.display = 'none';
             setTimeout(() => {
@@ -1392,68 +1247,68 @@
             log("Campos limpos com sucesso");
         }
 
-        function editPhrase(key) {
-            showScreen('editPhraseScreen');
-            const phraseRef = ref(db, `phrases/${key}`);
-            onValue(phraseRef, (snapshot) => {
-                const phrase = snapshot.val();
-                if (!phrase) {
-                    document.getElementById('error').textContent = "Frase não encontrada!";
+        function editPrompt(key) {
+            showScreen('editPromptScreen');
+            const promptRef = ref(db, `prompts/${key}`);
+            onValue(promptRef, (snapshot) => {
+                const prompt = snapshot.val();
+                if (!prompt) {
+                    document.getElementById('error').textContent = "Prompt não encontrado!";
                     return;
                 }
-                document.getElementById('editPhraseText').value = phrase.text;
-                document.getElementById('editPhraseContext').value = phrase.context || '';
-                document.getElementById('editPhraseLocation').value = phrase.location || '';
-                document.getElementById('editPhraseNote').value = phrase.note || '';
-                document.getElementById('editPhraseAuthor').value = phrase.author;
-                document.getElementById('editPhraseUserEmail').value = phrase.userEmail;
-                loadCategories(document.getElementById('editCategorySelect'), phrase.categories || []);
+                document.getElementById('editPromptText').value = prompt.text;
+                document.getElementById('editPromptFunction').value = prompt.function;
+                document.getElementById('editPromptLocation').value = prompt.location;
+                document.getElementById('editPromptNote').value = prompt.note || '';
+                document.getElementById('editPromptAuthor').value = prompt.author;
+                document.getElementById('editPromptUserEmail').value = prompt.userEmail;
+                loadCategories(document.getElementById('editCategorySelect'), prompt.categories || []);
                 if (currentUserEmail === "psics.psix.141@gmail.com") {
-                    document.getElementById('editHiddenCheckbox').checked = phrase.hidden || false;
+                    document.getElementById('editHiddenCheckbox').checked = prompt.hidden || false;
                 }
-                editingPhraseKey = key;
+                editingPromptKey = key;
             }, { onlyOnce: true });
         }
 
-        function deletePhrase(key, isAdvanced) {
-            if (confirm("Tem certeza que deseja excluir esta frase?")) {
-                const phraseRef = ref(db, `phrases/${key}`);
-                remove(phraseRef)
+        function deletePrompt(key, isAdvanced) {
+            if (confirm("Tem certeza que deseja excluir este prompt?")) {
+                const promptRef = ref(db, `prompts/${key}`);
+                remove(promptRef)
                     .then(() => {
-                        document.getElementById('success').textContent = "Frase excluída com sucesso!";
+                        document.getElementById('success').textContent = "Prompt excluído com sucesso!";
                         if (isAdvanced) {
                             performSearch(true);
                         } else {
-                            showRecentPhrases();
+                            showRecentPrompts();
                         }
                     })
-                    .catch(error => log(`Erro ao excluir frase: ${error.message}`));
+                    .catch(error => log(`Erro ao excluir prompt: ${error.message}`));
             }
         }
 
-        document.getElementById('saveEditPhraseBtn').addEventListener('click', () => {
-            const text = document.getElementById('editPhraseText').value.trim();
-            const context = document.getElementById('editPhraseContext').value.trim();
-            const location = document.getElementById('editPhraseLocation').value.trim();
-            const note = document.getElementById('editPhraseNote').value.trim();
-            let author = document.getElementById('editPhraseAuthor').value.trim();
-            const userEmail = document.getElementById('editPhraseUserEmail').value.trim();
+        document.getElementById('saveEditPromptBtn').addEventListener('click', () => {
+            const text = document.getElementById('editPromptText').value.trim();
+            const func = document.getElementById('editPromptFunction').value.trim();
+            const location = document.getElementById('editPromptLocation').value.trim();
+            const note = document.getElementById('editPromptNote').value.trim();
+            let author = document.getElementById('editPromptAuthor').value.trim();
+            const userEmail = document.getElementById('editPromptUserEmail').value.trim();
             const categorySelect = document.getElementById('editCategorySelect');
             const categories = Array.from(categorySelect.selectedOptions).map(option => option.textContent);
             const hidden = currentUserEmail === "psics.psix.141@gmail.com" && document.getElementById('editHiddenCheckbox').checked;
 
-            if (!text) {
-                document.getElementById('error').textContent = "Preencha o campo obrigatório: Texto da Frase!";
+            if (!text || !func) {
+                document.getElementById('error').textContent = "Preencha os campos obrigatórios: Texto do Prompt e Função!";
                 return;
             }
 
             if (!author) {
-                author = "Desconhecido";
+                author = currentUserEmail;
             }
 
-            const updatedPhrase = {
+            const updatedPrompt = {
                 text,
-                context,
+                function: func,
                 location,
                 note,
                 author,
@@ -1463,13 +1318,13 @@
                 hidden: hidden || false
             };
 
-            set(ref(db, `phrases/${editingPhraseKey}`), updatedPhrase)
+            set(ref(db, `prompts/${editingPromptKey}`), updatedPrompt)
                 .then(() => {
-                    document.getElementById('success').textContent = "Frase atualizada com sucesso!";
-                    editingPhraseKey = null;
-                    showRecentPhrases();
+                    document.getElementById('success').textContent = "Prompt atualizado com sucesso!";
+                    editingPromptKey = null;
+                    showRecentPrompts();
                 })
-                .catch(error => log(`Erro ao atualizar frase: ${error.message}`));
+                .catch(error => log(`Erro ao atualizar prompt: ${error.message}`));
         });
 
         document.getElementById('doSearchBtn').addEventListener('click', () => performSearch(false));
@@ -1518,16 +1373,15 @@
         document.getElementById('txtSearchBtn').addEventListener('click', () => exportSearchToTxt(false));
         document.getElementById('txtAdvSearchBtn').addEventListener('click', () => exportSearchToTxt(true));
 
-        document.getElementById('backBtn').addEventListener('click', showRecentPhrases);
-        document.getElementById('backBtnStore').addEventListener('click', showRecentPhrases);
-        document.getElementById('backBtnEdit').addEventListener('click', showRecentPhrases);
-        document.getElementById('backBtnCategory').addEventListener('click', showRecentPhrases);
-        document.getElementById('backBtnImport').addEventListener('click', showRecentPhrases);
-        document.getElementById('backBtnSearch').addEventListener('click', showRecentPhrases);
-        document.getElementById('backBtnAdvSearch').addEventListener('click', showRecentPhrases);
-        document.getElementById('backBtnAuthorization').addEventListener('click', showRecentPhrases);
+        document.getElementById('backBtn').addEventListener('click', showRecentPrompts);
+        document.getElementById('backBtnStore').addEventListener('click', showRecentPrompts);
+        document.getElementById('backBtnEdit').addEventListener('click', showRecentPrompts);
+        document.getElementById('backBtnCategory').addEventListener('click', showRecentPrompts);
+        document.getElementById('backBtnSearch').addEventListener('click', showRecentPrompts);
+        document.getElementById('backBtnAdvSearch').addEventListener('click', showRecentPrompts);
+        document.getElementById('backBtnAuthorization').addEventListener('click', showRecentPrompts);
 
-        showRecentPhrases();
+        showRecentPrompts();
     </script>
 </body>
 </html>
