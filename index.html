@@ -3,1385 +3,1471 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prompts para IAs</title>
+    <title>Gerenciador de Medicamentos</title>
     <style>
-        body { 
-            font-family: Arial, sans-serif; 
-            margin: 0; 
-            padding: 0; 
-            background: #1a1a1a; 
-            color: #e0e0e0; 
-            overflow-x: hidden; 
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #e0e0e0;
+            text-align: center;
+            margin: 0;
         }
-        #loginScreen, #appScreen { 
-            position: absolute; 
-            top: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 100%; 
-            box-sizing: border-box; 
+        #loginScreen, #registerScreen {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
         }
-        #loginScreen { 
-            background: url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1470&auto=format&fit=crop') no-repeat center center fixed; 
-            background-size: cover; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
+        #appScreen {
+            width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        #loginScreen { display: block; }
+        #registerScreen, #appScreen { display: none; }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+        h1 {
+            color: #ffffff;
+            font-size: 36px;
+            margin: 0;
+        }
+        #currentTime {
+            font-size: 28px;
+            color: #e0e0e0;
+        }
+        .nav-buttons {
+            margin: 20px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+        .report-container {
+            width: 100%;
+            text-align: left;
+        }
+        .report-line1, .report-line2 {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 0;
+            padding: 0;
+        }
+        .report-title { margin: 0; padding: 0; }
+        .report-period-buttons { display: flex; margin: 0; padding: 0; }
+        .report-order-chrono, .report-order-type, .report-user-registry, .report-txt {
+            margin: 0 10px 0 0;
+            padding: 15px;
+        }
+        button, input {
+            font-size: 24px;
+            padding: 15px;
+            margin: 10px 10px 0 0;
+            background: #333;
+            color: #e0e0e0;
+            border: 1px solid #555;
+        }
+        button:hover { background: #555; }
+        .screen { display: none; width: 100%; }
+        .screen.active { display: block; }
+        ul { list-style-type: none; padding: 0; width: 100%; }
+        #medList li, #userList li, #editMedList li, #deleteMedList li, #reportList li {
+            font-size: 28px;
+            margin: 15px 0;
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        #medList li { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+        #userList li, #editMedList li, #deleteMedList li, #reportList li {
+            display: flex;
             flex-direction: column;
+            align-items: flex-start;
         }
-        #appScreen { 
-            display: none; 
-            padding: 20px; 
-            overflow-y: auto; 
-            overflow-x: hidden; 
+        .user-row, .report-row, .edit-row, .delete-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            cursor: pointer;
         }
-        .login-container, .register-container { 
-            background: rgba(0, 0, 0, 0.8); 
-            padding: 20px; 
-            border-radius: 10px; 
-            text-align: center; 
+        .edit-row input[type="text"] { flex: 1; margin-right: 10px; }
+        .edit-row input[type="number"] { width: 150px; margin-right: 10px; }
+        .delete-name { cursor: pointer; flex: 1; text-align: left; }
+        .next-time { font-size: 36px; font-weight: bold; }
+        .same-day { color: #ffff00; }
+        .future-day { color: #1e90ff; }
+        .on-time { color: #00ff00; }
+        .late { color: #ff5555; }
+        #loginError, #registerError, #mainError, #addError, #editError, #deleteError, #reportError, #userError,
+        #loginSuccess, #registerSuccess, #mainSuccess, #addSuccess, #editSuccess, #deleteSuccess, #reportSuccess, #userSuccess {
+            font-size: 24px;
+            margin: 10px 0;
         }
-        .login-container input, .register-container input { 
-            width: 100%; 
-            max-width: 300px; 
-            font-size: 18px; 
-            padding: 10px; 
-            margin: 10px 0; 
-            background: #333; 
-            color: #e0e0e0; 
-            border: 1px solid #555; 
-            border-radius: 5px; 
+        [id$="Error"] { color: #ff5555; }
+        [id$="Success"] { color: #55ff55; }
+        .user-name, .has-note { cursor: pointer; }
+        .has-note { font-style: italic; color: #aaa; margin-left: 10px; }
+        .user-note, .delete-note, .report-note {
+            display: none;
+            font-size: 20px;
+            margin-top: 10px;
+            color: #e0e0e0;
+            width: 100%;
+            text-align: left;
+            word-wrap: break-word;
+            min-height: 60px;
+            background: #333;
+            border: 1px solid #555;
+            padding: 10px;
+            resize: none;
+            box-sizing: border-box;
         }
-        .login-container button, .register-container button { 
-            font-size: 18px; 
-            padding: 10px 20px; 
-            margin: 5px; 
-            background: #333; 
-            color: #e0e0e0; 
-            border: 1px solid #555; 
-            border-radius: 5px; 
-            cursor: pointer; 
-        }
-        .login-container button:hover, .register-container button:hover { 
-            background: #555; 
-        }
-        #registerContainer { 
-            display: none; 
-            margin-top: 20px; 
-        }
-        #message { 
-            color: #ff5555; 
-            margin-top: 10px; 
-        }
-        .header { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            flex-wrap: wrap; 
-            max-width: 100%; 
-            margin-bottom: 60px; 
-        }
-        h1 { 
-            margin: 0; 
-            color: #ffffff; 
-        }
-        .menu { 
-            display: flex; 
-            gap: 10px; 
-            align-items: center; 
-            flex-wrap: wrap; 
-        }
-        button { 
-            font-size: 18px; 
-            padding: 10px; 
-            margin: 5px; 
-            background: #333; 
-            color: #e0e0e0; 
-            border: 1px solid #555; 
-            cursor: pointer; 
-        }
-        button:hover { 
-            background: #555; 
-        }
-        button.active { 
-            background: #555; 
-            font-weight: bold; 
-        }
-        .small-btn { 
-            font-size: 14px; 
-            padding: 5px; 
-            width: 30px; 
-            height: 30px; 
-            line-height: 20px; 
-            text-align: center; 
-        }
-        ul { 
-            list-style-type: none; 
-            padding: 0; 
-        }
-        li { 
-            font-size: 18px; 
-            margin: 10px 0; 
-            background: #2a2a2a; 
-            padding: 10px; 
-            border-radius: 5px; 
-        }
-        .prompt-row { 
-            display: flex; 
-            align-items: center; 
-            gap: 10px; 
-        }
-        .adv-prompt-details { 
-            display: flex; 
-            flex-direction: column; 
-            gap: 5px; 
-        }
-        textarea { 
-            width: 100%; 
-            background: #444; 
-            color: #e0e0e0; 
-            border: 1px solid #555; 
-            padding: 5px; 
-            box-sizing: border-box; 
-            font-size: 20px; 
-        }
-        textarea::placeholder { 
-            font-size: 20px; 
-            color: #888; 
-        }
-        #error, #success { 
-            text-align: center; 
-        }
-        #error { 
-            color: #ff5555; 
-        }
-        #success { 
-            color: #55ff55; 
-        }
-        .input-row { 
-            display: flex; 
-            flex-direction: column; 
-            gap: 10px; 
-            align-items: flex-start; 
-        }
-        #promptText, #editPromptText { 
-            height: 150px; 
-        }
-        #promptFunction, #editPromptFunction { 
-            height: 100px; 
-        }
-        .location-note-container { 
-            display: flex; 
-            flex-direction: row; 
-            gap: 10px; 
-            width: 100%; 
-        }
-        #promptLocation, #editPromptLocation, #promptNote, #editPromptNote { 
-            height: 50px; 
-            width: 50%; 
-        }
-        #promptAuthor, #editPromptAuthor { 
-            width: 33.33%; 
-            background: #000; 
-            color: #fff; 
-            padding: 10px; 
-            border: 1px solid #555; 
-            border-radius: 5px; 
-            font-size: 20px; 
-        }
-        #promptUserEmail, #editPromptUserEmail { 
-            width: 25%; 
-            background: #000; 
-            color: #fff; 
-            padding: 10px; 
-            border: 1px solid #555; 
-            border-radius: 5px; 
-            font-size: 20px; 
-        }
-        #searchPromptAuthor { 
-            width: 33.33%; 
-            background: #000; 
-            color: #fff; 
-            padding: 10px; 
-            border: 1px solid #555; 
-            border-radius: 5px; 
-            font-size: 20px; 
-        }
-        #advSearchPromptAuthor, #advSearchPromptUserEmail { 
-            width: calc(66% + 50mm); 
-            height: 100px; 
-            background: #000; 
-            color: #fff; 
-            padding: 10px; 
-            border: 1px solid #555; 
-            border-radius: 5px; 
-            font-size: 20px; 
-            box-sizing: border-box; 
-        }
-        #promptAuthor.admin, #editPromptAuthor.admin { 
-            width: 25%; 
-        }
-        #promptAuthor::placeholder, #editPromptAuthor::placeholder, #searchPromptAuthor::placeholder, 
-        #promptUserEmail::placeholder, #editPromptUserEmail::placeholder, 
-        #advSearchPromptAuthor::placeholder, #advSearchPromptUserEmail::placeholder { 
-            font-size: 20px; 
-            color: #888; 
-        }
-        #categorySelect, #editCategorySelect { 
-            padding: 10px; 
-            background: #333; 
-            color: #e0e0e0; 
-            border: 1px solid #555; 
-            height: 100px; 
-            width: 33.33%; 
-        }
-        #categorySelect.admin, #editCategorySelect.admin { 
-            width: 50%; 
-        }
-        #categoryName { 
-            width: 33.33%; 
-            background: #000; 
-            color: #fff; 
-            padding: 10px; 
-            border: 1px solid #555; 
-            border-radius: 5px; 
-            font-size: 20px; 
-        }
-        #categoryName::placeholder { 
-            font-size: 20px; 
-            color: #888; 
-        }
-        #txtOutput, #txtOutputAdv { 
-            display: none; 
-            margin: 10px 0; 
-            padding: 10px; 
-            background: #333; 
-            border-radius: 5px; 
-            width: 100%; 
-            min-height: 100px; 
-            resize: vertical; 
-        }
-        .search-container { 
-            display: flex; 
-            flex-direction: column; 
-            gap: 10px; 
-            width: 100%; 
-            box-sizing: border-box; 
-        }
-        .combo-box { 
-            display: flex; 
-            flex-direction: column; 
-            align-items: flex-start; 
-            width: 33%; 
-        }
-        .combo-box select { 
-            height: 200px; 
-            background: #000; 
-            color: #fff; 
-            border: 1px solid #555; 
-            width: 100%; 
-        }
-        #searchInput, #advSearchInput { 
-            width: 100%; 
-            font-size: 18px; 
-            padding: 10px; 
-            background: #000; 
-            color: #fff; 
-            border: 1px solid #555; 
-            border-radius: 5px; 
-            box-sizing: border-box; 
-            margin-bottom: 10px; 
-        }
-        .prompt-container { 
-            display: flex; 
-            flex-direction: row; 
-            gap: 10px; 
-            width: 100%; 
-            justify-content: flex-start; 
-        }
-        .adv-search-author-container { 
-            display: flex; 
-            flex-direction: column; 
-            gap: 0px; 
-            width: calc(66% + 50mm); 
-        }
-        .checkbox-container { 
-            display: flex; 
-            align-items: center; 
-            gap: 10px; 
-        }
-        #hiddenCheckbox, #advSearchHiddenCheckbox, #editHiddenCheckbox, #searchAllPromptsCheckbox { 
-            width: 20px; 
-            height: 20px; 
-        }
-        .category-list, .user-list { 
-            margin-top: 50px; 
-        }
-        .search-btn-small { 
-            padding: 5px 10px; 
-            font-size: 16px; 
-            width: auto; 
-            align-self: flex-start; 
-        }
+        .status-text { font-size: 24px; margin-left: 10px; }
     </style>
 </head>
 <body>
+    <!-- Tela de Login -->
     <div id="loginScreen">
-        <div class="login-container">
-            <h2>Prompts para IAs</h2>
-            <input type="text" id="userInput" placeholder="Usuário (e-mail)">
-            <input type="password" id="passwordInput" placeholder="Senha">
-            <button id="loginBtn">Entrar</button>
-            <button id="registerBtn">Cadastrar</button>
-            <button id="recoverBtn">Recuperar Senha</button>
-            <div id="message"></div>
-            <div id="registerContainer" class="register-container">
-                <input type="text" id="newUserInput" placeholder="Novo Usuário (e-mail)">
-                <input type="password" id="newPasswordInput" placeholder="Nova Senha">
-                <button id="submitRegisterBtn">Cadastrar</button>
-            </div>
-        </div>
+        <h1>Gerenciador de Medicamentos</h1>
+        <input type="email" id="emailInput" placeholder="E-mail" autocomplete="off" autocapitalize="none">
+        <input type="password" id="passwordInput" placeholder="Senha" autocomplete="new-password">
+        <button id="loginButton">Entrar</button>
+        <button id="registerButton">Cadastrar</button>
+        <button id="resetPasswordButton">Recuperar Senha</button>
+        <div id="loginError"></div>
+        <div id="loginSuccess"></div>
     </div>
+
+    <!-- Tela de Cadastro de Usuário Autenticado -->
+    <div id="registerScreen">
+        <h1>Cadastrar Novo Usuário</h1>
+        <input type="text" id="registerNameInput" placeholder="Nome do Usuário" autocomplete="off">
+        <input type="email" id="registerEmailInput" placeholder="E-mail" autocomplete="off">
+        <input type="password" id="registerPasswordInput" placeholder="Senha" autocomplete="new-password">
+        <button id="saveRegisterButton">Salvar</button>
+        <button id="backFromRegisterButton">Voltar</button>
+        <div id="registerError"></div>
+        <div id="registerSuccess"></div>
+    </div>
+
+    <!-- Tela Principal -->
     <div id="appScreen">
-        <div class="header">
-            <h1>Prompts para IAs</h1>
-            <div class="menu">
-                <button id="storePromptBtn">Cadastro de Prompt</button>
-                <button id="categoryBtn">Cadastro de Categoria</button>
-                <button id="searchBtn">Pesquisa</button>
-                <button id="advancedSearchBtn" style="display: none;">Pesquisa Avançada</button>
-                <button id="authorizationBtn" style="display: none;">Autorizações</button>
+        <div id="mainScreen" class="screen active">
+            <div class="header">
+                <h1>Gerenciador de Medicamentos</h1>
+                <span id="currentTime"></span>
             </div>
+            <div class="nav-buttons">
+                <button id="goToUser">Pacientes</button>
+                <button id="goToAdd">Cadastrar Item</button>
+                <button id="goToEdit">Alterar Item</button>
+                <button id="goToDelete">Excluir ou Mudar Status do Item</button>
+                <button id="goToReport">Relatórios</button>
+                <button id="logoutButton">Sair</button>
+            </div>
+            <ul id="medList"></ul>
+            <div id="mainError"></div>
+            <div id="mainSuccess"></div>
         </div>
-        <div id="mainContent">
-            <div id="recentPrompts">
-                <h2>Últimos Prompts Armazenados</h2>
-                <ul id="promptList"></ul>
-                <button id="backBtn" style="display: none;">Voltar</button>
-            </div>
-            <div id="storePromptScreen" style="display: none;">
-                <div class="input-row">
-                    <textarea id="promptText" placeholder="Digite o texto do prompt"></textarea>
-                    <textarea id="promptFunction" placeholder="Descreva a função do prompt"></textarea>
-                    <div class="location-note-container">
-                        <textarea id="promptLocation" placeholder="Local em que foi utilizado (IA testada)"></textarea>
-                        <textarea id="promptNote" placeholder="Digite as palavras-chaves"></textarea>
-                    </div>
-                    <div class="prompt-container" id="storePromptContainer">
-                        <input type="text" id="promptAuthor" placeholder="Nome do Autor">
-                        <input type="text" id="promptUserEmail" placeholder="E-mail do Usuário" style="display: none;">
-                        <select id="categorySelect" multiple></select>
-                    </div>
-                    <div class="checkbox-container">
-                        <button id="savePromptBtn">Salvar Prompt</button>
-                        <div id="hiddenCheckboxContainer" style="display: none;">
-                            <input type="checkbox" id="hiddenCheckbox">
-                            <label for="hiddenCheckbox">Oculto</label>
-                        </div>
-                    </div>
-                </div>
-                <button id="backBtnStore">Voltar</button>
-            </div>
-            <div id="editPromptScreen" style="display: none;">
-                <div class="input-row">
-                    <textarea id="editPromptText" placeholder="Digite o texto do prompt"></textarea>
-                    <textarea id="editPromptFunction" placeholder="Descreva a função do prompt"></textarea>
-                    <div class="location-note-container">
-                        <textarea id="editPromptLocation" placeholder="Local em que foi utilizado (IA testada)"></textarea>
-                        <textarea id="editPromptNote" placeholder="Digite as palavras-chaves"></textarea>
-                    </div>
-                    <div class="prompt-container">
-                        <input type="text" id="editPromptAuthor" placeholder="Nome do Autor">
-                        <input type="text" id="editPromptUserEmail" placeholder="E-mail do Usuário">
-                        <select id="editCategorySelect" multiple></select>
-                    </div>
-                    <div class="checkbox-container">
-                        <button id="saveEditPromptBtn">Salvar Alterações</button>
-                        <div id="editHiddenCheckboxContainer" style="display: none;">
-                            <input type="checkbox" id="editHiddenCheckbox">
-                            <label for="editHiddenCheckbox">Oculto</label>
-                        </div>
-                    </div>
-                </div>
-                <button id="backBtnEdit">Voltar</button>
-            </div>
-            <div id="categoryScreen" style="display: none;">
-                <div class="input-row">
-                    <input type="text" id="categoryName" placeholder="Nome da Categoria">
-                    <textarea id="categoryDesc" placeholder="Breve descrição da categoria"></textarea>
-                    <button id="saveCategoryBtn">Cadastrar Categoria</button>
-                </div>
-                <button id="backBtnCategory">Voltar</button>
-                <div class="category-list">
-                    <h3>Categorias já cadastradas</h3>
-                    <ul id="categoryList"></ul>
-                </div>
-            </div>
-            <div id="searchScreen" style="display: none;">
-                <div class="search-container">
-                    <input type="text" id="searchInput" placeholder="Digite o texto para pesquisa">
-                    <button id="doSearchBtnTop" class="search-btn-small">Pesquisar</button>
-                    <div class="input-row">
-                        <textarea id="searchPromptText" placeholder="Digite o texto do prompt"></textarea>
-                        <textarea id="searchPromptFunction" placeholder="Descreva a função do prompt"></textarea>
-                        <div class="location-note-container">
-                            <textarea id="searchPromptLocation" placeholder="Local em que foi utilizado (IA testada)"></textarea>
-                            <textarea id="searchPromptNote" placeholder="Digite as palavras-chaves"></textarea>
-                        </div>
-                        <div class="prompt-container">
-                            <input type="text" id="searchPromptAuthor" placeholder="Nome do Autor">
-                            <div class="combo-box">
-                                <label>Incluir Categorias:</label>
-                                <select id="includeCategories" multiple></select>
-                            </div>
-                            <div class="combo-box">
-                                <label>Excluir Categorias:</label>
-                                <select id="excludeCategories" multiple></select>
-                            </div>
-                        </div>
-                        <div id="searchAllPromptsCheckboxContainer" class="checkbox-container" style="display: none;">
-                            <input type="checkbox" id="searchAllPromptsCheckbox">
-                            <label for="searchAllPromptsCheckbox">Pesquisar nos prompts de todos os usuários</label>
-                        </div>
-                    </div>
-                    <div class="checkbox-container">
-                        <button id="doSearchBtn" class="search-btn-small">Pesquisar</button>
-                        <button id="clearSearchBtn" class="search-btn-small">Limpar Campos</button>
-                    </div>
-                </div>
-                <button id="txtSearchBtn">TXT</button>
-                <textarea id="txtOutput" placeholder="Resultados da pesquisa aparecerão aqui"></textarea>
-                <ul id="searchResults"></ul>
-                <button id="backBtnSearch">Voltar</button>
-            </div>
-            <div id="advancedSearchScreen" style="display: none;">
-                <div class="search-container">
-                    <input type="text" id="advSearchInput" placeholder="Digite o texto para pesquisa avançada">
-                    <button id="doAdvSearchBtnTop" class="search-btn-small">Pesquisar</button>
-                    <div class="input-row">
-                        <textarea id="advSearchPromptText" placeholder="Digite o texto do prompt"></textarea>
-                        <textarea id="advSearchPromptFunction" placeholder="Descreva a função do prompt"></textarea>
-                        <div class="location-note-container">
-                            <textarea id="advSearchPromptLocation" placeholder="Local em que foi utilizado (IA testada)"></textarea>
-                            <textarea id="advSearchPromptNote" placeholder="Digite as palavras-chaves"></textarea>
-                        </div>
-                        <div class="prompt-container">
-                            <div class="adv-search-author-container">
-                                <input type="text" id="advSearchPromptAuthor" placeholder="Nome do Autor">
-                                <input type="text" id="advSearchPromptUserEmail" placeholder="E-mail do Usuário">
-                            </div>
-                            <div class="combo-box">
-                                <label>Incluir Categorias:</label>
-                                <select id="advIncludeCategories" multiple></select>
-                            </div>
-                            <div class="combo-box">
-                                <label>Excluir Categorias:</label>
-                                <select id="advExcludeCategories" multiple></select>
-                            </div>
-                        </div>
-                        <div id="advSearchHiddenCheckboxContainer" class="checkbox-container" style="display: none;">
-                            <input type="checkbox" id="advSearchHiddenCheckbox">
-                            <label for="advSearchHiddenCheckbox">Incluir Ocultos</label>
-                        </div>
-                    </div>
-                    <div class="checkbox-container">
-                        <button id="doAdvSearchBtn" class="search-btn-small">Pesquisar</button>
-                        <button id="clearAdvSearchBtn" class="search-btn-small">Limpar Campos</button>
-                    </div>
-                </div>
-                <button id="txtAdvSearchBtn">TXT</button>
-                <textarea id="txtOutputAdv" placeholder="Resultados da pesquisa avançada aparecerão aqui"></textarea>
-                <ul id="advSearchResults"></ul>
-                <button id="backBtnAdvSearch">Voltar</button>
-            </div>
-            <div id="authorizationScreen" style="display: none;">
-                <h2>Autorizações</h2>
-                <div class="user-list">
-                    <h3>Usuários Cadastrados</h3>
-                    <ul id="userList"></ul>
-                </div>
-                <button id="backBtnAuthorization">Voltar</button>
-            </div>
+
+        <div id="userScreen" class="screen">
+            <h1>Pacientes</h1>
+            <input type="text" id="userNameInput" placeholder="Nome do paciente">
+            <button id="saveUser">Salvar</button>
+            <button id="backFromUser">Voltar</button>
+            <ul id="userList"></ul>
+            <div id="userError"></div>
+            <div id="userSuccess"></div>
         </div>
-        <div id="error"></div>
-        <div id="success"></div>
+
+        <div id="addScreen" class="screen">
+            <h1>Cadastrar Item</h1>
+            <input type="text" id="addNameInput" placeholder="Nome do item">
+            <input type="number" id="addPeriodInput" placeholder="Periodicidade (horas)">
+            <button id="saveAdd">Salvar</button>
+            <button id="backFromAdd">Voltar</button>
+            <div id="addError"></div>
+            <div id="addSuccess"></div>
+        </div>
+
+        <div id="editScreen" class="screen">
+            <h1>Alterar Item</h1>
+            <ul id="editMedList"></ul>
+            <button id="backFromEdit">Voltar</button>
+            <div id="editError"></div>
+            <div id="editSuccess"></div>
+        </div>
+
+        <div id="deleteScreen" class="screen">
+            <h1>Excluir ou Mudar Status do Item</h1>
+            <ul id="deleteMedList"></ul>
+            <button id="backFromDelete">Voltar</button>
+            <div id="deleteError"></div>
+            <div id="deleteSuccess"></div>
+        </div>
+
+        <div id="reportScreen" class="screen">
+            <div class="report-container">
+                <div class="report-line1">
+                    <h1 class="report-title">RELATÓRIOS</h1>
+                    <button id="chronoOrder" class="report-order-chrono">Ordenamento Cronológico</button>
+                </div>
+                <div class="report-line2">
+                    <div class="report-period-buttons">
+                        <button id="dailyReport">Diário</button>
+                        <button id="weeklyReport">Semanal</button>
+                        <button id="monthlyReport">Mensal</button>
+                        <button id="yearlyReport">Anual</button>
+                    </div>
+                    <button id="userRegistryReport" class="report-user-registry">Registro de Usuários</button>
+                    <button id="txtReport" class="report-txt">TXT</button>
+                    <button id="typeOrder" class="report-order-type">Ordenamento por Tipo de Item</button>
+                </div>
+            </div>
+            <textarea id="reportNote" class="report-note" placeholder="Registros em texto aparecerão aqui ao clicar em TXT"></textarea>
+            <ul id="reportList"></ul>
+            <button id="backFromReport">Voltar</button>
+            <div id="reportError"></div>
+            <div id="reportSuccess"></div>
+        </div>
     </div>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, onValue, push, update, set, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getDatabase, ref, onValue, push, update, remove, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
         const firebaseConfig = {
-            apiKey: "AIzaSyDZ8rtMXtSztcePnSh6sSe9yl3wyJ9GaNs",
-            authDomain: "gerenciador-de-prompts-de-ias.firebaseapp.com",
-            projectId: "gerenciador-de-prompts-de-ias",
-            storageBucket: "gerenciador-de-prompts-de-ias.firebasestorage.app",
-            messagingSenderId: "902314577084",
-            appId: "1:902314577084:web:a97afc0081d83b048894b9",
-            measurementId: "G-5C0RJFG1GH"
+            apiKey: "AIzaSyDan0hha-AIKJ2onO-u79Yf480uyR9DroQ",
+            authDomain: "medicamentos-enf-patricia.firebaseapp.com",
+            projectId: "medicamentos-enf-patricia",
+            storageBucket: "medicamentos-enf-patricia.firebasestorage.app",
+            messagingSenderId: "893304740405",
+            appId: "1:893304740405:web:9ef46f7b6ad808504c2f7c",
+            measurementId: "G-FMTFKEBNN7",
+            databaseURL: "https://medicamentos-enf-patricia-default-rtdb.firebaseio.com"
         };
 
         const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
         const db = getDatabase(app);
-        const promptsRef = ref(db, 'prompts');
-        const categoriesRef = ref(db, 'categories');
+        const auth = getAuth(app);
         const usersRef = ref(db, 'users');
-        let currentUserEmail = null;
-        let editingPromptKey = null;
-        let canSearchAllPrompts = false;
+        const lastUserRef = ref(db, 'lastUser');
+        const authUsersRef = ref(db, 'authUsers');
+        let currentUserId = null;
+        let currentReportType = 'daily';
+        let currentAuthUser = null;
+        let currentAuthUserName = null;
+        let loggedInUserName = null;
+        let isRegisterClicked = false;
 
+        function getMedsRef() {
+            return currentUserId ? ref(db, `users/${currentUserId}/medications`) : ref(db, 'medications');
+        }
+
+        // Elementos DOM para autenticação e cadastro
+        const loginScreen = document.getElementById('loginScreen');
+        const registerScreen = document.getElementById('registerScreen');
+        const appScreen = document.getElementById('appScreen');
+        const emailInput = document.getElementById('emailInput');
+        const passwordInput = document.getElementById('passwordInput');
+        const loginButton = document.getElementById('loginButton');
+        const registerButton = document.getElementById('registerButton');
+        const resetPasswordButton = document.getElementById('resetPasswordButton');
+        const logoutButton = document.getElementById('logoutButton');
+        const loginError = document.getElementById('loginError');
+        const loginSuccess = document.getElementById('loginSuccess');
+        const registerNameInput = document.getElementById('registerNameInput');
+        const registerEmailInput = document.getElementById('registerEmailInput');
+        const registerPasswordInput = document.getElementById('registerPasswordInput');
+        const saveRegisterButton = document.getElementById('saveRegisterButton');
+        const backFromRegisterButton = document.getElementById('backFromRegisterButton');
+        const registerError = document.getElementById('registerError');
+        const registerSuccess = document.getElementById('registerSuccess');
+
+        // Elementos DOM para as telas de pacientes e medicamentos
+        const userNameInput = document.getElementById('userNameInput');
+        const addNameInput = document.getElementById('addNameInput');
+        const addPeriodInput = document.getElementById('addPeriodInput');
+
+        // Função de log
         function log(message) {
             console.log(`[LOG ${new Date().toLocaleTimeString()}]: ${message}`);
         }
 
-        log("Firebase conectado com sucesso!");
+        // Função para validar e-mail
+        function isValidEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
 
-        // Tela de Login e Autenticação
-        const loginScreen = document.getElementById('loginScreen');
-        const appScreen = document.getElementById('appScreen');
-        const loginBtn = document.getElementById('loginBtn');
-        const registerBtn = document.getElementById('registerBtn');
-        const recoverBtn = document.getElementById('recoverBtn');
-        const registerContainer = document.getElementById('registerContainer');
-        const submitRegisterBtn = document.getElementById('submitRegisterBtn');
-        const userInput = document.getElementById('userInput');
-        const passwordInput = document.getElementById('passwordInput');
-        const newUserInput = document.getElementById('newUserInput');
-        const newPasswordInput = document.getElementById('newPasswordInput');
-        const messageDiv = document.getElementById('message');
-        const searchBtn = document.getElementById('searchBtn');
-        const advancedSearchBtn = document.getElementById('advancedSearchBtn');
-        const authorizationBtn = document.getElementById('authorizationBtn');
-
-        signOut(auth).then(() => {
-            log("Logout inicial realizado para garantir tela de login");
-            loginScreen.style.display = 'flex';
-            appScreen.style.display = 'none';
-        });
-
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                currentUserEmail = user.email;
-                log(`Usuário autenticado: ${currentUserEmail}`);
-                const userRef = ref(db, `users/${user.uid}`);
-                onValue(userRef, (snapshot) => {
-                    const userData = snapshot.val();
-                    canSearchAllPrompts = userData?.canSearchAllPrompts || false;
-                    if (canSearchAllPrompts && currentUserEmail !== "psics.psix.141@gmail.com") {
-                        document.getElementById('searchAllPromptsCheckboxContainer').style.display = 'flex';
-                    } else {
-                        document.getElementById('searchAllPromptsCheckboxContainer').style.display = 'none';
-                    }
+        // Função para obter o nome ou e-mail do usuário autenticado por UID
+        function getAuthUserNameByUid(uid) {
+            return new Promise((resolve) => {
+                onValue(ref(db, `authUsers/${uid}`), (snapshot) => {
+                    const user = snapshot.val();
+                    const name = user ? (user.name || user.email) : "Usuário Desconhecido";
+                    log(`Resolvendo UID ${uid} para nome: ${name}`);
+                    resolve(name);
                 }, { onlyOnce: true });
+            });
+        }
 
-                if (currentUserEmail === "psics.psix.141@gmail.com") {
-                    searchBtn.style.display = 'none';
-                    advancedSearchBtn.style.display = 'inline-block';
-                    authorizationBtn.style.display = 'inline-block';
-                    document.getElementById('hiddenCheckboxContainer').style.display = 'flex';
-                    document.getElementById('advSearchHiddenCheckboxContainer').style.display = 'flex';
-                    document.getElementById('editHiddenCheckboxContainer').style.display = 'flex';
-                    document.getElementById('promptUserEmail').style.display = 'inline-block';
-                    document.getElementById('promptAuthor').classList.add('admin');
-                    document.getElementById('categorySelect').classList.add('admin');
-                } else {
-                    searchBtn.style.display = 'inline-block';
-                    advancedSearchBtn.style.display = 'none';
-                    authorizationBtn.style.display = 'none';
-                    document.getElementById('hiddenCheckboxContainer').style.display = 'none';
-                    document.getElementById('advSearchHiddenCheckboxContainer').style.display = 'none';
-                    document.getElementById('editHiddenCheckboxContainer').style.display = 'none';
-                    document.getElementById('promptUserEmail').style.display = 'none';
-                    document.getElementById('promptAuthor').classList.remove('admin');
-                    document.getElementById('categorySelect').classList.remove('admin');
-                }
-                loginScreen.style.display = 'none';
-                appScreen.style.display = 'block';
-                showRecentPrompts();
+        // Listener persistente para estado de autenticação
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                log(`Usuário autenticado detectado: ${user.email}`);
+                currentAuthUser = user;
+                currentAuthUserName = await getAuthUserNameByUid(user.uid);
+                loggedInUserName = user.email;
+                log(`currentAuthUser definido como: ${currentAuthUser.email}, loggedInUserName: ${loggedInUserName}`);
             } else {
-                currentUserEmail = null;
-                canSearchAllPrompts = false;
-                loginScreen.style.display = 'flex';
+                log("Nenhum usuário autenticado detectado.");
+                currentAuthUser = null;
+                currentAuthUserName = null;
+                loggedInUserName = null;
+                loginScreen.style.display = 'block';
                 appScreen.style.display = 'none';
-                searchBtn.style.display = 'inline-block';
-                advancedSearchBtn.style.display = 'none';
-                authorizationBtn.style.display = 'none';
+                registerScreen.style.display = 'none';
             }
         });
 
-        loginBtn.addEventListener('click', loginUser);
-        passwordInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') loginUser();
+        // Forçar logout ao carregar a página
+        document.addEventListener('DOMContentLoaded', () => {
+            signOut(auth).then(() => {
+                log("Sessão encerrada ao carregar a página.");
+                loginScreen.style.display = 'block';
+                appScreen.style.display = 'none';
+                registerScreen.style.display = 'none';
+            }).catch((error) => {
+                log(`Erro ao forçar logout inicial: ${error.message}`);
+            });
         });
 
-        function loginUser() {
-            const email = userInput.value.trim();
+        // Login
+        loginButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            const email = emailInput.value.trim();
             const password = passwordInput.value.trim();
             if (!email || !password) {
-                messageDiv.textContent = "Preencha todos os campos!";
+                loginError.textContent = "Preencha e-mail e senha!";
+                return;
+            }
+            if (!isValidEmail(email)) {
+                loginError.textContent = "Digite um e-mail válido (ex.: usuario@dominio.com)!";
                 return;
             }
             signInWithEmailAndPassword(auth, email, password)
-                .then(() => log("Login bem-sucedido"))
+                .then((userCredential) => {
+                    log(`Login bem-sucedido: ${userCredential.user.email}`);
+                    loginError.textContent = '';
+                    loginSuccess.textContent = "Login realizado com sucesso!";
+                    setTimeout(() => {
+                        if (!isRegisterClicked) {
+                            loginSuccess.textContent = '';
+                            loginScreen.style.display = 'none';
+                            appScreen.style.display = 'block';
+                            renderMainScreen();
+                        }
+                    }, 3000);
+                })
                 .catch((error) => {
-                    if (error.code === 'auth/user-not-found') {
-                        messageDiv.textContent = "Favor cadastrar-se primeiro clicando no botão abaixo!";
-                    } else if (error.code === 'auth/wrong-password') {
-                        messageDiv.textContent = "Senha incorreta, favor tentar novamente!";
-                    } else {
-                        messageDiv.textContent = "Erro ao entrar: " + error.message;
-                    }
+                    loginError.textContent = `Erro ao fazer login: ${error.message}`;
                     log(`Erro ao fazer login: ${error.message}`);
                 });
-        }
-
-        registerBtn.addEventListener('click', () => {
-            registerContainer.style.display = 'block';
-            messageDiv.textContent = '';
         });
 
-        submitRegisterBtn.addEventListener('click', () => {
-            const newEmail = newUserInput.value.trim();
-            const newPassword = newPasswordInput.value.trim();
-            if (!newEmail || !newPassword) {
-                messageDiv.textContent = "Preencha todos os campos!";
+        // Mostrar tela de cadastro apenas se autenticado
+        registerButton.addEventListener('click', () => {
+            log(`Botão 'Cadastrar' clicado. currentAuthUser: ${currentAuthUser ? currentAuthUser.email : 'null'}`);
+            if (currentAuthUser) {
+                isRegisterClicked = true;
+                loginScreen.style.display = 'none';
+                appScreen.style.display = 'none';
+                registerScreen.style.display = 'block';
+                registerNameInput.value = '';
+                registerEmailInput.value = '';
+                registerPasswordInput.value = '';
+                registerError.textContent = '';
+                registerSuccess.textContent = '';
+                log("Tela de cadastro exibida para usuário autenticado: " + currentAuthUser.email);
+            } else {
+                loginError.textContent = "Faça login primeiro para cadastrar um novo usuário!";
+                log("Tentativa de acessar cadastro sem usuário autenticado.");
+            }
+        });
+
+        // Salvar novo usuário autenticado sem alterar o usuário logado
+        saveRegisterButton.addEventListener('click', () => {
+            const name = registerNameInput.value.trim();
+            const email = registerEmailInput.value.trim();
+            const password = registerPasswordInput.value.trim();
+
+            log(`Tentativa de salvar novo usuário: ${email}. currentAuthUser: ${currentAuthUser ? currentAuthUser.email : 'null'}, loggedInUserName: ${loggedInUserName}`);
+
+            if (!name || !email || !password) {
+                registerError.textContent = "Preencha todos os campos!";
                 return;
             }
-            createUserWithEmailAndPassword(auth, newEmail, newPassword)
+            if (!isValidEmail(email)) {
+                registerError.textContent = "Digite um e-mail válido (ex.: usuario@dominio.com)!";
+                return;
+            }
+            if (password.length < 6) {
+                registerError.textContent = "A senha deve ter pelo menos 6 caracteres!";
+                return;
+            }
+            if (!currentAuthUser || !loggedInUserName) {
+                registerError.textContent = "Nenhum usuário autenticado! Faça login novamente.";
+                log("Tentativa de cadastro sem usuário autenticado.");
+                registerScreen.style.display = 'none';
+                loginScreen.style.display = 'block';
+                return;
+            }
+
+            const secondaryApp = initializeApp(firebaseConfig, "SecondaryApp");
+            const secondaryAuth = getAuth(secondaryApp);
+
+            createUserWithEmailAndPassword(secondaryAuth, email, password)
                 .then((userCredential) => {
                     const user = userCredential.user;
-                    set(ref(db, `users/${user.uid}`), {
-                        email: newEmail,
-                        password: newPassword,
-                        canSearchAllPrompts: false
+                    log(`Novo usuário autenticado ${name} criado com e-mail: ${email}`);
+
+                    return set(ref(db, `authUsers/${user.uid}`), {
+                        name: name,
+                        email: email,
+                        registeredById: currentAuthUser.uid
                     }).then(() => {
-                        messageDiv.textContent = "Usuário cadastrado com sucesso!";
-                        registerContainer.style.display = 'none';
-                        newUserInput.value = '';
-                        newPasswordInput.value = '';
+                        return update(ref(db, `authUsers/${user.uid}`), {
+                            registeredBy: loggedInUserName
+                        }).then(() => {
+                            registerError.textContent = '';
+                            registerSuccess.textContent = `Usuário ${name} cadastrado com sucesso! Use as credenciais (${email}) para fazer login.`;
+                            
+                            signOut(secondaryAuth).then(() => {
+                                log(`Sessão do novo usuário ${email} encerrada na instância secundária.`);
+                                setTimeout(() => {
+                                    registerSuccess.textContent = '';
+                                    registerScreen.style.display = 'none';
+                                    appScreen.style.display = 'block';
+                                    isRegisterClicked = false;
+                                }, 3000);
+                            }).catch((error) => {
+                                log(`Erro ao deslogar da instância secundária: ${error.message}`);
+                            });
+                        });
+                    }).catch((error) => {
+                        registerError.textContent = "Erro ao salvar dados do usuário: " + error.message;
+                        log(`Erro ao salvar no Realtime Database: ${error.message}`);
                     });
                 })
                 .catch((error) => {
-                    messageDiv.textContent = "Erro ao cadastrar: " + error.message;
+                    if (error.code === 'auth/email-already-in-use') {
+                        registerError.textContent = "Este e-mail já está em uso. Tente outro ou faça login.";
+                    } else if (error.code === 'auth/invalid-email') {
+                        registerError.textContent = "E-mail inválido! Use o formato correto (ex.: usuario@dominio.com).";
+                    } else {
+                        registerError.textContent = `Erro ao cadastrar: ${error.message}`;
+                    }
                     log(`Erro ao cadastrar usuário: ${error.message}`);
+                })
+                .finally(() => {
+                    secondaryApp.delete().catch((error) => {
+                        log(`Erro ao destruir instância secundária: ${error.message}`);
+                    });
                 });
         });
 
-        recoverBtn.addEventListener('click', () => {
-            const email = userInput.value.trim();
+        backFromRegisterButton.addEventListener('click', () => {
+            registerScreen.style.display = 'none';
+            loginScreen.style.display = 'block';
+            isRegisterClicked = false;
+            log("Voltando da tela de cadastro para a tela de login.");
+        });
+
+        // Recuperação de senha
+        resetPasswordButton.addEventListener('click', () => {
+            const email = emailInput.value.trim();
             if (!email) {
-                messageDiv.textContent = "Digite seu e-mail para recuperação!";
+                loginError.textContent = "Digite seu e-mail para recuperar a senha!";
+                return;
+            }
+            if (!isValidEmail(email)) {
+                loginError.textContent = "Digite um e-mail válido (ex.: usuario@dominio.com)!";
                 return;
             }
             sendPasswordResetEmail(auth, email)
                 .then(() => {
-                    messageDiv.textContent = "E-mail de recuperação enviado com sucesso!";
+                    loginError.textContent = '';
+                    loginSuccess.textContent = "E-mail de recuperação enviado! Verifique sua caixa de entrada.";
+                    setTimeout(() => loginSuccess.textContent = '', 5000);
                 })
                 .catch((error) => {
-                    messageDiv.textContent = "Erro ao enviar e-mail de recuperação: " + error.message;
+                    loginError.textContent = `Erro ao enviar e-mail de recuperação: ${error.message}`;
                     log(`Erro ao enviar e-mail de recuperação: ${error.message}`);
                 });
         });
 
-        // Funções do Aplicativo
+        // Logout
+        logoutButton.addEventListener('click', () => {
+            signOut(auth)
+                .then(() => {
+                    log("Logout realizado com sucesso.");
+                    loginError.textContent = '';
+                    loginSuccess.textContent = "Logout realizado com sucesso!";
+                    setTimeout(() => {
+                        loginSuccess.textContent = '';
+                        appScreen.style.display = 'none';
+                        loginScreen.style.display = 'block';
+                    }, 2000);
+                })
+                .catch((error) => {
+                    loginError.textContent = `Erro ao fazer logout: ${error.message}`;
+                    log(`Erro ao fazer logout: ${error.message}`);
+                });
+        });
+
+        function updateCurrentTime() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            document.getElementById('currentTime').textContent = `${hours}:${minutes}`;
+        }
+        setInterval(updateCurrentTime, 60000);
+        updateCurrentTime();
+
         function showScreen(screenId) {
-            document.querySelectorAll('#mainContent > div').forEach(div => div.style.display = 'none');
-            document.getElementById(screenId).style.display = 'block';
-            document.getElementById('error').textContent = '';
-            document.getElementById('success').textContent = '';
+            document.querySelectorAll('.screen').forEach(screen => screen.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+            if (screenId === 'userScreen') renderUserScreen();
+            if (screenId === 'editScreen') renderEditScreen();
+            if (screenId === 'deleteScreen') renderDeleteScreen();
+            if (screenId === 'reportScreen') {
+                if (currentReportType === 'daily') renderDailyReport('chrono');
+                else renderReportScreen(currentReportType);
+            }
+            if (screenId === 'mainScreen') renderMainScreen();
         }
 
-        function loadCategories(selectElement, selectedCategories = []) {
-            onValue(categoriesRef, (snapshot) => {
-                const categories = snapshot.val();
-                selectElement.innerHTML = '';
-                if (categories) {
-                    const sortedCategories = Object.entries(categories).sort((a, b) => a[1].name.localeCompare(b[1].name));
-                    sortedCategories.forEach(([key, category]) => {
-                        const option = document.createElement('option');
-                        option.value = key;
-                        option.textContent = category.name;
-                        if (selectedCategories.includes(category.name)) {
-                            option.selected = true;
-                        }
-                        selectElement.appendChild(option);
-                    });
-                }
-            }, { onlyOnce: true });
-        }
+        function formatDateTime(dateTime) {
+            if (!dateTime) return '<span>Aguardando!</span>';
+            const date = new Date(dateTime);
+            const dateLocal = new Date(date.getTime() - 3 * 60 * 60 * 1000);
+            const day = String(dateLocal.getDate()).padStart(2, '0');
+            const month = String(dateLocal.getMonth() + 1).padStart(2, '0');
+            const year = dateLocal.getFullYear();
+            const hours = String(dateLocal.getHours()).padStart(2, '0');
+            const minutes = String(dateLocal.getMinutes()).padStart(2, '0');
+            let className = '';
 
-        function showRecentPrompts() {
-            showScreen('recentPrompts');
-            onValue(promptsRef, (snapshot) => {
-                const prompts = snapshot.val();
-                const promptList = document.getElementById('promptList');
-                promptList.innerHTML = '';
-                if (!prompts) {
-                    promptList.innerHTML = '<li>Nenhum prompt armazenado ainda.</li>';
-                    return;
-                }
-                let userPrompts;
-                if (currentUserEmail === "psics.psix.141@gmail.com") {
-                    userPrompts = Object.entries(prompts)
-                        .sort((a, b) => b[1].timestamp - a[1].timestamp)
-                        .slice(0, 10);
+            const now = new Date();
+            const today = new Date(now);
+            today.setHours(0, 0, 0, 0);
+            const due = new Date(dateLocal);
+            due.setHours(0, 0, 0, 0);
+            const diffDays = Math.floor((due - today) / (24 * 60 * 60 * 1000));
+
+            if (diffDays < 0) {
+                className = 'late';
+            } else if (diffDays === 0) {
+                const nowTime = now.getTime();
+                const dueTime = dateLocal.getTime();
+                const diffMinutes = (nowTime - dueTime) / (60 * 1000);
+                if (diffMinutes > 30) {
+                    className = 'late';
                 } else {
-                    userPrompts = Object.entries(prompts)
-                        .filter(([_, prompt]) => prompt.userEmail === currentUserEmail)
-                        .sort((a, b) => b[1].timestamp - a[1].timestamp)
-                        .slice(0, 10);
+                    className = 'same-day';
                 }
-                userPrompts.forEach(([key, prompt]) => {
-                    const categoriesText = Array.isArray(prompt.categories) ? prompt.categories.join(', ') : 'Sem categorias';
-                    const li = document.createElement('li');
-                    li.innerHTML = `
-                        <div class="prompt-row">
-                            <span>${prompt.text} | Autor: ${prompt.author} | Categorias: ${categoriesText}</span>
-                            <button class="copy-btn">Copiar</button>
-                            ${currentUserEmail === "psics.psix.141@gmail.com" ? `
-                                <button class="edit-btn" data-key="${key}">Editar</button>
-                                <button class="delete-btn" data-key="${key}">Excluir</button>
-                            ` : ''}
-                        </div>
-                    `;
-                    promptList.appendChild(li);
-                    li.querySelector('.copy-btn').addEventListener('click', () => {
-                        navigator.clipboard.writeText(prompt.text);
-                        document.getElementById('success').textContent = "Prompt copiado para a área de transferência!";
-                    });
-                    if (currentUserEmail === "psics.psix.141@gmail.com") {
-                        li.querySelector('.edit-btn').addEventListener('click', (e) => {
-                            const key = e.target.getAttribute('data-key');
-                            editPrompt(key);
-                        });
-                        li.querySelector('.delete-btn').addEventListener('click', (e) => {
-                            const key = e.target.getAttribute('data-key');
-                            deletePrompt(key, false);
-                        });
-                    }
-                });
-            }, { onlyOnce: true });
-        }
-
-        document.getElementById('storePromptBtn').addEventListener('click', () => {
-            showScreen('storePromptScreen');
-            loadCategories(document.getElementById('categorySelect'));
-            document.getElementById('promptUserEmail').value = currentUserEmail;
-        });
-
-        document.getElementById('savePromptBtn').addEventListener('click', () => {
-            const text = document.getElementById('promptText').value.trim();
-            const func = document.getElementById('promptFunction').value.trim();
-            const location = document.getElementById('promptLocation').value.trim();
-            const note = document.getElementById('promptNote').value.trim();
-            let author = document.getElementById('promptAuthor').value.trim();
-            const userEmail = document.getElementById('promptUserEmail').value.trim();
-            const categorySelect = document.getElementById('categorySelect');
-            const categories = Array.from(categorySelect.selectedOptions).map(option => option.textContent) || [];
-            const hidden = currentUserEmail === "psics.psix.141@gmail.com" && document.getElementById('hiddenCheckbox').checked;
-
-            if (!text || !func) {
-                document.getElementById('error').textContent = "Preencha os campos obrigatórios: Texto do Prompt e Função!";
-                return;
+            } else if (diffDays === 1) {
+                className = 'future-day';
             }
 
-            if (!author) {
-                author = currentUserEmail;
-            }
-
-            const newPrompt = {
-                text,
-                function: func,
-                location,
-                note,
-                author,
-                userEmail: userEmail || currentUserEmail,
-                categories: categories.length > 0 ? categories : [],
-                timestamp: Date.now(),
-                hidden: hidden || false
-            };
-
-            push(promptsRef, newPrompt)
-                .then(() => {
-                    document.getElementById('success').textContent = "Prompt armazenado com sucesso!";
-                    document.getElementById('promptText').value = '';
-                    document.getElementById('promptFunction').value = '';
-                    document.getElementById('promptLocation').value = '';
-                    document.getElementById('promptNote').value = '';
-                    document.getElementById('promptAuthor').value = '';
-                    document.getElementById('promptUserEmail').value = currentUserEmail;
-                    categorySelect.selectedIndex = -1;
-                    if (hidden) document.getElementById('hiddenCheckbox').checked = false;
-                })
-                .catch(error => log(`Erro ao armazenar prompt: ${error.message}`));
-        });
-
-        document.getElementById('categoryBtn').addEventListener('click', () => {
-            showScreen('categoryScreen');
-            loadCategoryList();
-            const saveBtn = document.getElementById('saveCategoryBtn');
-            saveBtn.textContent = "Cadastrar Categoria";
-            saveBtn.removeEventListener('click', editCategoryHandler);
-            saveBtn.addEventListener('click', saveCategoryDefault);
-        });
-
-        function saveCategoryDefault() {
-            const name = document.getElementById('categoryName').value.trim();
-            const desc = document.getElementById('categoryDesc').value.trim();
-            if (!name || !desc) {
-                document.getElementById('error').textContent = "Preencha todos os campos!";
-                return;
-            }
-            push(categoriesRef, { name, description: desc })
-                .then(() => {
-                    document.getElementById('success').textContent = "Categoria cadastrada com sucesso!";
-                    document.getElementById('categoryName').value = '';
-                    document.getElementById('categoryDesc').value = '';
-                    loadCategoryList();
-                })
-                .catch(error => log(`Erro ao cadastrar categoria: ${error.message}`));
+            return `<span class="${className}">${hours}:${minutes}</span>`;
         }
 
-        function editCategoryHandler() {
-            const name = document.getElementById('categoryName').value.trim();
-            const desc = document.getElementById('categoryDesc').value.trim();
-            const key = this.dataset.key;
-            if (!name || !desc) {
-                document.getElementById('error').textContent = "Preencha todos os campos!";
-                return;
-            }
-            set(ref(db, `categories/${key}`), { name, description: desc })
-                .then(() => {
-                    document.getElementById('success').textContent = "Categoria alterada com sucesso!";
-                    document.getElementById('categoryName').value = '';
-                    document.getElementById('categoryDesc').value = '';
-                    const saveBtn = document.getElementById('saveCategoryBtn');
-                    saveBtn.textContent = "Cadastrar Categoria";
-                    saveBtn.removeEventListener('click', editCategoryHandler);
-                    saveBtn.addEventListener('click', saveCategoryDefault);
-                    loadCategoryList();
-                })
-                .catch(error => log(`Erro ao alterar categoria: ${error.message}`));
+        function getNextTime(lastTaken, periodicity) {
+            if (!lastTaken) return null;
+            const last = new Date(lastTaken);
+            const periodMs = periodicity * 60 * 60 * 1000;
+            const nextTimeMs = last.getTime() + periodMs;
+            const next = new Date(nextTimeMs);
+            return next.toISOString();
         }
 
-        document.getElementById('categoryName').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') document.getElementById('saveCategoryBtn').click();
-        });
-
-        document.getElementById('categoryDesc').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') document.getElementById('saveCategoryBtn').click();
-        });
-
-        function loadCategoryList() {
-            const categoryList = document.getElementById('categoryList');
-            onValue(categoriesRef, (snapshot) => {
-                const categories = snapshot.val();
-                categoryList.innerHTML = '';
-                if (!categories) {
-                    categoryList.innerHTML = '<li>Nenhuma categoria cadastrada.</li>';
-                    return;
-                }
-                const sortedCategories = Object.entries(categories).sort((a, b) => a[1].name.localeCompare(b[1].name));
-                sortedCategories.forEach(([key, category]) => {
-                    const li = document.createElement('li');
-                    li.innerHTML = `
-                        <div class="prompt-row">
-                            <span>${category.name} | ${category.description}</span>
-                            ${currentUserEmail === "psics.psix.141@gmail.com" ? `
-                                <button class="edit-category-btn" data-key="${key}">Alterar</button>
-                                <button class="delete-category-btn" data-key="${key}">Excluir</button>
-                            ` : ''}
-                        </div>
-                    `;
-                    categoryList.appendChild(li);
-                    if (currentUserEmail === "psics.psix.141@gmail.com") {
-                        li.querySelector('.edit-category-btn').addEventListener('click', (e) => {
-                            const key = e.target.getAttribute('data-key');
-                            editCategory(key);
-                        });
-                        li.querySelector('.delete-category-btn').addEventListener('click', (e) => {
-                            const key = e.target.getAttribute('data-key');
-                            deleteCategory(key);
-                        });
-                    }
-                });
-            }, { onlyOnce: true });
-        }
-
-        function editCategory(key) {
-            const categoryRef = ref(db, `categories/${key}`);
-            onValue(categoryRef, (snapshot) => {
-                const category = snapshot.val();
-                document.getElementById('categoryName').value = category.name;
-                document.getElementById('categoryDesc').value = category.description;
-                const saveBtn = document.getElementById('saveCategoryBtn');
-                saveBtn.textContent = "Alterar Categoria";
-                saveBtn.removeEventListener('click', saveCategoryDefault);
-                saveBtn.dataset.key = key;
-                saveBtn.addEventListener('click', editCategoryHandler);
-                document.getElementById('categoryName').scrollIntoView({ behavior: 'smooth', block: 'start' });
-                setTimeout(() => document.getElementById('categoryName').focus(), 300);
-            }, { onlyOnce: true });
-        }
-
-        function deleteCategory(key) {
-            if (confirm("Tem certeza que deseja excluir esta categoria?")) {
-                const categoryRef = ref(db, `categories/${key}`);
-                remove(categoryRef)
-                    .then(() => {
-                        document.getElementById('success').textContent = "Categoria excluída com sucesso!";
-                        loadCategoryList();
-                    })
-                    .catch(error => log(`Erro ao excluir categoria: ${error.message}`));
-            }
-        }
-
-        document.getElementById('searchBtn').addEventListener('click', () => {
-            showScreen('searchScreen');
-            loadCategories(document.getElementById('includeCategories'));
-            loadCategories(document.getElementById('excludeCategories'));
-            document.getElementById('searchAllPromptsCheckbox').checked = false;
-        });
-
-        document.getElementById('advancedSearchBtn').addEventListener('click', () => {
-            showScreen('advancedSearchScreen');
-            loadCategories(document.getElementById('advIncludeCategories'));
-            loadCategories(document.getElementById('advExcludeCategories'));
-            if (currentUserEmail === "psics.psix.141@gmail.com") {
-                document.getElementById('advSearchHiddenCheckbox').checked = false;
-            }
-        });
-
-        document.getElementById('authorizationBtn').addEventListener('click', () => {
-            showScreen('authorizationScreen');
-            loadUserList();
-        });
-
-        function loadUserList() {
-            const userList = document.getElementById('userList');
-            onValue(usersRef, (snapshot) => {
-                const users = snapshot.val();
-                userList.innerHTML = '';
-                if (!users) {
-                    userList.innerHTML = '<li>Nenhum usuário cadastrado.</li>';
-                    return;
-                }
-                const sortedUsers = Object.entries(users).sort((a, b) => a[1].email.localeCompare(b[1].email));
-                sortedUsers.forEach(([uid, user]) => {
-                    const li = document.createElement('li');
-                    li.innerHTML = `
-                        <div class="prompt-row">
-                            <span>${user.email}</span>
-                            <div class="checkbox-container">
-                                <input type="checkbox" id="perm_${uid}" ${user.canSearchAllPrompts ? 'checked' : ''}>
-                                <label for="perm_${uid}">Permissão para pesquisar todos os prompts</label>
-                                ${user.email !== "psics.psix.141@gmail.com" ? `<button class="delete-user-btn" data-uid="${uid}">Excluir</button>` : ''}
-                            </div>
-                        </div>
-                    `;
-                    userList.appendChild(li);
-                    li.querySelector(`#perm_${uid}`).addEventListener('change', (e) => {
-                        set(ref(db, `users/${uid}/canSearchAllPrompts`), e.target.checked)
-                            .then(() => log(`Permissão atualizada para ${user.email}`))
-                            .catch(error => log(`Erro ao atualizar permissão: ${error.message}`));
-                    });
-                    if (user.email !== "psics.psix.141@gmail.com") {
-                        li.querySelector('.delete-user-btn').addEventListener('click', (e) => {
-                            const uid = e.target.getAttribute('data-uid');
-                            deleteUser(uid);
-                        });
-                    }
-                });
-            }, { onlyOnce: true });
-        }
-
-        function deleteUser(uid) {
-            if (confirm("Tem certeza que deseja excluir este usuário? Isso também excluirá todos os seus prompts.")) {
-                const userRef = ref(db, `users/${uid}`);
-                const userPromptsRef = ref(db, 'prompts');
-                onValue(userPromptsRef, (snapshot) => {
-                    const prompts = snapshot.val();
-                    if (prompts) {
-                        const userPrompts = Object.entries(prompts).filter(([_, prompt]) => prompt.userEmail === currentUserEmail);
-                        userPrompts.forEach(([key, _]) => {
-                            remove(ref(db, `prompts/${key}`));
-                        });
+        onValue(lastUserRef, (snapshot) => {
+            const lastUser = snapshot.val();
+            if (lastUser && lastUser.id) {
+                currentUserId = lastUser.id;
+                onValue(ref(db, `users/${currentUserId}`), (userSnapshot) => {
+                    const user = userSnapshot.val();
+                    if (user && user.name) {
+                        const firstName = user.name.split(' ')[0];
+                        document.getElementById('goToUser').textContent = firstName;
                     }
                 }, { onlyOnce: true });
-                remove(userRef)
-                    .then(() => {
-                        document.getElementById('success').textContent = "Usuário e seus prompts excluídos com sucesso!";
-                        loadUserList();
-                    })
-                    .catch(error => log(`Erro ao excluir usuário: ${error.message}`));
+                renderMainScreen();
             }
+        });
+
+        function renderMainScreen() {
+            if (!currentAuthUser) {
+                appScreen.style.display = 'none';
+                loginScreen.style.display = 'block';
+                return;
+            }
+            const medsRef = getMedsRef();
+            onValue(medsRef, (snapshot) => {
+                const meds = snapshot.val() || {};
+                const medList = document.getElementById('medList');
+                medList.innerHTML = meds ? '' : '<li>Nenhum medicamento, alimento ou líquido cadastrado!</li>';
+
+                const medArray = Object.entries(meds)
+                    .filter(([_, med]) => med.enabled !== false)
+                    .map(([key, med]) => ({
+                        key,
+                        med,
+                        nextTime: getNextTime(med.lastTaken, med.periodicity)
+                    }));
+
+                medArray.sort((a, b) => {
+                    if (a.nextTime === null && b.nextTime === null) return 0;
+                    if (a.nextTime === null) return 1;
+                    if (b.nextTime === null) return -1;
+                    return new Date(a.nextTime) - new Date(b.nextTime);
+                });
+
+                medArray.forEach(({ key, med, nextTime }) => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `
+                        ${med.name} | Próximo: <span class="next-time">${formatDateTime(nextTime)}</span>
+                        | Tomado às: <input type="text" id="taken-${key}" value="" placeholder="hhmm" maxlength="4">
+                        <button id="currentTime-${key}">Hora Atual</button>
+                    `;
+                    medList.appendChild(li);
+
+                    li.querySelector(`#taken-${key}`).addEventListener('change', (e) => {
+                        const value = e.target.value;
+                        if (/^\d{4}$/.test(value)) {
+                            const hours = parseInt(value.slice(0, 2));
+                            const minutes = parseInt(value.slice(2, 4));
+                            if (hours >= 0 && hours < 24 && minutes >= 0 && minutes < 60) {
+                                const localDate = new Date();
+                                localDate.setHours(hours, minutes, 0, 0);
+                                const utcDate = new Date(localDate.getTime() + 3 * 60 * 60 * 1000);
+                                const newLastTaken = utcDate.toISOString();
+                                update(ref(db, `users/${currentUserId}/medications/${key}`), { 
+                                    lastTaken: newLastTaken,
+                                    history: med.history ? [...med.history, { taken: newLastTaken, notes: "", loggedBy: loggedInUserName || currentAuthUser.email }] : [{ taken: newLastTaken, notes: "", loggedBy: loggedInUserName || currentAuthUser.email }]
+                                }).then(() => {
+                                    e.target.value = '';
+                                }).catch((error) => {
+                                    document.getElementById('mainError').textContent = "Erro ao registrar: " + error.message;
+                                    log(`Erro ao registrar medicamento: ${error.message}`);
+                                });
+                            } else {
+                                document.getElementById('mainError').textContent = "Horário inválido!";
+                            }
+                        } else {
+                            document.getElementById('mainError').textContent = "Digite hhmm (ex.: 1556)!";
+                        }
+                    });
+
+                    li.querySelector(`#currentTime-${key}`).addEventListener('click', () => {
+                        const now = new Date();
+                        const hours = String(now.getHours()).padStart(2, '0');
+                        const minutes = String(now.getMinutes()).padStart(2, '0');
+                        const value = `${hours}${minutes}`;
+                        const localDate = new Date();
+                        localDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+                        const utcDate = new Date(localDate.getTime() + 3 * 60 * 60 * 1000);
+                        const newLastTaken = utcDate.toISOString();
+                        update(ref(db, `users/${currentUserId}/medications/${key}`), { 
+                            lastTaken: newLastTaken,
+                            history: med.history ? [...med.history, { taken: newLastTaken, notes: "", loggedBy: loggedInUserName || currentAuthUser.email }] : [{ taken: newLastTaken, notes: "", loggedBy: loggedInUserName || currentAuthUser.email }]
+                        }).then(() => {
+                            document.getElementById(`taken-${key}`).value = '';
+                        }).catch((error) => {
+                            document.getElementById('mainError').textContent = "Erro ao registrar: " + error.message;
+                            log(`Erro ao registrar medicamento com hora atual: ${error.message}`);
+                        });
+                    });
+                });
+            });
         }
 
-        function performSearch(isAdvanced = false) {
-            const input = document.getElementById(isAdvanced ? 'advSearchInput' : 'searchInput').value.trim().toLowerCase();
-            const promptText = document.getElementById(isAdvanced ? 'advSearchPromptText' : 'searchPromptText').value.trim().toLowerCase();
-            const promptFunction = document.getElementById(isAdvanced ? 'advSearchPromptFunction' : 'searchPromptFunction').value.trim().toLowerCase();
-            const promptLocation = document.getElementById(isAdvanced ? 'advSearchPromptLocation' : 'searchPromptLocation').value.trim().toLowerCase();
-            const promptNote = document.getElementById(isAdvanced ? 'advSearchPromptNote' : 'searchPromptNote').value.trim().toLowerCase();
-            const promptAuthor = document.getElementById(isAdvanced ? 'advSearchPromptAuthor' : 'searchPromptAuthor').value.trim().toLowerCase();
-            const promptUserEmail = isAdvanced ? document.getElementById('advSearchPromptUserEmail').value.trim().toLowerCase() : '';
-            const includeSelect = document.getElementById(isAdvanced ? 'advIncludeCategories' : 'includeCategories');
-            const excludeSelect = document.getElementById(isAdvanced ? 'advExcludeCategories' : 'excludeCategories');
-            const includeCategories = Array.from(includeSelect.selectedOptions).map(opt => opt.textContent);
-            const excludeCategories = Array.from(excludeSelect.selectedOptions).map(opt => opt.textContent);
-            const includeHidden = isAdvanced && currentUserEmail === "psics.psix.141@gmail.com" && document.getElementById('advSearchHiddenCheckbox').checked;
-            const searchAllPrompts = !isAdvanced && canSearchAllPrompts && document.getElementById('searchAllPromptsCheckbox').checked;
-            const resultsList = document.getElementById(isAdvanced ? 'advSearchResults' : 'searchResults');
+        function addUser() {
+            const nameInput = document.getElementById('userNameInput');
+            const name = nameInput.value.trim();
 
-            if (includeCategories.length > 0 && excludeCategories.length > 0 && includeCategories.some(cat => excludeCategories.includes(cat))) {
-                document.getElementById('error').textContent = "Conflito nas categorias! Marque apenas em uma coluna.";
+            log("Iniciando addUser para: " + name);
+
+            if (!name) {
+                document.getElementById('userError').textContent = "Preencha o nome do paciente!";
+                log("Tentativa de adicionar paciente sem nome.");
                 return;
             }
 
-            onValue(promptsRef, (snapshot) => {
-                const prompts = snapshot.val();
-                resultsList.innerHTML = '';
-                if (!prompts) {
-                    resultsList.innerHTML = '<li>Nenhum prompt encontrado.</li>';
-                    scrollToResults(isAdvanced);
-                    return;
-                }
+            if (!currentAuthUser) {
+                document.getElementById('userError').textContent = "Usuário não autenticado! Faça login novamente.";
+                log("Tentativa de adicionar paciente sem autenticação.");
+                return;
+            }
 
-                const hasCriteria = input || promptText || promptFunction || promptLocation || promptNote || promptAuthor || (isAdvanced && promptUserEmail) || includeCategories.length > 0 || excludeCategories.length > 0;
+            log("Usuário autenticado: " + currentAuthUser.email + ". Tentando adicionar paciente: " + name);
 
-                const filteredPrompts = Object.entries(prompts)
-                    .filter(([_, prompt]) => {
-                        if (!isAdvanced && !searchAllPrompts && prompt.userEmail !== currentUserEmail) return false;
-                        if (!isAdvanced && prompt.hidden && prompt.userEmail === "psics.psix.141@gmail.com") return false;
-                        if (isAdvanced && currentUserEmail !== "psics.psix.141@gmail.com" && prompt.hidden) return false;
+            log("Executando push para /users...");
+            push(usersRef, {
+                name: name,
+                note: "",
+                registeredBy: loggedInUserName || currentAuthUser.email,
+                registeredById: currentAuthUser.uid
+            }).then((newUserRef) => {
+                const userId = newUserRef.key;
+                log(`Novo paciente criado com ID: ${userId}`);
 
-                        if (isAdvanced && includeHidden && !hasCriteria) {
-                            return prompt.hidden && prompt.userEmail === "psics.psix.141@gmail.com";
-                        }
+                log("Executando set para /lastUser...");
+                return set(lastUserRef, { id: userId }).then(() => {
+                    log("lastUser atualizado com sucesso para ID: " + userId);
+                    currentUserId = userId;
+                    nameInput.value = '';
+                    document.getElementById('userError').textContent = '';
+                    document.getElementById('userSuccess').textContent = "Paciente cadastrado com sucesso!";
+                    setTimeout(() => document.getElementById('userSuccess').textContent = '', 2000);
+                    showScreen('mainScreen');
+                });
+            }).catch((error) => {
+                log("Erro durante a operação no Firebase: " + error.message);
+                document.getElementById('userError').textContent = "Erro ao cadastrar paciente: " + error.message;
+            });
+        }
 
-                        if (!hasCriteria && !includeHidden) return false;
+        function renderUserScreen() {
+            onValue(usersRef, (snapshot) => {
+                const users = snapshot.val() || {};
+                const userList = document.getElementById('userList');
+                userList.innerHTML = '';
 
-                        const generalMatch = !input || (
-                            prompt.text.toLowerCase().includes(input) ||
-                            prompt.function.toLowerCase().includes(input) ||
-                            prompt.location.toLowerCase().includes(input) ||
-                            (prompt.note && prompt.note.toLowerCase().includes(input)) ||
-                            prompt.author.toLowerCase().includes(input) ||
-                            (prompt.categories && prompt.categories.some(cat => cat.toLowerCase().includes(input))) ||
-                            prompt.userEmail.toLowerCase().includes(input)
-                        );
+                const userArray = Object.entries(users).sort((a, b) => 
+                    a[1].name.localeCompare(b[1].name)
+                );
 
-                        const specificMatch = (
-                            (!promptText || prompt.text.toLowerCase().includes(promptText)) &&
-                            (!promptFunction || prompt.function.toLowerCase().includes(promptFunction)) &&
-                            (!promptLocation || prompt.location.toLowerCase().includes(promptLocation)) &&
-                            (!promptNote || (prompt.note && prompt.note.toLowerCase().includes(promptNote))) &&
-                            (!promptAuthor || prompt.author.toLowerCase().includes(promptAuthor)) &&
-                            (!promptUserEmail || prompt.userEmail.toLowerCase().includes(promptUserEmail))
-                        );
-
-                        const includeMatch = includeCategories.length === 0 || (Array.isArray(prompt.categories) && prompt.categories.some(cat => includeCategories.includes(cat)));
-                        const excludeMatch = excludeCategories.length === 0 || !(Array.isArray(prompt.categories) && prompt.categories.some(cat => excludeCategories.includes(cat)));
-
-                        if (isAdvanced && includeHidden && hasCriteria) {
-                            return generalMatch && specificMatch && includeMatch && excludeMatch;
-                        }
-
-                        if (prompt.hidden && prompt.userEmail === "psics.psix.141@gmail.com" && !includeHidden) return false;
-
-                        return generalMatch && specificMatch && includeMatch && excludeMatch;
-                    })
-                    .sort((a, b) => b[1].timestamp - a[1].timestamp);
-
-                filteredPrompts.forEach(([key, prompt]) => {
-                    const categoriesText = Array.isArray(prompt.categories) ? prompt.categories.join(', ') : 'Sem categorias';
+                userArray.forEach(([key, user]) => {
                     const li = document.createElement('li');
-                    if (isAdvanced) {
-                        li.innerHTML = `
-                            <div class="prompt-row">
-                                <div class="adv-prompt-details">
-                                    <span>Texto: ${prompt.text}</span>
-                                    <span>Função: ${prompt.function}</span>
-                                    <span>Local: ${prompt.location}</span>
-                                    <span>Palavras-chave: ${prompt.note || ''}</span>
-                                    <span>Autor: ${prompt.author}</span>
-                                    <span>E-mail: ${prompt.userEmail}</span>
-                                    <span>Categorias: ${categoriesText}</span>
-                                </div>
-                                <button class="copy-btn">Copiar</button>
-                                <button class="edit-btn" data-key="${key}">Editar</button>
-                                ${currentUserEmail === "psics.psix.141@gmail.com" ? `<button class="delete-btn" data-key="${key}">Excluir</button>` : ''}
+                    li.innerHTML = `
+                        <div class="user-row">
+                            <span class="user-name">${user.name}</span>
+                            <div>
+                                <button id="editUser-${key}">Editar</button>
+                                <button id="deleteUser-${key}">Excluir</button>
+                                ${user.note ? '<span class="has-note">(Contém Nota)</span>' : ''}
                             </div>
-                        `;
-                    } else {
-                        li.innerHTML = `
-                            <div class="prompt-row">
-                                <span>${prompt.text} | Autor: ${prompt.author}</span>
-                                <button class="copy-btn">Copiar</button>
-                                ${currentUserEmail === "psics.psix.141@gmail.com" ? `
-                                    <button class="edit-btn" data-key="${key}">Editar</button>
-                                    <button class="delete-btn" data-key="${key}">Excluir</button>
-                                ` : ''}
-                            </div>
-                        `;
-                    }
-                    resultsList.appendChild(li);
-                    li.querySelector('.copy-btn').addEventListener('click', () => {
-                        navigator.clipboard.writeText(prompt.text);
-                        document.getElementById('success').textContent = "Prompt copiado para a área de transferência!";
-                    });
-                    if (currentUserEmail === "psics.psix.141@gmail.com") {
-                        li.querySelector('.edit-btn').addEventListener('click', (e) => {
-                            const key = e.target.getAttribute('data-key');
-                            editPrompt(key);
+                        </div>
+                        <textarea id="note-${key}" class="user-note" placeholder="Digite uma nota aqui">${user.note || ''}</textarea>
+                    `;
+                    userList.appendChild(li);
+
+                    const userNameSpan = li.querySelector('.user-name');
+                    const hasNoteSpan = li.querySelector('.has-note');
+                    const noteTextarea = document.getElementById(`note-${key}`);
+
+                    function toggleNote() {
+                        noteTextarea.style.display = noteTextarea.style.display === 'block' ? 'none' : 'block';
+                        set(lastUserRef, { id: key }).then(() => {
+                            const firstName = user.name.split(' ')[0];
+                            document.getElementById('goToUser').textContent = firstName;
+                            currentUserId = key;
+                            renderMainScreen();
                         });
-                        li.querySelector('.delete-btn').addEventListener('click', (e) => {
-                            const key = e.target.getAttribute('data-key');
-                            deletePrompt(key, isAdvanced);
+                        noteTextarea.focus();
+                    }
+
+                    userNameSpan.addEventListener('click', toggleNote);
+                    if (hasNoteSpan) hasNoteSpan.addEventListener('click', toggleNote);
+
+                    noteTextarea.addEventListener('blur', () => {
+                        update(ref(db, `users/${key}`), { note: noteTextarea.value });
+                    });
+                    noteTextarea.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            update(ref(db, `users/${key}`), { note: noteTextarea.value });
+                            noteTextarea.blur();
+                        }
+                    });
+
+                    document.getElementById(`editUser-${key}`).addEventListener('click', () => {
+                        const newName = prompt("Digite o novo nome:", user.name);
+                        if (newName) {
+                            const newNote = prompt("Digite uma nova nota (opcional):", user.note || "");
+                            update(ref(db, `users/${key}`), { 
+                                name: newName,
+                                note: newNote || ""
+                            });
+                        }
+                    });
+
+                    document.getElementById(`deleteUser-${key}`).addEventListener('click', () => {
+                        if (confirm("Tem certeza que deseja excluir este paciente? Isso excluirá todos os medicamentos associados!")) {
+                            remove(ref(db, `users/${key}`)).then(() => {
+                                if (currentUserId === key) {
+                                    set(lastUserRef, null);
+                                    document.getElementById('goToUser').textContent = "Pacientes";
+                                    currentUserId = null;
+                                    renderMainScreen();
+                                }
+                            });
+                        }
+                    });
+                });
+            });
+        }
+
+        function addMedication() {
+            if (!currentUserId) {
+                document.getElementById('addError').textContent = "Selecione um paciente primeiro!";
+                log("Tentativa de adicionar medicamento sem paciente selecionado.");
+                return;
+            }
+            const nameInput = document.getElementById('addNameInput');
+            const periodInput = document.getElementById('addPeriodInput');
+            const name = nameInput.value.trim();
+            const periodicity = parseInt(periodInput.value);
+
+            if (!name || isNaN(periodicity) || periodicity <= 0) {
+                document.getElementById('addError').textContent = "Preencha nome e periodicidade válida!";
+                log("Tentativa de adicionar medicamento com dados inválidos.");
+                return;
+            }
+
+            const medsRef = getMedsRef();
+            push(medsRef, {
+                name,
+                periodicity,
+                lastTaken: null,
+                enabled: true,
+                history: [],
+                note: ""
+            }).then(() => {
+                nameInput.value = '';
+                periodInput.value = '';
+                document.getElementById('addError').textContent = '';
+                document.getElementById('addSuccess').textContent = "Item cadastrado com sucesso!";
+                log(`Medicamento ${name} cadastrado para o paciente ${currentUserId}.`);
+                setTimeout(() => document.getElementById('addSuccess').textContent = '', 2000);
+                showScreen('mainScreen');
+            }).catch((error) => {
+                document.getElementById('addError').textContent = "Erro ao cadastrar: " + error.message;
+                log(`Erro ao cadastrar medicamento: ${error.message}`);
+            });
+        }
+
+        function renderEditScreen() {
+            const medsRef = getMedsRef();
+            onValue(medsRef, (snapshot) => {
+                const meds = snapshot.val() || {};
+                const editList = document.getElementById('editMedList');
+                editList.innerHTML = '';
+
+                const medArray = Object.entries(meds).sort((a, b) => a[1].name.localeCompare(b[1].name));
+
+                medArray.forEach(([key, med]) => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `
+                        <div class="edit-row">
+                            <input type="text" id="editName-${key}" value="${med.name}">
+                            <input type="number" id="editPeriod-${key}" value="${med.periodicity}">
+                            <button id="saveEdit-${key}">Salvar</button>
+                        </div>
+                    `;
+                    editList.appendChild(li);
+
+                    const editNameInput = document.getElementById(`editName-${key}`);
+                    const editPeriodInput = document.getElementById(`editPeriod-${key}`);
+                    const saveButton = document.getElementById(`saveEdit-${key}`);
+
+                    saveButton.addEventListener('click', () => saveEdit(key));
+
+                    editNameInput.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            saveEdit(key);
+                        }
+                    });
+                    editPeriodInput.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            saveEdit(key);
+                        }
+                    });
+                });
+            });
+        }
+
+        function saveEdit(key) {
+            const name = document.getElementById(`editName-${key}`).value.trim();
+            const periodicity = parseInt(document.getElementById(`editPeriod-${key}`).value);
+            if (!name || isNaN(periodicity) || periodicity <= 0) {
+                document.getElementById('editError').textContent = "Preencha nome e periodicidade válida!";
+                return;
+            }
+            update(ref(db, `users/${currentUserId}/medications/${key}`), { name, periodicity })
+                .then(() => {
+                    document.getElementById('editError').textContent = '';
+                    document.getElementById('editSuccess').textContent = "Item atualizado com sucesso!";
+                    setTimeout(() => document.getElementById('editSuccess').textContent = '', 2000);
+                    showScreen('mainScreen');
+                })
+                .catch((error) => {
+                    document.getElementById('editError').textContent = "Erro ao atualizar: " + error.message;
+                    log(`Erro ao atualizar medicamento: ${error.message}`);
+                });
+        }
+
+        function renderDeleteScreen() {
+            const medsRef = getMedsRef();
+            onValue(medsRef, (snapshot) => {
+                const meds = snapshot.val() || {};
+                const deleteList = document.getElementById('deleteMedList');
+                deleteList.innerHTML = '';
+
+                const medArray = Object.entries(meds).sort((a, b) => a[1].name.localeCompare(b[1].name));
+
+                medArray.forEach(([key, med]) => {
+                    const status = med.enabled !== false ? "Habilitado" : "Desabilitado";
+                    const li = document.createElement('li');
+                    li.innerHTML = `
+                        <div class="delete-row">
+                            <span class="delete-name">${med.name} | Periodicidade: ${med.periodicity}h</span>
+                            <div>
+                                <button id="enable-${key}">Habilitar</button>
+                                <button id="disable-${key}">Desabilitar</button>
+                                <button id="delete-${key}">Excluir</button>
+                                <span class="status-text">(${status})</span>
+                                ${med.note ? '<span class="has-note">(Contém Nota)</span>' : ''}
+                            </div>
+                        </div>
+                        <textarea id="note-${key}" class="delete-note" placeholder="Digite uma nota aqui">${med.note || ''}</textarea>
+                    `;
+                    deleteList.appendChild(li);
+
+                    const deleteNameSpan = li.querySelector('.delete-name');
+                    const hasNoteSpan = li.querySelector('.has-note');
+                    const noteTextarea = document.getElementById(`note-${key}`);
+
+                    function toggleNote(e) {
+                        e.stopPropagation();
+                        noteTextarea.style.display = noteTextarea.style.display === 'block' ? 'none' : 'block';
+                        noteTextarea.focus();
+                    }
+
+                    deleteNameSpan.addEventListener('click', toggleNote);
+                    if (hasNoteSpan) hasNoteSpan.addEventListener('click', toggleNote);
+
+                    noteTextarea.addEventListener('blur', () => {
+                        update(ref(db, `users/${currentUserId}/medications/${key}`), { note: noteTextarea.value });
+                    });
+                    noteTextarea.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            update(ref(db, `users/${currentUserId}/medications/${key}`), { note: noteTextarea.value });
+                            noteTextarea.blur();
+                        }
+                    });
+
+                    document.getElementById(`enable-${key}`).addEventListener('click', () => enableItem(key));
+                    document.getElementById(`disable-${key}`).addEventListener('click', () => disableItem(key));
+                    document.getElementById(`delete-${key}`).addEventListener('click', () => deleteItem(key));
+                });
+            });
+        }
+
+        function enableItem(key) {
+            update(ref(db, `users/${currentUserId}/medications/${key}`), { enabled: true });
+            document.getElementById('deleteSuccess').textContent = "Item habilitado com sucesso!";
+            setTimeout(() => document.getElementById('deleteSuccess').textContent = '', 2000);
+            showScreen('mainScreen');
+        }
+
+        function disableItem(key) {
+            update(ref(db, `users/${currentUserId}/medications/${key}`), { enabled: false });
+            document.getElementById('deleteSuccess').textContent = "Item desabilitado com sucesso!";
+            setTimeout(() => document.getElementById('deleteSuccess').textContent = '', 2000);
+            renderDeleteScreen();
+        }
+
+        function deleteItem(key) {
+            remove(ref(db, `users/${currentUserId}/medications/${key}`));
+            document.getElementById('deleteSuccess').textContent = "Item excluído com sucesso!";
+            setTimeout(() => document.getElementById('deleteSuccess').textContent = '', 2000);
+            renderDeleteScreen();
+        }
+
+        function editHistory(key, index, sortedHistory, currentTaken) {
+            const takenLocal = new Date(new Date(currentTaken).getTime() - 3 * 60 * 60 * 1000);
+            const day = String(takenLocal.getDate()).padStart(2, '0');
+            const month = String(takenLocal.getMonth() + 1).padStart(2, '0');
+            const year = takenLocal.getFullYear();
+            const hours = String(takenLocal.getHours()).padStart(2, '0');
+            const minutes = String(takenLocal.getMinutes()).padStart(2, '0');
+            const currentValue = `${day}${month}${year}${hours}${minutes}`;
+
+            const newTime = prompt("Digite a nova data e horário (ddmmyyyyhhmm):", currentValue);
+            if (newTime && /^\d{12}$/.test(newTime)) {
+                const day = parseInt(newTime.slice(0, 2));
+                const month = parseInt(newTime.slice(2, 4)) - 1;
+                const year = parseInt(newTime.slice(4, 8));
+                const hours = parseInt(newTime.slice(8, 10));
+                const minutes = parseInt(newTime.slice(10, 12));
+
+                if (day >= 1 && day <= 31 && month >= 0 && month <= 11 && 
+                    year >= 2000 && year <= 9999 && 
+                    hours >= 0 && hours < 24 && minutes >= 0 && minutes < 60) {
+                    const localDate = new Date(year, month, day, hours, minutes, 0, 0);
+                    const utcDate = new Date(localDate.getTime() + 3 * 60 * 60 * 1000);
+                    const newTaken = utcDate.toISOString();
+
+                    onValue(ref(db, `users/${currentUserId}/medications/${key}`), (snapshot) => {
+                        const med = snapshot.val();
+                        if (med.history) {
+                            const updatedHistory = [...med.history];
+                            const historyIndex = updatedHistory.findIndex(item => item.taken === currentTaken);
+                            if (historyIndex !== -1) {
+                                const currentNotes = updatedHistory[historyIndex].notes || "";
+                                const currentLoggedBy = updatedHistory[historyIndex].loggedBy || (loggedInUserName || currentAuthUser.email);
+                                updatedHistory[historyIndex] = { taken: newTaken, notes: currentNotes, loggedBy: currentLoggedBy };
+                                const isLastEntry = historyIndex === updatedHistory.length - 1;
+                                const updates = { history: updatedHistory };
+                                if (isLastEntry) {
+                                    updates.lastTaken = newTaken;
+                                }
+                                update(ref(db, `users/${currentUserId}/medications/${key}`), updates).then(() => {
+                                    if (currentReportType === 'daily') renderDailyReport('chrono');
+                                    else renderReportScreen(currentReportType);
+                                    if (isLastEntry) {
+                                        renderMainScreen();
+                                        document.getElementById('reportSuccess').textContent = "Registro editado e tela inicial atualizada!";
+                                    } else {
+                                        document.getElementById('reportSuccess').textContent = "Registro editado com sucesso!";
+                                    }
+                                    setTimeout(() => document.getElementById('reportSuccess').textContent = '', 2000);
+                                }).catch((error) => {
+                                    document.getElementById('reportError').textContent = "Erro ao atualizar: " + error.message;
+                                    log(`Erro ao atualizar histórico: ${error.message}`);
+                                });
+                            }
+                        }
+                    }, { onlyOnce: true });
+                } else {
+                    document.getElementById('reportError').textContent = "Data ou horário inválido! Use ddmmyyyyhhmm.";
+                }
+            } else {
+                document.getElementById('reportError').textContent = "Digite ddmmyyyyhhmm (ex.: 260220250122)!";
+            }
+        }
+
+        function deleteHistory(key, index) {
+            onValue(ref(db, `users/${currentUserId}/medications/${key}`), (snapshot) => {
+                const med = snapshot.val();
+                if (med.history && med.history[index]) {
+                    const updatedHistory = [...med.history];
+                    updatedHistory.splice(index, 1);
+                    const newLastTaken = updatedHistory.length > 0 ? updatedHistory[updatedHistory.length - 1].taken : null;
+                    update(ref(db, `users/${currentUserId}/medications/${key}`), { 
+                        history: updatedHistory,
+                        lastTaken: newLastTaken
+                    }).then(() => {
+                        if (currentReportType === 'daily') renderDailyReport('chrono');
+                        else renderReportScreen(currentReportType);
+                        document.getElementById('reportSuccess').textContent = "Registro excluído com sucesso!";
+                        setTimeout(() => document.getElementById('reportSuccess').textContent = '', 2000);
+                        renderMainScreen();
+                    }).catch((error) => {
+                        document.getElementById('reportError').textContent = "Erro ao excluir: " + error.message;
+                        log(`Erro ao excluir histórico: ${error.message}`);
+                    });
+                }
+            }, { onlyOnce: true });
+        }
+
+        function renderReportScreen(type, order = 'chrono') {
+            const medsRef = getMedsRef();
+            onValue(medsRef, (snapshot) => {
+                const meds = snapshot.val() || {};
+                const reportList = document.getElementById('reportList');
+                reportList.innerHTML = '';
+                const now = new Date();
+                const today = new Date(now.getTime() - 3 * 60 * 60 * 1000);
+                today.setHours(0, 0, 0, 0);
+
+                let allEntries = [];
+                Object.entries(meds).forEach(([key, med]) => {
+                    if (med.history && med.history.length > 0) {
+                        med.history.forEach((entry, index) => {
+                            const takenDate = new Date(entry.taken);
+                            const takenLocal = new Date(takenDate.getTime() - 3 * 60 * 60 * 1000);
+                            const takenLocalDate = new Date(takenLocal);
+                            takenLocalDate.setHours(0, 0, 0, 0);
+                            let shouldInclude = false;
+                            if (type === 'daily') {
+                                shouldInclude = takenLocalDate.getTime() === today.getTime();
+                            } else if (type === 'weekly') {
+                                const weekAgo = new Date(now - 7 * 24 * 60 * 60 * 1000);
+                                shouldInclude = takenLocal >= weekAgo;
+                            } else if (type === 'monthly') {
+                                const monthAgo = new Date(now - 30 * 24 * 60 * 60 * 1000);
+                                shouldInclude = takenLocal >= monthAgo;
+                            } else if (type === 'yearly') {
+                                const yearAgo = new Date(now - 365 * 24 * 60 * 60 * 1000);
+                                shouldInclude = takenLocal >= yearAgo;
+                            }
+                            if (shouldInclude) {
+                                allEntries.push({ key, med, taken: entry.taken, notes: entry.notes || "", loggedBy: entry.loggedBy || (loggedInUserName || currentAuthUser.email), index });
+                            }
                         });
                     }
                 });
 
-                if (filteredPrompts.length === 0) {
-                    resultsList.innerHTML = '<li>Nenhum prompt encontrado.</li>';
-                } else {
-                    document.getElementById('success').textContent = "Resultados exibidos!";
+                if (order === 'chrono') {
+                    allEntries.sort((a, b) => new Date(a.taken) - new Date(b.taken));
+                } else if (order === 'type') {
+                    allEntries.sort((a, b) => {
+                        const nameCompare = a.med.name.localeCompare(b.med.name);
+                        if (nameCompare !== 0) return nameCompare;
+                        return new Date(a.taken) - new Date(b.taken);
+                    });
                 }
-                scrollToResults(isAdvanced);
-            }, { onlyOnce: true });
-        }
 
-        function scrollToResults(isAdvanced) {
-            const resultsList = document.getElementById(isAdvanced ? 'advSearchResults' : 'searchResults');
-            resultsList.scrollIntoView({ behavior: 'smooth' });
-        }
-
-        function clearSearchFields(isAdvanced = false) {
-            log(`Limpando campos da ${isAdvanced ? 'Pesquisa Avançada' : 'Pesquisa'} para ${currentUserEmail}`);
-            const prefix = isAdvanced ? 'advSearch' : 'search';
-
-            // Função auxiliar para limpar campo se ele existir
-            const clearValue = (id) => {
-                const element = document.getElementById(id);
-                if (element) {
-                    element.value = '';
-                    log(`Campo ${id} limpo`);
-                } else {
-                    log(`Campo ${id} não encontrado`);
-                }
-            };
-
-            // Função auxiliar para limpar seleções de combo box
-            const clearSelect = (id) => {
-                const element = document.getElementById(id);
-                if (element) {
-                    element.selectedIndex = -1;
-                    // Forçar desmarcação de todas as opções
-                    for (let option of element.options) {
-                        option.selected = false;
+                allEntries.forEach(({ key, med, taken, notes, loggedBy, index }) => {
+                    const li = document.createElement('li');
+                    const takenLocal = new Date(new Date(taken).getTime() - 3 * 60 * 60 * 1000);
+                    const periodMs = med.periodicity * 60 * 60 * 1000;
+                    let expectedLocal;
+                    if (index === 0) {
+                        expectedLocal = null;
+                    } else {
+                        const previousEntry = med.history[index - 1];
+                        const previousTaken = new Date(previousEntry.taken);
+                        const expected = new Date(previousTaken.getTime() + periodMs);
+                        expectedLocal = new Date(expected.getTime() - 3 * 60 * 60 * 1000);
                     }
-                    log(`Combo box ${id} limpo`);
-                } else {
-                    log(`Combo box ${id} não encontrado`);
-                }
-            };
+                    const diff = index === 0 ? 0 : Math.abs(takenLocal - expectedLocal);
+                    const onTime = index === 0 || diff <= 30 * 60 * 1000;
+                    li.innerHTML = `
+                        <div class="report-row">
+                            ${med.name} | Tomado: <span class="${onTime ? 'on-time' : 'late'}">${takenLocal.toLocaleString('pt-BR', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
+                            | Esperado: ${index === 0 ? 'N/A' : expectedLocal.toLocaleString('pt-BR', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' })}
+                            | Registrado por: ${loggedBy}
+                            <div>
+                                <button id="editHist-${key}-${index}">Editar</button>
+                                <button id="delHist-${key}-${index}">Excluir</button>
+                                ${notes ? '<span class="has-note">(Contém Nota)</span>' : ''}
+                            </div>
+                        </div>
+                        <textarea id="note-${key}-${index}" class="user-note" placeholder="Digite uma nota aqui">${notes}</textarea>
+                    `;
+                    reportList.appendChild(li);
 
-            // Limpar campos de texto com IDs corretos
-            clearValue(`${prefix}Input`);           // Pesquisa: searchInput, Avançada: advSearchInput
-            clearValue(`${prefix}PromptText`);      // Pesquisa: searchPromptText, Avançada: advSearchPromptText
-            clearValue(`${prefix}PromptFunction`);  // Pesquisa: searchPromptFunction, Avançada: advSearchPromptFunction
-            clearValue(`${prefix}PromptLocation`);  // Pesquisa: searchPromptLocation, Avançada: advSearchPromptLocation
-            clearValue(`${prefix}PromptNote`);      // Pesquisa: searchPromptNote, Avançada: advSearchPromptNote
-            clearValue(`${prefix}PromptAuthor`);    // Pesquisa: searchPromptAuthor, Avançada: advSearchPromptAuthor
-            if (isAdvanced) clearValue('advSearchPromptUserEmail'); // Apenas para Pesquisa Avançada
+                    const reportRow = li.querySelector('.report-row');
+                    const hasNoteSpan = li.querySelector('.has-note');
+                    const noteTextarea = document.getElementById(`note-${key}-${index}`);
 
-            // Limpar seleções dos combo boxes
-            clearSelect(isAdvanced ? 'advIncludeCategories' : 'includeCategories');
-            clearSelect(isAdvanced ? 'advExcludeCategories' : 'excludeCategories');
+                    function toggleNote(e) {
+                        e.stopPropagation();
+                        noteTextarea.style.display = noteTextarea.style.display === 'block' ? 'none' : 'block';
+                        noteTextarea.focus();
+                    }
 
-            // Limpar checkbox da Pesquisa, se aplicável
-            if (!isAdvanced && canSearchAllPrompts && currentUserEmail !== "psics.psix.141@gmail.com") {
-                const checkbox = document.getElementById('searchAllPromptsCheckbox');
-                if (checkbox) {
-                    checkbox.checked = false;
-                    log("Checkbox searchAllPromptsCheckbox limpo");
-                }
-            }
+                    reportRow.addEventListener('click', toggleNote);
+                    if (hasNoteSpan) hasNoteSpan.addEventListener('click', toggleNote);
 
-            // Limpar checkbox da Pesquisa Avançada, se aplicável
-            if (isAdvanced && currentUserEmail === "psics.psix.141@gmail.com") {
-                const hiddenCheckbox = document.getElementById('advSearchHiddenCheckbox');
-                if (hiddenCheckbox) {
-                    hiddenCheckbox.checked = false;
-                    log("Checkbox advSearchHiddenCheckbox limpo");
-                }
-            }
-
-            // Limpar resultados e saída de texto
-            const results = document.getElementById(isAdvanced ? 'advSearchResults' : 'searchResults');
-            const txtOutput = document.getElementById(isAdvanced ? 'txtOutputAdv' : 'txtOutput');
-            if (results) {
-                results.innerHTML = '';
-                log(`Resultados ${isAdvanced ? 'advSearchResults' : 'searchResults'} limpos`);
-            }
-            if (txtOutput) {
-                txtOutput.style.display = 'none';
-                log(`Saída de texto ${isAdvanced ? 'txtOutputAdv' : 'txtOutput'} ocultada`);
-            }
-
-            // Exibir mensagem de sucesso
-            document.getElementById('success').textContent = "Campos limpos com sucesso!";
-
-            // Forçar rolagem para o topo
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-
-            // Forçar atualização do DOM
-            const screen = document.getElementById(isAdvanced ? 'advancedSearchScreen' : 'searchScreen');
-            screen.style.display = 'none';
-            setTimeout(() => {
-                screen.style.display = 'block';
-            }, 0);
-
-            log("Campos limpos com sucesso");
-        }
-
-        function editPrompt(key) {
-            showScreen('editPromptScreen');
-            const promptRef = ref(db, `prompts/${key}`);
-            onValue(promptRef, (snapshot) => {
-                const prompt = snapshot.val();
-                if (!prompt) {
-                    document.getElementById('error').textContent = "Prompt não encontrado!";
-                    return;
-                }
-                document.getElementById('editPromptText').value = prompt.text;
-                document.getElementById('editPromptFunction').value = prompt.function;
-                document.getElementById('editPromptLocation').value = prompt.location;
-                document.getElementById('editPromptNote').value = prompt.note || '';
-                document.getElementById('editPromptAuthor').value = prompt.author;
-                document.getElementById('editPromptUserEmail').value = prompt.userEmail;
-                loadCategories(document.getElementById('editCategorySelect'), prompt.categories || []);
-                if (currentUserEmail === "psics.psix.141@gmail.com") {
-                    document.getElementById('editHiddenCheckbox').checked = prompt.hidden || false;
-                }
-                editingPromptKey = key;
-            }, { onlyOnce: true });
-        }
-
-        function deletePrompt(key, isAdvanced) {
-            if (confirm("Tem certeza que deseja excluir este prompt?")) {
-                const promptRef = ref(db, `prompts/${key}`);
-                remove(promptRef)
-                    .then(() => {
-                        document.getElementById('success').textContent = "Prompt excluído com sucesso!";
-                        if (isAdvanced) {
-                            performSearch(true);
-                        } else {
-                            showRecentPrompts();
+                    noteTextarea.addEventListener('blur', () => {
+                        const updatedHistory = [...med.history];
+                        updatedHistory[index] = { taken: taken, notes: noteTextarea.value, loggedBy: loggedBy };
+                        update(ref(db, `users/${currentUserId}/medications/${key}`), { history: updatedHistory });
+                    });
+                    noteTextarea.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            const updatedHistory = [...med.history];
+                            updatedHistory[index] = { taken: taken, notes: noteTextarea.value, loggedBy: loggedBy };
+                            update(ref(db, `users/${currentUserId}/medications/${key}`), { history: updatedHistory });
+                            noteTextarea.blur();
                         }
-                    })
-                    .catch(error => log(`Erro ao excluir prompt: ${error.message}`));
-            }
-        }
+                    });
 
-        document.getElementById('saveEditPromptBtn').addEventListener('click', () => {
-            const text = document.getElementById('editPromptText').value.trim();
-            const func = document.getElementById('editPromptFunction').value.trim();
-            const location = document.getElementById('editPromptLocation').value.trim();
-            const note = document.getElementById('editPromptNote').value.trim();
-            let author = document.getElementById('editPromptAuthor').value.trim();
-            const userEmail = document.getElementById('editPromptUserEmail').value.trim();
-            const categorySelect = document.getElementById('editCategorySelect');
-            const categories = Array.from(categorySelect.selectedOptions).map(option => option.textContent);
-            const hidden = currentUserEmail === "psics.psix.141@gmail.com" && document.getElementById('editHiddenCheckbox').checked;
+                    document.getElementById(`editHist-${key}-${index}`).addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        editHistory(key, index, allEntries.map(e => e.taken), taken);
+                    });
+                    document.getElementById(`delHist-${key}-${index}`).addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        deleteHistory(key, index);
+                    });
+                });
 
-            if (!text || !func) {
-                document.getElementById('error').textContent = "Preencha os campos obrigatórios: Texto do Prompt e Função!";
-                return;
-            }
-
-            if (!author) {
-                author = currentUserEmail;
-            }
-
-            const updatedPrompt = {
-                text,
-                function: func,
-                location,
-                note,
-                author,
-                userEmail: userEmail || currentUserEmail,
-                categories: categories.length > 0 ? categories : [],
-                timestamp: Date.now(),
-                hidden: hidden || false
-            };
-
-            set(ref(db, `prompts/${editingPromptKey}`), updatedPrompt)
-                .then(() => {
-                    document.getElementById('success').textContent = "Prompt atualizado com sucesso!";
-                    editingPromptKey = null;
-                    showRecentPrompts();
-                })
-                .catch(error => log(`Erro ao atualizar prompt: ${error.message}`));
-        });
-
-        document.getElementById('doSearchBtn').addEventListener('click', () => performSearch(false));
-        document.getElementById('doSearchBtnTop').addEventListener('click', () => performSearch(false));
-        document.getElementById('doAdvSearchBtn').addEventListener('click', () => performSearch(true));
-        document.getElementById('doAdvSearchBtnTop').addEventListener('click', () => performSearch(true));
-        document.getElementById('searchInput').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') performSearch(false);
-        });
-        document.getElementById('advSearchInput').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') performSearch(true);
-        });
-
-        document.getElementById('clearSearchBtn').addEventListener('click', () => {
-            log("Botão Limpar Campos da Pesquisa clicado");
-            clearSearchFields(false);
-        });
-        document.getElementById('clearAdvSearchBtn').addEventListener('click', () => {
-            log("Botão Limpar Campos da Pesquisa Avançada clicado");
-            clearSearchFields(true);
-        });
-
-        function exportSearchToTxt(isAdvanced = false) {
-            const resultsList = document.getElementById(isAdvanced ? 'advSearchResults' : 'searchResults');
-            const txtOutput = document.getElementById(isAdvanced ? 'txtOutputAdv' : 'txtOutput');
-            let content = '';
-            resultsList.querySelectorAll('li').forEach(li => {
-                if (isAdvanced) {
-                    const details = li.querySelector('.adv-prompt-details');
-                    if (details) {
-                        const spans = details.querySelectorAll('span');
-                        spans.forEach(span => {
-                            content += `${span.textContent}\n`;
-                        });
-                        content += '\n';
-                    }
-                } else {
-                    const text = li.querySelector('span').textContent;
-                    content += `${text}\n\n`;
+                if (!reportList.children.length) {
+                    reportList.innerHTML = '<li>Nenhum registro encontrado!</li>';
                 }
             });
-            txtOutput.value = content || 'Nenhum resultado para exportar.';
-            txtOutput.style.display = 'block';
         }
 
-        document.getElementById('txtSearchBtn').addEventListener('click', () => exportSearchToTxt(false));
-        document.getElementById('txtAdvSearchBtn').addEventListener('click', () => exportSearchToTxt(true));
+        function renderDailyReport(order = 'chrono') {
+            const medsRef = getMedsRef();
+            onValue(medsRef, (snapshot) => {
+                const meds = snapshot.val() || {};
+                const reportList = document.getElementById('reportList');
+                reportList.innerHTML = '';
+                const now = new Date();
+                const today = new Date(now);
+                today.setHours(0, 0, 0, 0);
 
-        document.getElementById('backBtn').addEventListener('click', showRecentPrompts);
-        document.getElementById('backBtnStore').addEventListener('click', showRecentPrompts);
-        document.getElementById('backBtnEdit').addEventListener('click', showRecentPrompts);
-        document.getElementById('backBtnCategory').addEventListener('click', showRecentPrompts);
-        document.getElementById('backBtnSearch').addEventListener('click', showRecentPrompts);
-        document.getElementById('backBtnAdvSearch').addEventListener('click', showRecentPrompts);
-        document.getElementById('backBtnAuthorization').addEventListener('click', showRecentPrompts);
+                let allEntries = [];
+                Object.entries(meds).forEach(([key, med]) => {
+                    if (med.history && med.history.length > 0) {
+                        med.history.forEach((entry, index) => {
+                            const takenDate = new Date(entry.taken);
+                            const takenLocal = new Date(takenDate.getTime() - 3 * 60 * 60 * 1000);
+                            const takenLocalDate = new Date(takenLocal);
+                            takenLocalDate.setHours(0, 0, 0, 0);
+                            if (takenLocalDate.getTime() === today.getTime()) {
+                                allEntries.push({ key, med, taken: entry.taken, notes: entry.notes || "", loggedBy: entry.loggedBy || (loggedInUserName || currentAuthUser.email), index });
+                            }
+                        });
+                    }
+                });
 
-        showRecentPrompts();
+                if (order === 'chrono') {
+                    allEntries.sort((a, b) => new Date(a.taken) - new Date(b.taken));
+                } else if (order === 'type') {
+                    allEntries.sort((a, b) => {
+                        const nameCompare = a.med.name.localeCompare(b.med.name);
+                        if (nameCompare !== 0) return nameCompare;
+                        return new Date(a.taken) - new Date(b.taken);
+                    });
+                }
+
+                allEntries.forEach(({ key, med, taken, notes, loggedBy, index }) => {
+                    const li = document.createElement('li');
+                    const takenLocal = new Date(new Date(taken).getTime() - 3 * 60 * 60 * 1000);
+                    const periodMs = med.periodicity * 60 * 60 * 1000;
+                    let expectedLocal;
+                    if (index === 0) {
+                        expectedLocal = null;
+                    } else {
+                        const previousEntry = med.history[index - 1];
+                        const previousTaken = new Date(previousEntry.taken);
+                        expectedLocal = new Date(previousTaken.getTime() + periodMs - 3 * 60 * 60 * 1000);
+                    }
+                    const diff = index === 0 || !expectedLocal ? 0 : Math.abs(takenLocal - expectedLocal);
+                    const onTime = index === 0 || diff <= 30 * 60 * 1000;
+                    li.innerHTML = `
+                        <div class="report-row">
+                            ${med.name} | Tomado: <span class="${onTime ? 'on-time' : 'late'}">${takenLocal.toLocaleString('pt-BR', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
+                            | Esperado: ${index === 0 || !expectedLocal ? 'N/A' : expectedLocal.toLocaleString('pt-BR', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' })}
+                            | Registrado por: ${loggedBy}
+                            <div>
+                                <button id="editHist-${key}-${index}">Editar</button>
+                                <button id="delHist-${key}-${index}">Excluir</button>
+                                ${notes ? '<span class="has-note">(Contém Nota)</span>' : ''}
+                            </div>
+                        </div>
+                        <textarea id="note-${key}-${index}" class="user-note" placeholder="Digite uma nota aqui">${notes}</textarea>
+                    `;
+                    reportList.appendChild(li);
+
+                    const reportRow = li.querySelector('.report-row');
+                    const hasNoteSpan = li.querySelector('.has-note');
+                    const noteTextarea = document.getElementById(`note-${key}-${index}`);
+
+                    function toggleNote(e) {
+                        e.stopPropagation();
+                        noteTextarea.style.display = noteTextarea.style.display === 'block' ? 'none' : 'block';
+                        noteTextarea.focus();
+                    }
+
+                    reportRow.addEventListener('click', toggleNote);
+                    if (hasNoteSpan) hasNoteSpan.addEventListener('click', toggleNote);
+
+                    noteTextarea.addEventListener('blur', () => {
+                        const updatedHistory = [...med.history];
+                        updatedHistory[index] = { taken: taken, notes: noteTextarea.value, loggedBy: loggedBy };
+                        update(ref(db, `users/${currentUserId}/medications/${key}`), { history: updatedHistory });
+                    });
+                    noteTextarea.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            const updatedHistory = [...med.history];
+                            updatedHistory[index] = { taken: taken, notes: noteTextarea.value, loggedBy: loggedBy };
+                            update(ref(db, `users/${currentUserId}/medications/${key}`), { history: updatedHistory });
+                            noteTextarea.blur();
+                        }
+                    });
+
+                    document.getElementById(`editHist-${key}-${index}`).addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        editHistory(key, index, allEntries.map(e => e.taken), taken);
+                    });
+                    document.getElementById(`delHist-${key}-${index}`).addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        deleteHistory(key, index);
+                    });
+                });
+
+                if (!reportList.children.length) {
+                    reportList.innerHTML = '<li>Nenhum registro encontrado!</li>';
+                }
+            });
+        }
+
+        function renderUserRegistryReport() {
+            const reportList = document.getElementById('reportList');
+            reportList.innerHTML = '';
+
+            onValue(authUsersRef, (snapshot) => {
+                const authUsers = snapshot.val() || {};
+                log(`Dados brutos de authUsers: ${JSON.stringify(authUsers)}`);
+                
+                if (!authUsers) {
+                    reportList.innerHTML = '<li>Nenhum usuário autenticado encontrado!</li>';
+                    return;
+                }
+
+                const userArray = Object.entries(authUsers).map(([uid, user]) => ({
+                    uid,
+                    name: user.name || user.email,
+                    email: user.email,
+                    registeredBy: user.registeredBy || "Usuário Desconhecido"
+                }));
+
+                log(`Array de usuários para o relatório: ${JSON.stringify(userArray)}`);
+
+                userArray.sort((a, b) => a.name.localeCompare(b.name));
+
+                userArray.forEach(({ name, email, registeredBy }) => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `
+                        <div class="report-row">
+                            <span>${name} | E-mail: ${email} | Cadastrado por: ${registeredBy}</span>
+                        </div>
+                    `;
+                    reportList.appendChild(li);
+                });
+
+                if (!reportList.children.length) {
+                    reportList.innerHTML = '<li>Nenhum usuário autenticado encontrado!</li>';
+                }
+            }, { onlyOnce: true });
+            log("Relatório de registro de usuários renderizado.");
+        }
+
+        function generateTxtReport() {
+            const reportList = document.getElementById('reportList');
+            const reportNote = document.getElementById('reportNote');
+            let textContent = "";
+
+            if (currentReportType === 'userRegistry') {
+                const userItems = reportList.querySelectorAll('li');
+                if (userItems.length === 0) {
+                    textContent = "Nenhum usuário autenticado encontrado!";
+                } else {
+                    textContent = "Registro de Usuários:\n";
+                    userItems.forEach((item) => {
+                        const text = item.querySelector('.report-row span').textContent;
+                        textContent += `${text}\n`;
+                    });
+                }
+            } else {
+                const medItems = reportList.querySelectorAll('li');
+                if (medItems.length === 0) {
+                    textContent = "Nenhum registro encontrado!";
+                } else {
+                    textContent = `Relatório ${currentReportType === 'daily' ? 'Diário' : currentReportType === 'weekly' ? 'Semanal' : currentReportType === 'monthly' ? 'Mensal' : 'Anual'}:\n`;
+                    medItems.forEach((item) => {
+                        const row = item.querySelector('.report-row');
+                        const nameAndTime = row.childNodes[0].textContent.trim() + " " + row.querySelector('span').textContent;
+                        const expected = row.childNodes[2].textContent.trim();
+                        const loggedBy = row.childNodes[4].textContent.trim();
+                        const notes = item.querySelector('.user-note').value ? `Notas: ${item.querySelector('.user-note').value}` : "";
+                        textContent += `${nameAndTime} | ${expected} | ${loggedBy}${notes ? ' | ' + notes : ''}\n`;
+                    });
+                }
+            }
+
+            reportNote.value = textContent;
+            reportNote.style.display = 'block';
+            log("Relatório TXT gerado com base nos registros exibidos.");
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('goToUser').addEventListener('click', () => showScreen('userScreen'));
+            document.getElementById('goToAdd').addEventListener('click', () => showScreen('addScreen'));
+            document.getElementById('goToEdit').addEventListener('click', () => showScreen('editScreen'));
+            document.getElementById('goToDelete').addEventListener('click', () => showScreen('deleteScreen'));
+            document.getElementById('goToReport').addEventListener('click', () => showScreen('reportScreen'));
+            document.getElementById('saveUser').addEventListener('click', addUser);
+            document.getElementById('backFromUser').addEventListener('click', () => showScreen('mainScreen'));
+            document.getElementById('saveAdd').addEventListener('click', addMedication);
+            document.getElementById('backFromAdd').addEventListener('click', () => showScreen('mainScreen'));
+            document.getElementById('backFromEdit').addEventListener('click', () => showScreen('mainScreen'));
+            document.getElementById('backFromDelete').addEventListener('click', () => showScreen('mainScreen'));
+            document.getElementById('backFromReport').addEventListener('click', () => showScreen('mainScreen'));
+            document.getElementById('dailyReport').addEventListener('click', () => {
+                currentReportType = 'daily';
+                renderDailyReport('chrono');
+            });
+            document.getElementById('weeklyReport').addEventListener('click', () => {
+                currentReportType = 'weekly';
+                renderReportScreen('weekly');
+            });
+            document.getElementById('monthlyReport').addEventListener('click', () => {
+                currentReportType = 'monthly';
+                renderReportScreen('monthly');
+            });
+            document.getElementById('yearlyReport').addEventListener('click', () => {
+                currentReportType = 'yearly';
+                renderReportScreen('yearly');
+            });
+            document.getElementById('chronoOrder').addEventListener('click', () => {
+                if (currentReportType === 'daily') renderDailyReport('chrono');
+                else renderReportScreen(currentReportType, 'chrono');
+            });
+            document.getElementById('typeOrder').addEventListener('click', () => {
+                if (currentReportType === 'daily') renderDailyReport('type');
+                else renderReportScreen(currentReportType, 'type');
+            });
+            document.getElementById('userRegistryReport').addEventListener('click', () => {
+                currentReportType = 'userRegistry';
+                renderUserRegistryReport();
+            });
+            document.getElementById('txtReport').addEventListener('click', generateTxtReport);
+
+            userNameInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addUser();
+                }
+            });
+
+            addNameInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addMedication();
+                }
+            });
+            addPeriodInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addMedication();
+                }
+            });
+        });
     </script>
 </body>
 </html>
