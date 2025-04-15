@@ -22,7 +22,7 @@
             border-radius: 10px;
         }
         #loginScreen {
-            background-image: url('https://unsplash.com/pt-br/fotografias/um-longo-corredor-com-quadros-nas-paredes-P65ogppIhUg?q=80&w=1470&auto=format&fit=crop');
+            background-image: url('https://images.unsplash.com/photo-1620482533010-8e6e3f1d76ae?q=80&w=1470&auto=format&fit=crop');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
@@ -32,13 +32,14 @@
             justify-content: center;
         }
         #loginScreen h1 {
-            margin-bottom: 7em; /* Aproximadamente 7 linhas para descer os campos */
+            font-size: 48px; /* Título maior */
+            margin-bottom: 7em;
         }
         #loginScreen .input-container {
             display: flex;
             justify-content: center;
             gap: 10px;
-            margin-bottom: 2em; /* Duas linhas abaixo para os botões */
+            margin-bottom: 2em;
         }
         #loginScreen .button-container {
             display: flex;
@@ -161,7 +162,7 @@
 <body>
     <!-- Tela de Login -->
     <div id="loginScreen">
-        <h1>GERENCIADOR DE MEDICAMENTOS/h1>
+        <h1>Gerenciador de Medicamentos</h1>
         <div class="input-container">
             <input type="email" id="emailInput" placeholder="E-mail" autocomplete="off" autocapitalize="none">
             <input type="password" id="passwordInput" placeholder="Senha" autocomplete="new-password">
@@ -298,7 +299,7 @@
         let loggedInUserName = null;
         let isRegisterClicked = false;
 
-        function getM  getMedsRef() {
+        function getMedsRef() {
             return currentUserId ? ref(db, `users/${currentUserId}/medications`) : ref(db, 'medications');
         }
 
@@ -456,7 +457,7 @@
             }
             if (!currentAuthUser || !loggedInUserName) {
                 registerError.textContent = "Nenhum usuário autenticado! Faça login novamente.";
-                log("Tentativa de cadastro sem usuário autenticado.");
+                log("Tentativa de cadastro W sem usuário autenticado.");
                 registerScreen.style.display = 'none';
                 loginScreen.style.display = 'block';
                 return;
