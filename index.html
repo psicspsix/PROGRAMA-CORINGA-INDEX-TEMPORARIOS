@@ -19,6 +19,10 @@
             margin: 0 auto;
             padding: 20px;
         }
+        #loginScreen {
+            background: url('https://images.unsplash.com/photo-1512675828443-4f4544e245d6?q=80&w=1470&auto=format&fit=crop') no-repeat center center fixed;
+            background-size: cover;
+        }
         #appScreen {
             width: 100%;
             margin: 0;
@@ -1157,12 +1161,12 @@
                         const expected = new Date(previousTaken.getTime() + periodMs);
                         expectedLocal = new Date(expected.getTime() - 3 * 60 * 60 * 1000);
                     }
-                    const diff = index === 0 ? 0 : Math.abs(takenLocal - expectedLocal);
+                    const diff = index === 0 || !expectedLocal ? 0 : Math.abs(takenLocal - expectedLocal);
                     const onTime = index === 0 || diff <= 30 * 60 * 1000;
                     li.innerHTML = `
                         <div class="report-row">
                             ${med.name} | Tomado: <span class="${onTime ? 'on-time' : 'late'}">${takenLocal.toLocaleString('pt-BR', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
-                            | Esperado: ${index === 0 ? 'N/A' : expectedLocal.toLocaleString('pt-BR', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' })}
+                            | Esperado: ${index === 0 || !expectedLocal ? 'N/A' : expectedLocal.toLocaleString('pt-BR', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' })}
                             | Registrado por: ${loggedBy}
                             <div>
                                 <button id="editHist-${key}-${index}">Editar</button>
