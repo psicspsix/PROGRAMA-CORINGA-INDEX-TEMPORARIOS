@@ -79,12 +79,13 @@
             <input type="text" id="userInput" placeholder="Usuário (Nome ou e-mail)">
             <input type="password" id="passwordInput" placeholder="Senha">
             <button id="loginBtn">Entrar</button>
-            <button id="registerBtn">Cadastrar</button>
+            <button id="showRegisterBtn">Cadastrar</button>
             <div id="message"></div>
             <div id="registerContainer" class="register-container">
                 <input type="text" id="newUserInput" placeholder="Novo Usuário (e-mail)">
                 <input type="password" id="newPasswordInput" placeholder="Nova Senha">
                 <button id="submitRegisterBtn">Cadastrar</button>
+                <button id="cancelRegisterBtn">Cancelar</button>
             </div>
             <div id="usersList"></div>
         </div>
@@ -169,9 +170,10 @@
         const loginScreen = document.getElementById('loginScreen');
         const appScreen = document.getElementById('appScreen');
         const loginBtn = document.getElementById('loginBtn');
-        const registerBtn = document.getElementById('registerBtn');
+        const showRegisterBtn = document.getElementById('showRegisterBtn');
         const registerContainer = document.getElementById('registerContainer');
         const submitRegisterBtn = document.getElementById('submitRegisterBtn');
+        const cancelRegisterBtn = document.getElementById('cancelRegisterBtn');
         const userInput = document.getElementById('userInput');
         const passwordInput = document.getElementById('passwordInput');
         const newUserInput = document.getElementById('newUserInput');
@@ -182,41 +184,37 @@
         const sendToComplexBtn = document.getElementById('sendToComplexBtn');
         const shareBtn = document.getElementById('shareBtn');
 
-        signOut(auth).then(() => {
-            log("Logout inicial realizado para garantir tela de login");
-            loginScreen.style.display = 'flex';
-            appScreen.style.display = 'none';
-        });
+        loginScreen.style.display = 'flex';
+        appScreen.style.display = 'none';
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentUserEmail = user.email;
                 log(`Usuário autenticado: ${currentUserEmail}`);
-                if (currentUserEmail === "psics.psix.141@gmail.com") {
-                    registerBtn.style.display = 'inline-block';
-                    deleteCategoryBtn.style.display = 'inline-block';
-                    sendToComplexBtn.style.display = 'inline-block';
-                    shareBtn.style.display = 'inline-block'; // Botão "↻" visível apenas para este usuário
-                    setTimeout(() => {
-                        registerBtn.style.display = 'none';
-                    }, 3000);
-                } else {
-                    registerBtn.style.display = 'none';
-                    deleteCategoryBtn.style.display = 'none';
-                    sendToComplexBtn.style.display = 'none';
-                    shareBtn.style.display = 'none'; // Botão "↻" oculto para outros usuários
-                }
                 loginScreen.style.display = 'none';
                 appScreen.style.display = 'block';
+                if (currentUserEmail === "psics.psix.141@gmail.com") {
+                    showRegisterBtn.style.display = 'inline-block';
+                    deleteCategoryBtn.style.display = 'inline-block';
+                    sendToComplexBtn.style.display = 'inline-block';
+                    shareBtn.style.display = 'inline-block';
+                } else {
+                    showRegisterBtn.style.display = 'none';
+                    deleteCategoryBtn.style.display = 'none';
+                    sendToComplexBtn.style.display = 'none';
+                    shareBtn.style.display = 'none';
+                }
                 renderTasks();
                 renderUsersList();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
             } else {
                 currentUserEmail = null;
                 loginScreen.style.display = 'flex';
                 appScreen.style.display = 'none';
+                showRegisterBtn.style.display = 'inline-block';
                 deleteCategoryBtn.style.display = 'none';
                 sendToComplexBtn.style.display = 'none';
-                shareBtn.style.display = 'none'; // Botão "↻" oculto ao deslogar
+                shareBtn.style.display = 'none';
             }
         });
 
@@ -228,23 +226,27 @@
                 return;
             }
             signInWithEmailAndPassword(auth, email, password)
-                .then(() => log("Login bem-sucedido"))
+                .then(() => {
+                    log("Login bem-sucedido");
+                    messageDiv.textContent = '';
+                })
                 .catch((error) => {
-                    if (error.code === 'auth/user-not-found') {
-                        messageDiv.textContent = 'Favor cadastrar-se primeiro clicando no botão "Cadastrar" abaixo!';
-                        registerBtn.style.display = 'inline-block';
-                        setTimeout(() => registerBtn.style.display = 'none', 3000);
-                    } else if (error.code === 'auth/wrong-password') {
-                        messageDiv.textContent = "Senha incorreta, favor tentar novamente!";
-                    } else {
-                        messageDiv.textContent = "Erro ao entrar: " + error.message;
-                    }
+                    messageDiv.textContent = "Erro ao entrar: " + error.message;
                     log(`Erro ao fazer login: ${error.message}`);
                 });
         });
 
-        registerBtn.addEventListener('click', () => {
+        showRegisterBtn.addEventListener('click', () => {
             registerContainer.style.display = 'block';
+            showRegisterBtn.style.display = 'none';
+            messageDiv.textContent = '';
+        });
+
+        cancelRegisterBtn.addEventListener('click', () => {
+            registerContainer.style.display = 'none';
+            showRegisterBtn.style.display = 'inline-block';
+            newUserInput.value = '';
+            newPasswordInput.value = '';
             messageDiv.textContent = '';
         });
 
@@ -264,6 +266,7 @@
                     }).then(() => {
                         messageDiv.textContent = "Usuário cadastrado com sucesso!";
                         registerContainer.style.display = 'none';
+                        showRegisterBtn.style.display = 'inline-block';
                         newUserInput.value = '';
                         newPasswordInput.value = '';
                         renderUsersList();
@@ -279,7 +282,7 @@
             onValue(usersRef, (snapshot) => {
                 const users = snapshot.val();
                 usersList.innerHTML = '<h3>Usuários Cadastrados</h3>';
-                if (users) {
+                if (users && currentUserEmail === "psics.psix.141@gmail.com") {
                     Object.entries(users).forEach(([uid, userData]) => {
                         const userDiv = document.createElement('div');
                         userDiv.innerHTML = `
@@ -315,7 +318,7 @@
                         });
                     });
                 } else {
-                    usersList.innerHTML += '<p>Nenhum usuário cadastrado.</p>';
+                    usersList.innerHTML += '<p>Nenhum usuário cadastrado ou acesso restrito.</p>';
                 }
             }, { onlyOnce: true });
         }
@@ -1382,115 +1385,116 @@
         }
 
         function renderTasks() {
-    onValue(tasksRefShared, (snapshot) => {
-        const tasks = snapshot.val();
-        const taskList = document.getElementById('taskList');
-        taskList.innerHTML = '';
+            onValue(tasksRefShared, (snapshot) => {
+                const tasks = snapshot.val();
+                const taskList = document.getElementById('taskList');
+                taskList.innerHTML = '';
 
-        if (!tasks) {
-            taskList.innerHTML = '<li>Nenhuma tarefa encontrada.</li>';
-            return;
-        }
+                if (!tasks) {
+                    taskList.innerHTML = '<li>Nenhuma tarefa encontrada.</li>';
+                    return;
+                }
 
-        const taskArray = Object.entries(tasks)
-            .filter(([_, task]) => currentCategory === 'all' || task.category === currentCategory)
-            .sort((a, b) => {
-                if (a[1].completed !== b[1].completed) return a[1].completed - b[1].completed;
-                const dateA = a[1].dueDate || '9999-12-31';
-                const dateB = b[1].dueDate || '9999-12-31';
-                if (dateA !== dateB) return dateA.localeCompare(dateB);
-                return b[1].priority - a[1].priority;
-            });
+                const taskArray = Object.entries(tasks)
+                    .filter(([_, task]) => currentCategory === 'all' || task.category === currentCategory)
+                    .sort((a, b) => {
+                        if (a[1].completed !== b[1].completed) return a[1].completed - b[1].completed;
+                        const dateA = a[1].dueDate || '9999-12-31';
+                        const dateB = b[1].dueDate || '9999-12-31';
+                        if (dateA !== dateB) return dateA.localeCompare(dateB);
+                        return b[1].priority - a[1].priority;
+                    });
 
-        taskArray.forEach(([key, task]) => {
-            const li = document.createElement('li');
-            li.setAttribute('data-key', key);
-            li.className = task.completed ? 'completed' : '';
-            const isBoldItalic = isPastDue(task.dueDate, task.completed);
-            const hasSubtasks = task.subtasks && task.subtasks.length > 0;
-            const shouldExpand = isToday(task.dueDate) || isTomorrow(task.dueDate);
-            const isExpanded = task.expanded || shouldExpand;
-            const isNotesVisible = task.notesVisible || false;
+                taskArray.forEach(([key, task]) => {
+                    const li = document.createElement('li');
+                    li.setAttribute('data-key', key);
+                    li.className = task.completed ? 'completed' : '';
+                    const isBoldItalic = isPastDue(task.dueDate, task.completed);
+                    const hasSubtasks = task.subtasks && task.subtasks.length > 0;
+                    const shouldExpand = isToday(task.dueDate) || isTomorrow(task.dueDate);
+                    const isExpanded = task.expanded || shouldExpand;
+                    const isNotesVisible = task.notesVisible || false;
 
-            li.innerHTML = `
-                <div class="task-row">
-                    ${hasSubtasks ? `<button class="expand-btn">${isExpanded ? '−' : '+'}</button>` : '<span class="expand-placeholder"></span>'}
-                    <input type="checkbox" ${task.completed ? 'checked' : ''} data-key="${key}" data-path="">
-                    <span class="task-text ${isBoldItalic ? 'bold-italic' : ''}">${task.text} | Data: ${formatDate(task.dueDate)} | Prioridade: ${task.priority}</span>
-                    <button class="level-btn up-btn" disabled data-id="${key}">↑</button>
-                    <button class="level-btn down-btn" ${taskArray.length === 1 ? 'disabled' : ''} data-id="${key}">↓</button>
-                    <div class="category-dropdown">
-                        <button class="category-btn">Categoria</button>
-                        <div class="dropdown-content">
-                            <button class="dropdown-item" data-category="mainProjects">Projetos Principais</button>
-                            <button class="dropdown-item" data-category="proposed">Proj. Propostos</button>
-                            <button class="dropdown-item" data-category="inProgress">Proj. em Andamento</button>
-                            <button class="dropdown-item" data-category="future">Proj. Futuros</button>
+                    li.innerHTML = `
+                        <div class="task-row">
+                            ${hasSubtasks ? `<button class="expand-btn">${isExpanded ? '−' : '+'}</button>` : '<span class="expand-placeholder"></span>'}
+                            <input type="checkbox" ${task.completed ? 'checked' : ''} data-key="${key}" data-path="">
+                            <span class="task-text ${isBoldItalic ? 'bold-italic' : ''}">${task.text} | Data: ${formatDate(task.dueDate)} | Prioridade: ${task.priority}</span>
+                            <button class="level-btn up-btn" disabled data-id="${key}">↑</button>
+                            <button class="level-btn down-btn" ${taskArray.length === 1 ? 'disabled' : ''} data-id="${key}">↓</button>
+                            <div class="category-dropdown">
+                                <button class="category-btn">Categoria</button>
+                                <div class="dropdown-content">
+                                    <button class="dropdown-item" data-category="mainProjects">Projetos Principais</button>
+                                    <button class="dropdown-item" data-category="proposed">Proj. Propostos</button>
+                                    <button class="dropdown-item" data-category="inProgress">Proj. em Andamento</button>
+                                    <button class="dropdown-item" data-category="future">Proj. Futuros</button>
+                                </div>
+                            </div>
+                            <button class="edit-btn" data-key="${key}">Editar</button>
+                            <button class="delete-btn">Excluir</button>
+                            ${hasSubtasks ? '<button class="subtask-btn">Subtarefa</button>' : '<button class="subtask-btn">Subtarefa</button>'}
+                            ${task.notes && task.notes.trim() !== '' ? '<span class="has-notes">(Contém Nota)</span>' : ''}
                         </div>
-                    </div>
-                    <button class="edit-btn" data-key="${key}">Editar</button>
-                    <button class="delete-btn">Excluir</button>
-                    ${hasSubtasks ? '<button class="subtask-btn">Subtarefa</button>' : '<button class="subtask-btn">Subtarefa</button>'}
-                    ${task.notes && task.notes.trim() !== '' ? '<span class="has-notes">(Contém Nota)</span>' : ''}
-                </div>
-                <div class="notes ${isNotesVisible ? 'visible' : ''}">
-                    <textarea rows="3">${task.notes || ''}</textarea>
-                </div>
-                <div class="subtasks-container ${isExpanded ? 'visible' : ''}"></div>
-            `;
+                        <div class="notes ${isNotesVisible ? 'visible' : ''}">
+                            <textarea rows="3">${task.notes || ''}</textarea>
+                        </div>
+                        <div class="subtasks-container ${isExpanded ? 'visible' : ''}"></div>
+                    `;
 
-            if (hasSubtasks) {
-                const subtasksContainer = li.querySelector('.subtasks-container');
-                renderSubtasks(key, task, subtasksContainer, '', 1);
-            }
+                    if (hasSubtasks) {
+                        const subtasksContainer = li.querySelector('.subtasks-container');
+                        renderSubtasks(key, task, subtasksContainer, '', 1);
+                    }
 
-            taskList.appendChild(li);
+                    taskList.appendChild(li);
 
-            li.querySelector('.task-text').addEventListener('click', (e) => {
-                e.stopPropagation();
-                toggleNotes(li, key);
-            });
-            if (hasSubtasks) {
-                li.querySelector('.expand-btn').addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    toggleSubtasks(key, '', li);
-                });
-            }
-            li.querySelector('.up-btn').addEventListener('click', (e) => {
-                e.stopPropagation();
-                moveLevelUp(key);
-            });
-            li.querySelector('.down-btn').addEventListener('click', (e) => {
-                e.stopPropagation();
-                moveLevelDown(key);
-            });
-            const categoryBtn = li.querySelector('.category-btn');
-            categoryBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                toggleCategoryDropdown(categoryBtn.parentElement);
-            });
-            li.querySelectorAll('.dropdown-item').forEach(item => {
-                item.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    const newCategory = item.getAttribute('data-category');
-                    changeCategory(key, newCategory);
-                    item.closest('.dropdown-content').style.display = 'none';
-                });
-            });
-            li.querySelector('.edit-btn').addEventListener('click', (e) => {
-                e.stopPropagation();
-                editTask(key);
-            });
-            li.querySelector('.delete-btn').addEventListener('click', (e) => {
-                e.stopPropagation();
-                deleteTask(key);
-            });
-            const subtaskBtn = li.querySelector('.subtask-btn');
-            if (subtaskBtn) {
-                subtaskBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    addSubtask(key);
-                });
-            }
-            const notesIndicator = li.querySelector('.has-notes');
-            if (notes
+                    li.querySelector('.task-text').addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        toggleNotes(li, key);
+                    });
+                    if (hasSubtasks) {
+                        li.querySelector('.expand-btn').addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            toggleSubtasks(key, '', li);
+                        });
+                    }
+                    li.querySelector('.up-btn').addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        moveLevelUp(key);
+                    });
+                    li.querySelector('.down-btn').addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        moveLevelDown(key);
+                    });
+                    const categoryBtn = li.querySelector('.category-btn');
+                    categoryBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        toggleCategoryDropdown(categoryBtn.parentElement);
+                    });
+                    li.querySelectorAll('.dropdown-item').forEach(item => {
+                        item.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            const newCategory = item.getAttribute('data-category');
+                            changeCategory(key, newCategory);
+                            item.closest('.dropdown-content').style.display = 'none';
+                        });
+                    });
+                    li.querySelector('.edit-btn').addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        editTask(key);
+                    });
+                    li.querySelector('.delete-btn').addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        deleteTask(key);
+                    });
+                    const subtaskBtn = li.querySelector('.subtask-btn');
+                    if (subtaskBtn) {
+                        subtaskBtn.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            addSubtask(key);
+                        });
+                    }
+                    const notesIndicator = li.querySelector('.has-notes');
+                    if (notesIndicator) {
+                        notesIndicator.addEventListener('click', (e) =>
