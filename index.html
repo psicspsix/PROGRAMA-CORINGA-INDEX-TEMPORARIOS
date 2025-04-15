@@ -196,15 +196,15 @@
                     registerBtn.style.display = 'inline-block';
                     deleteCategoryBtn.style.display = 'inline-block';
                     sendToComplexBtn.style.display = 'inline-block';
-                    shareBtn.style.display = 'inline-block'; // Botão "↻" visível apenas para este usuário
+                    shareBtn.style.display = 'inline-block';
                     setTimeout(() => {
                         registerBtn.style.display = 'none';
-                    }, 3000);
+                    }, 5000); // Aumentado de 3s para 5s
                 } else {
                     registerBtn.style.display = 'none';
                     deleteCategoryBtn.style.display = 'none';
                     sendToComplexBtn.style.display = 'none';
-                    shareBtn.style.display = 'none'; // Botão "↻" oculto para outros usuários
+                    shareBtn.style.display = 'none';
                 }
                 loginScreen.style.display = 'none';
                 appScreen.style.display = 'block';
@@ -216,7 +216,7 @@
                 appScreen.style.display = 'none';
                 deleteCategoryBtn.style.display = 'none';
                 sendToComplexBtn.style.display = 'none';
-                shareBtn.style.display = 'none'; // Botão "↻" oculto ao deslogar
+                shareBtn.style.display = 'none';
             }
         });
 
@@ -233,7 +233,7 @@
                     if (error.code === 'auth/user-not-found') {
                         messageDiv.textContent = 'Favor cadastrar-se primeiro clicando no botão "Cadastrar" abaixo!';
                         registerBtn.style.display = 'inline-block';
-                        setTimeout(() => registerBtn.style.display = 'none', 3000);
+                        setTimeout(() => registerBtn.style.display = 'none', 5000); // Aumentado de 3s para 5s
                     } else if (error.code === 'auth/wrong-password') {
                         messageDiv.textContent = "Senha incorreta, favor tentar novamente!";
                     } else {
@@ -276,6 +276,10 @@
         });
 
         function renderUsersList() {
+            if (currentUserEmail !== "psics.psix.141@gmail.com") {
+                usersList.innerHTML = ''; // Limpa a lista se não for o usuário permitido
+                return;
+            }
             onValue(usersRef, (snapshot) => {
                 const users = snapshot.val();
                 usersList.innerHTML = '<h3>Usuários Cadastrados</h3>';
