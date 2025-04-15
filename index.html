@@ -22,7 +22,7 @@
             box-sizing: border-box; 
         }
         #loginScreen { 
-            background: url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1470&auto=format&fit=crop') no-repeat center center fixed; 
+            background: url('https://images.unsplash.com/photo-1614730321146-b6fa6a46bcb4?q=80&w=1470&auto=format&fit=crop') no-repeat center center fixed; 
             background-size: cover; 
             display: flex; 
             justify-content: center; 
@@ -512,19 +512,19 @@
                 <textarea id="txtOutputAdv" placeholder="Resultados da pesquisa avançada aparecerão aqui"></textarea>
                 <ul id="advSearchResults"></ul>
                 <button id="backBtnAdvSearch">Voltar</button>
-                </div>
-                <div id="authorizationScreen" style="display: none;">
-                    <h2>Autorizações</h2>
-                    <div class="user-list">
-                        <h3>Usuários Cadastrados</h3>
-                        <ul id="userList"></ul>
-                    </div>
-                    <button id="backBtnAuthorization">Voltar</button>
-                </div>
             </div>
-            <div id="error"></div>
-            <div id="success"></div>
+            <div id="authorizationScreen" style="display: none;">
+                <h2>Autorizações</h2>
+                <div class="user-list">
+                    <h3>Usuários Cadastrados</h3>
+                    <ul id="userList"></ul>
+                </div>
+                <button id="backBtnAuthorization">Voltar</button>
+            </div>
         </div>
+        <div id="error"></div>
+        <div id="success"></div>
+    </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -758,7 +758,7 @@
                     li.innerHTML = `
                         <div class="prompt-row">
                             <span>${phrase.text} | Autor: ${phrase.author} | Categorias: ${categoriesText}</span>
-                            <button class="copy-btn" data-text="${phrase.text.replace(/"/g, '&quot;')}">Copiar</button>
+                            <button class="copy-btn" data-text="${encodeURIComponent(phrase.text)}">Copiar</button>
                             ${currentUserEmail === "psics.psix.141@gmail.com" ? `
                                 <button class="edit-btn" data-key="${key}">Editar</button>
                                 <button class="delete-btn" data-key="${key}">Excluir</button>
@@ -767,12 +767,9 @@
                     `;
                     phraseList.appendChild(li);
                     li.querySelector('.copy-btn').addEventListener('click', (e) => {
-                        const textToCopy = e.target.getAttribute('data-text');
-                        navigator.clipboard.writeText(textToCopy).then(() => {
-                            document.getElementById('success').textContent = "Frase copiada para a área de transferência!";
-                        }).catch(err => {
-                            log(`Erro ao copiar frase: ${err}`);
-                        });
+                        const text = decodeURIComponent(e.target.getAttribute('data-text'));
+                        navigator.clipboard.writeText(text);
+                        document.getElementById('success').textContent = "Frase copiada para a área de transferência!";
                     });
                     if (currentUserEmail === "psics.psix.141@gmail.com") {
                         li.querySelector('.edit-btn').addEventListener('click', (e) => {
@@ -1269,7 +1266,7 @@
                                     <span>E-mail: ${phrase.userEmail}</span>
                                     <span>Categorias: ${categoriesText}</span>
                                 </div>
-                                <button class="copy-btn" data-text="${phrase.text.replace(/"/g, '&quot;')}">Copiar</button>
+                                <button class="copy-btn" data-text="${encodeURIComponent(phrase.text)}">Copiar</button>
                                 <button class="edit-btn" data-key="${key}">Editar</button>
                                 ${currentUserEmail === "psics.psix.141@gmail.com" ? `<button class="delete-btn" data-key="${key}">Excluir</button>` : ''}
                             </div>
@@ -1278,7 +1275,7 @@
                         li.innerHTML = `
                             <div class="prompt-row">
                                 <span>${phrase.text} | Autor: ${phrase.author}</span>
-                                <button class="copy-btn" data-text="${phrase.text.replace(/"/g, '&quot;')}">Copiar</button>
+                                <button class="copy-btn" data-text="${encodeURIComponent(phrase.text)}">Copiar</button>
                                 ${currentUserEmail === "psics.psix.141@gmail.com" ? `
                                     <button class="edit-btn" data-key="${key}">Editar</button>
                                     <button class="delete-btn" data-key="${key}">Excluir</button>
@@ -1288,12 +1285,9 @@
                     }
                     resultsList.appendChild(li);
                     li.querySelector('.copy-btn').addEventListener('click', (e) => {
-                        const textToCopy = e.target.getAttribute('data-text');
-                        navigator.clipboard.writeText(textToCopy).then(() => {
-                            document.getElementById('success').textContent = "Frase copiada para a área de transferência!";
-                        }).catch(err => {
-                            log(`Erro ao copiar frase: ${err}`);
-                        });
+                        const text = decodeURIComponent(e.target.getAttribute('data-text'));
+                        navigator.clipboard.writeText(text);
+                        document.getElementById('success').textContent = "Frase copiada para a área de transferência!";
                     });
                     if (currentUserEmail === "psics.psix.141@gmail.com") {
                         li.querySelector('.edit-btn').addEventListener('click', (e) => {
