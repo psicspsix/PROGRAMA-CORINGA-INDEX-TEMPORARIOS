@@ -5,20 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Projetos Compartilhados</title>
     <style>
-        body { 
-            font-family: Arial, sans-serif; 
-            margin: 0; 
-            padding: 0; 
-            background: #1a1a1a; 
-            color: #ffffff; 
-            font-size: 18px; 
-            overflow-x: hidden;
-        }
-        #loginScreen, #appScreen { 
-            width: 100vw; 
-            min-height: 100vh; 
-            box-sizing: border-box;
-        }
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #1a1a1a; color: #e0e0e0; }
+        #loginScreen, #appScreen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
         #loginScreen { 
             background: url('https://images.unsplash.com/photo-1464802686167-b939a6910659?q=80&w=1450&auto=format&fit=crop') no-repeat center center fixed; 
             background-size: cover; 
@@ -27,344 +15,61 @@
             align-items: center; 
             flex-direction: column;
         }
-        #appScreen { 
-            display: none; 
-            padding: 20px; 
-            overflow-x: hidden; 
-            overflow-y: auto; 
-            max-width: 100vw; 
-            flex-direction: column;
-        }
-        .login-container, .register-container { 
-            background: rgba(0, 0, 0, 0.8); 
-            padding: 25px; 
-            border-radius: 10px; 
-            text-align: center; 
-        }
+        #appScreen { display: none; padding: 20px; }
+        .login-container, .register-container { background: rgba(0, 0, 0, 0.8); padding: 20px; border-radius: 10px; text-align: center; }
         .login-container input, .register-container input { 
-            width: 100%; 
-            max-width: 320px; 
-            font-size: 16px; 
-            padding: 10px; 
-            margin: 10px 0; 
-            background: #333; 
-            color: #ffffff; 
-            border: 1px solid #555; 
-            border-radius: 5px; 
-            box-sizing: border-box; 
-        }
+            width: 100%; max-width: 300px; font-size: 18px; padding: 10px; margin: 10px 0; background: #333; color: #e0e0e0; border: 1px solid #555; border-radius: 5px; }
         .login-container button, .register-container button { 
-            font-size: 16px; 
-            padding: 10px 20px; 
-            margin: 5px; 
-            background: #333; 
-            color: #ffffff; 
-            border: 1px solid #555; 
-            border-radius: 5px; 
-            cursor: pointer; 
-        }
-        .login-container button:hover, .register-container button:hover { 
-            background: #555; 
-        }
-        #registerBtn { 
-            display: none; 
-        }
-        #registerContainer { 
-            display: none; 
-            margin-top: 15px; 
-        }
-        #usersList { 
-            margin-top: 15px; 
-            text-align: left; 
-            max-width: 400px; 
-        }
-        #usersList div { 
-            margin: 10px 0; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-        }
-        #usersList button { 
-            font-size: 14px; 
-            padding: 6px; 
-        }
-        #message { 
-            color: #ff5555; 
-            margin-top: 10px; 
-            font-size: 16px; 
-        }
-        .header { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            flex-wrap: wrap; 
-            max-width: 100%; 
-            margin-bottom: 20px;
-        }
-        h1 { 
-            margin: 0; 
-            color: #ffffff; 
-            font-size: 28px;
-        }
-        .category-buttons { 
-            display: flex; 
-            gap: 10px; 
-            align-items: center; 
-            flex-wrap: wrap; 
-        }
-        input, button { 
-            font-size: 16px; 
-            padding: 10px; 
-            margin: 5px; 
-            background: #333; 
-            color: #ffffff; 
-            border: 1px solid #555; 
-            box-sizing: border-box; 
-            border-radius: 5px;
-        }
-        #taskInput { 
-            width: 100%; 
-            max-width: 600px; 
-        }
-        button:hover { 
-            background: #555; 
-        }
-        button.active { 
-            background: #555; 
-            font-weight: bold; 
-        }
-        .small-btn { 
-            font-size: 14px; 
-            padding: 6px; 
-            width: 28px; 
-            height: 28px; 
-            line-height: 16px; 
-            text-align: center; 
-            flex: 0 0 auto;
-        }
-        ul { 
-            list-style-type: none; 
-            padding: 0; 
-            margin: 0; 
-            width: 100%; 
-            max-width: 100%; 
-            overflow-x: hidden;
-        }
-        li { 
-            font-size: 16px; 
-            margin: 10px 0; 
-            background: #2a2a2a; 
-            padding: 10px; 
-            border-radius: 5px; 
-            width: 100%; 
-            box-sizing: border-box; 
-            word-break: break-word; 
-        }
-        .task-row { 
-            display: flex; 
-            align-items: center; 
-            gap: 10px; 
-            flex-wrap: wrap; 
-            width: 100%; 
-            max-width: 100%;
-        }
-        .task-text {
-            flex: 1 1 auto;
-            min-width: 0;
-            overflow-wrap: break-word;
-            font-size: 16px;
-        }
-        .notes { 
-            display: none; 
-            margin-top: 10px; 
-            padding: 10px; 
-            background: #333; 
-            border-radius: 5px; 
-            width: 100%; 
-            box-sizing: border-box; 
-        }
-        .notes.visible { 
-            display: block; 
-        }
-        textarea { 
-            width: 100%; 
-            background: #444; 
-            color: #ffffff; 
-            border: 1px solid #555; 
-            padding: 8px; 
-            box-sizing: border-box; 
-            border-radius: 5px; 
-            font-size: 16px;
-        }
-        .completed { 
-            text-decoration: line-through; 
-            color: #888; 
-        }
-        #error, #success { 
-            text-align: center; 
-            width: 100%; 
-            margin: 10px 0; 
-            font-size: 16px;
-        }
-        #error { 
-            color: #ff5555; 
-        }
-        #success { 
-            color: #55ff55; 
-        }
-        .has-notes { 
-            margin-left: 10px; 
-            font-style: italic; 
-            cursor: pointer; 
-            flex: 0 0 auto; 
-            font-size: 14px;
-        }
-        .task-text.bold-italic { 
-            font-weight: bold; 
-            font-style: italic; 
-        }
-        .category-dropdown { 
-            position: relative; 
-            display: inline-block; 
-            flex: 0 0 auto;
-        }
-        .dropdown-content { 
-            display: none; 
-            position: absolute; 
-            background-color: #333; 
-            min-width: 160px; 
-            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2); 
-            z-index: 1; 
-            border-radius: 5px; 
-        }
-        .dropdown-content button { 
-            width: 100%; 
-            text-align: left; 
-            padding: 10px; 
-            margin: 0; 
-            font-size: 14px;
-        }
-        .dropdown-content button:hover { 
-            background-color: #555; 
-        }
-        .date-today { 
-            color: #ffff00; 
-        }
-        .date-one-day-past { 
-            color: #1e90ff; 
-        }
-        .date-past { 
-            color: #ff0000; 
-        }
-        .subtask-level-1 { 
-            margin-left: 15px; 
-            background: #3a3a3a; 
-        }
-        .subtask-level-2 { 
-            margin-left: 30px; 
-            background: #4a4a4a; 
-        }
-        .subtask-level-3 { 
-            margin-left: 45px; 
-            background: #5a5a5a; 
-        }
-        .subtask-level-4 { 
-            margin-left: 60px; 
-            background: #6a6a6a; 
-        }
-        .expand-btn { 
-            font-size: 16px; 
-            padding: 0; 
-            width: 24px; 
-            height: 24px; 
-            line-height: 24px; 
-            text-align: center; 
-            cursor: pointer; 
-            background: none; 
-            border: none; 
-            color: #ffffff; 
-            margin: 0 10px 0 0; 
-            flex: 0 0 auto;
-        }
-        .expand-placeholder { 
-            width: 24px; 
-            height: 24px; 
-            margin: 0 10px 0 0; 
-            display: inline-block; 
-            flex: 0 0 auto;
-        }
-        .task-row input[type="checkbox"] { 
-            width: 18px; 
-            height: 18px; 
-            margin: 0 10px 0 0; 
-            flex: 0 0 auto;
-        }
-        .subtasks-container { 
-            display: none; 
-            width: 100%; 
-        }
-        .subtasks-container.visible { 
-            display: block; 
-        }
-        .input-row { 
-            display: flex; 
-            align-items: center; 
-            gap: 10px; 
-            flex-wrap: wrap; 
-            width: 100%; 
-            max-width: 100%; 
-            box-sizing: border-box; 
-            margin-bottom: 20px;
-        }
-        #txtNote { 
-            display: none; 
-            margin: 10px 0; 
-            padding: 10px; 
-            background: #333; 
-            border-radius: 5px; 
-            width: 100%; 
-            min-height: 100px; 
-            resize: vertical; 
-            box-sizing: border-box; 
-            font-size: 16px;
-        }
-        .level-btn { 
-            font-size: 14px; 
-            padding: 6px; 
-            width: 24px; 
-            height: 24px; 
-            line-height: 12px; 
-            text-align: center; 
-            cursor: pointer; 
-            flex: 0 0 auto;
-        }
-        .level-btn:disabled { 
-            opacity: 0.5; 
-            cursor: not-allowed; 
-        }
-        .edit-btn, .delete-btn, .subtask-btn, .category-btn {
-            font-size: 14px;
-            padding: 6px 10px;
-            flex: 0 0 auto;
-        }
-        #deleteCategoryBtn, #sendToComplexBtn, #shareBtn { 
-            display: none; 
-        }
-        #backBtn { 
-            display: none; 
-        }
-        @media (max-width: 600px) {
-            body { font-size: 16px; }
-            h1 { font-size: 24px; }
-            input, button { font-size: 14px; padding: 8px; }
-            .task-text { font-size: 14px; }
-            .small-btn, .level-btn, .edit-btn, .delete-btn, .subtask-btn, .category-btn { 
-                font-size: 12px; 
-                padding: 5px; 
-            }
-            .login-container, .register-container { padding: 15px; }
-            #taskInput { max-width: 100%; }
-        }
+            font-size: 18px; padding: 10px 20px; margin: 5px; background: #333; color: #e0e0e0; border: 1px solid #555; border-radius: 5px; cursor: pointer; }
+        .login-container button:hover, .register-container button:hover { background: #555; }
+        #registerBtn { display: none; }
+        #registerContainer { display: none; margin-top: 20px; }
+        #usersList { margin-top: 20px; text-align: left; max-width: 400px; }
+        #usersList div { margin: 10px 0; display: flex; justify-content: space-between; align-items: center; }
+        #usersList button { font-size: 14px; padding: 5px; }
+        #message { color: #ff5555; margin-top: 10px; }
+        .header { display: flex; justify-content: space-between; align-items: center; }
+        h1 { margin: 0; color: #ffffff; }
+        .category-buttons { display: flex; gap: 10px; align-items: center; }
+        input, button { font-size: 18px; padding: 10px; margin: 5px; background: #333; color: #e0e0e0; border: 1px solid #555; }
+        #taskInput { width: 600px; max-width: 100%; }
+        button:hover { background: #555; }
+        button.active { background: #555; font-weight: bold; }
+        .small-btn { font-size: 14px; padding: 5px; width: 30px; height: 30px; line-height: 20px; text-align: center; }
+        ul { list-style-type: none; padding: 0; }
+        li { font-size: 18px; margin: 10px 0; background: #2a2a2a; padding: 10px; border-radius: 5px; cursor: pointer; }
+        .task-row { display: flex; align-items: center; gap: 10px; }
+        .notes { display: none; margin-top: 10px; padding: 10px; background: #333; border-radius: 5px; width: 100%; }
+        .notes.visible { display: block; }
+        textarea { width: 100%; background: #444; color: #e0e0e0; border: 1px solid #555; padding: 5px; box-sizing: border-box; }
+        .completed { text-decoration: line-through; color: #888; }
+        #error, #success { text-align: center; }
+        #error { color: #ff5555; }
+        #success { color: #55ff55; }
+        .has-notes { margin-left: 10px; font-style: italic; cursor: pointer; }
+        .task-text.bold-italic { font-weight: bold; font-style: italic; }
+        .category-dropdown { position: relative; display: inline-block; }
+        .dropdown-content { display: none; position: absolute; background-color: #333; min-width: 160px; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2); z-index: 1; border-radius: 5px; }
+        .dropdown-content button { width: 100%; text-align: left; padding: 10px; margin: 0; }
+        .dropdown-content button:hover { background-color: #555; }
+        .date-today { color: #ffff00; }
+        .date-one-day-past { color: #1e90ff; }
+        .date-past { color: #ff0000; }
+        .subtask-level-1 { margin-left: 60px; background: #3a3a3a; }
+        .subtask-level-2 { margin-left: 120px; background: #4a4a4a; }
+        .subtask-level-3 { margin-left: 180px; background: #5a5a5a; }
+        .subtask-level-4 { margin-left: 240px; background: #6a6a6a; }
+        .expand-btn { font-size: 18px; padding: 0; width: 20px; height: 20px; line-height: 20px; text-align: center; cursor: pointer; background: none; border: none; color: #e0e0e0; margin: 0 10px 0 0; flex-shrink: 0; }
+        .expand-placeholder { width: 20px; height: 20px; margin: 0 10px 0 0; display: inline-block; flex-shrink: 0; }
+        .task-row input[type="checkbox"] { width: 18px; height: 18px; margin: 0 10px 0 0; flex-shrink: 0; }
+        .subtasks-container { display: none; }
+        .subtasks-container.visible { display: block; }
+        .input-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        #txtNote { display: none; margin: 10px 0; padding: 10px; background: #333; border-radius: 5px; width: 100%; min-height: 100px; resize: vertical; }
+        .level-btn { font-size: 14px; padding: 5px; width: 20px; height: 20px; line-height: 10px; text-align: center; cursor: pointer; }
+        .level-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        #deleteCategoryBtn, #sendToComplexBtn, #shareBtn { display: none; }
+        #backBtn { display: none; }
     </style>
 </head>
 <body>
@@ -494,7 +199,7 @@
                     shareBtn.style.display = 'inline-block';
                     setTimeout(() => {
                         registerBtn.style.display = 'none';
-                    }, 5000);
+                    }, 5000); // Aumentado de 3s para 5s
                 } else {
                     registerBtn.style.display = 'none';
                     deleteCategoryBtn.style.display = 'none';
@@ -502,7 +207,7 @@
                     shareBtn.style.display = 'none';
                 }
                 loginScreen.style.display = 'none';
-                appScreen.style.display = 'flex';
+                appScreen.style.display = 'block';
                 renderTasks();
                 renderUsersList();
             } else {
@@ -528,7 +233,7 @@
                     if (error.code === 'auth/user-not-found') {
                         messageDiv.textContent = 'Favor cadastrar-se primeiro clicando no botão "Cadastrar" abaixo!';
                         registerBtn.style.display = 'inline-block';
-                        setTimeout(() => registerBtn.style.display = 'none', 5000);
+                        setTimeout(() => registerBtn.style.display = 'none', 5000); // Aumentado de 3s para 5s
                     } else if (error.code === 'auth/wrong-password') {
                         messageDiv.textContent = "Senha incorreta, favor tentar novamente!";
                     } else {
@@ -572,7 +277,7 @@
 
         function renderUsersList() {
             if (currentUserEmail !== "psics.psix.141@gmail.com") {
-                usersList.innerHTML = '';
+                usersList.innerHTML = ''; // Limpa a lista se não for o usuário permitido
                 return;
             }
             onValue(usersRef, (snapshot) => {
@@ -635,7 +340,7 @@
             log(`Iniciando rolagem para o input: posição calculada=${targetPosition}, posição atual=${startPosition}`);
 
             function animateScroll(currentTime) {
-                if (! UPDATE: startTime) startTime = currentTime;
+                if (!startTime) startTime = currentTime;
                 const elapsed = currentTime - startTime;
                 const progress = Math.min(elapsed / duration, 1);
                 const ease = progress * (2 - progress);
@@ -1681,360 +1386,275 @@
         }
 
         function renderTasks() {
-            onValue(tasksRefShared, (snapshot) => {
-                const tasks = snapshot.val();
-                const taskList = document.getElementById('taskList');
-                taskList.innerHTML = '';
+    onValue(tasksRefShared, (snapshot) => {
+        const tasks = snapshot.val();
+        const taskList = document.getElementById('taskList');
+        taskList.innerHTML = '';
 
-                if (!tasks) {
-                    taskList.innerHTML = '<li>Nenhuma tarefa encontrada.</li>';
-                    return;
-                }
+        if (!tasks) {
+            taskList.innerHTML = '<li>Nenhuma tarefa encontrada.</li>';
+            return;
+        }
 
-                const taskArray = Object.entries(tasks)
-                    .filter(([_, task]) => currentCategory === 'all' || task.category === currentCategory)
-                    .sort((a, b) => {
-                        if (a[1].completed !== b[1].completed) return a[1].completed - b[1].completed;
-                        const dateA = a[1].dueDate || '9999-12-31';
-                        const dateB = b[1].dueDate || '9999-12-31';
-                        if (dateA !== dateB) return dateA.localeCompare(dateB);
-                        return b[1].priority - a[1].priority;
-                    });
+        const taskArray = Object.entries(tasks)
+            .filter(([_, task]) => currentCategory === 'all' || task.category === currentCategory)
+            .sort((a, b) => {
+                if (a[1].completed !== b[1].completed) return a[1].completed - b[1].completed;
+                const dateA = a[1].dueDate || '9999-12-31';
+                const dateB = b[1].dueDate || '9999-12-31';
+                if (dateA !== dateB) return dateA.localeCompare(dateB);
+                return b[1].priority - a[1].priority;
+            });
 
-                taskArray.forEach(([key, task]) => {
-                    const li = document.createElement('li');
-                    li.setAttribute('data-key', key);
-                    li.className = task.completed ? 'completed' : '';
-                    const isBoldItalic = isPastDue(task.dueDate, task.completed);
-                    const hasSubtasks = task.subtasks && task.subtasks.length > 0;
-                    const shouldExpand = isToday(task.dueDate) || isTomorrow(task.dueDate);
-                    const isExpanded = task.expanded || shouldExpand;
-                    const isNotesVisible = task.notesVisible || false;
+        taskArray.forEach(([key, task]) => {
+            const li = document.createElement('li');
+            li.setAttribute('data-key', key);
+            li.className = task.completed ? 'completed' : '';
+            const isBoldItalic = isPastDue(task.dueDate, task.completed);
+            const hasSubtasks = task.subtasks && task.subtasks.length > 0;
+            const shouldExpand = isToday(task.dueDate) || isTomorrow(task.dueDate);
+            const isExpanded = task.expanded || shouldExpand;
+            const isNotesVisible = task.notesVisible || false;
 
-                    li.innerHTML = `
-                        <div class="task-row">
-                            ${hasSubtasks ? `<button class="expand-btn">${isExpanded ? '−' : '+'}</button>` : '<span class="expand-placeholder"></span>'}
-                            <input type="checkbox" ${task.completed ? 'checked' : ''}>
-                            <span class="task-text ${isBoldItalic ? 'bold-italic' : ''}">${task.text} | Data: ${formatDate(task.dueDate)} | Prioridade: ${task.priority}</span>
-                            <button class="level-btn up-btn" disabled>↑</button>
-                            <button class="level-btn down-btn" data-id="${key}">↓</button>
-                            <div class="category-dropdown">
-                                <button class="category-btn">Categoria</button>
-                                <div class="dropdown-content">
-                                    <button class="dropdown-item" data-category="mainProjects">Projetos Principais</button>
-                                    <button class="dropdown-item" data-category="proposed">Proj. Propostos</button>
-                                    <button class="dropdown-item" data-category="inProgress">Proj. em Andamento</button>
-                                    <button class="dropdown-item" data-category="future">Proj. Futuros</button>
-                                </div>
-                            </div>
-                            <button class="edit-btn" data-key="${key}">Editar</button>
-                            <button class="delete-btn">Excluir</button>
-                            ${hasSubtasks || task.subtasks ? '<button class="subtask-btn">Subtarefa</button>' : ''}
-                            ${task.notes && task.notes.trim() !== '' ? '<span class="has-notes">(Contém Nota)</span>' : ''}
+            li.innerHTML = `
+                <div class="task-row">
+                    ${hasSubtasks ? `<button class="expand-btn">${isExpanded ? '−' : '+'}</button>` : '<span class="expand-placeholder"></span>'}
+                    <input type="checkbox" ${task.completed ? 'checked' : ''} data-key="${key}" data-path="">
+                    <span class="task-text ${isBoldItalic ? 'bold-italic' : ''}">${task.text} | Data: ${formatDate(task.dueDate)} | Prioridade: ${task.priority}</span>
+                    <button class="level-btn up-btn" disabled data-id="${key}">↑</button>
+                    <button class="level-btn down-btn" ${taskArray.length === 1 ? 'disabled' : ''} data-id="${key}">↓</button>
+                    <div class="category-dropdown">
+                        <button class="category-btn">Categoria</button>
+                        <div class="dropdown-content">
+                            <button class="dropdown-item" data-category="mainProjects">Projetos Principais</button>
+                            <button class="dropdown-item" data-category="proposed">Proj. Propostos</button>
+                            <button class="dropdown-item" data-category="inProgress">Proj. em Andamento</button>
+                            <button class="dropdown-item" data-category="future">Proj. Futuros</button>
                         </div>
-                        <div class="notes ${isNotesVisible ? 'visible' : ''}">
-                            <textarea rows="3">${task.notes || ''}</textarea>
-                        </div>
-                        <div class="subtasks-container ${isExpanded ? 'visible' : ''}"></div>
-                    `;
+                    </div>
+                    <button class="edit-btn" data-key="${key}">Editar</button>
+                    <button class="delete-btn">Excluir</button>
+                    ${hasSubtasks ? '<button class="subtask-btn">Subtarefa</button>' : '<button class="subtask-btn">Subtarefa</button>'}
+                    ${task.notes && task.notes.trim() !== '' ? '<span class="has-notes">(Contém Nota)</span>' : ''}
+                </div>
+                <div class="notes ${isNotesVisible ? 'visible' : ''}">
+                    <textarea rows="3">${task.notes || ''}</textarea>
+                </div>
+                <div class="subtasks-container ${isExpanded ? 'visible' : ''}"></div>
+            `;
 
-                    if (hasSubtasks) {
-                        const subtasksContainer = li.querySelector('.subtasks-container');
-                        renderSubtasks(key, task, subtasksContainer, '', 1);
-                    }
+            if (hasSubtasks) {
+                const subtasksContainer = li.querySelector('.subtasks-container');
+                renderSubtasks(key, task, subtasksContainer, '', 1);
+            }
 
-                    taskList.appendChild(li);
+            taskList.appendChild(li);
 
-                    li.querySelector('.task-text').addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        toggleNotes(li, key);
-                    });
-
-                    if (hasSubtasks) {
-                        li.querySelector('.expand-btn').addEventListener('click', (e) => {
-                            e.stopPropagation();
-                            toggleSubtasks(key, '', li);
-                        });
-                    }
-
-                    li.querySelector('.down-btn').addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        moveLevelDown(key);
-                    });
-
-                    const categoryBtn = li.querySelector('.category-btn');
-                    categoryBtn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        toggleCategoryDropdown(categoryBtn.parentElement);
-                    });
-
-                    li.querySelectorAll('.dropdown-item').forEach(item => {
-                        item.addEventListener('click', (e) => {
-                            e.stopPropagation();
-                            const newCategory = item.getAttribute('data-category');
-                            changeCategory(key, newCategory);
-                            item.closest('.dropdown-content').style.display = 'none';
-                        });
-                    });
-
-                    li.querySelector('.edit-btn').addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        editTask(key);
-                    });
-
-                    li.querySelector('.delete-btn').addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        deleteTask(key);
-                    });
-
-                    const subtaskBtn = li.querySelector('.subtask-btn');
-                    if (subtaskBtn) {
-                        subtaskBtn.addEventListener('click', (e) => {
-                            e.stopPropagation();
-                            addSubtask(key);
-                        });
-                    }
-
-                    const notesIndicator = li.querySelector('.has-notes');
-                    if (notesIndicator) {
-                        notesIndicator.addEventListener('click', (e) => {
-                            e.stopPropagation();
-                            toggleNotes(li, key);
-                        });
-                    }
-
-                    li.querySelector('textarea').addEventListener('change', (e) => {
-                        updateNotes(key, e.target);
-                    });
-
-                    li.querySelector('input[type="checkbox"]').addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        toggleTask(key);
-                    });
+            li.querySelector('.task-text').addEventListener('click', (e) => {
+                e.stopPropagation();
+                toggleNotes(li, key);
+            });
+            if (hasSubtasks) {
+                li.querySelector('.expand-btn').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    toggleSubtasks(key, '', li);
                 });
-
-                log("Tarefas renderizadas com sucesso");
-            }, { onlyOnce: false });
-        }
-
-        function deleteCategory() {
-            if (currentCategory === 'all') {
-                document.getElementById('error').textContent = "Não é possível excluir a categoria 'Todos'!";
-                log("Erro: Tentativa de excluir categoria 'Todos'");
-                return;
             }
-
-            if (confirm(`Tem certeza que deseja excluir todas as tarefas da categoria "${currentCategory}"?`)) {
-                onValue(tasksRefShared, (snapshot) => {
-                    const tasks = snapshot.val();
-                    if (tasks) {
-                        Object.entries(tasks).forEach(([key, task]) => {
-                            if (task.category === currentCategory) {
-                                remove(ref(dbShared, `tasks/${key}`))
-                                    .then(() => log(`Tarefa ${key} excluída da categoria ${currentCategory}`))
-                                    .catch(error => log(`Erro ao excluir tarefa ${key}: ${error.message}`));
-                            }
-                        });
-                        document.getElementById('success').textContent = `Categoria "${currentCategory}" excluída com sucesso!`;
-                    } else {
-                        document.getElementById('error').textContent = "Nenhuma tarefa encontrada para excluir!";
-                    }
-                }, { onlyOnce: true });
-            }
-        }
-
-        function sendToComplex() {
-            if (currentCategory === 'all') {
-                document.getElementById('error').textContent = "Selecione uma categoria específica para enviar!";
-                log("Erro: Tentativa de enviar categoria 'Todos' para projetos complexos");
-                return;
-            }
-
-            onValue(tasksRefShared, (snapshot) => {
-                const tasks = snapshot.val();
-                let tasksToSend = [];
-
-                if (tasks) {
-                    tasksToSend = Object.entries(tasks)
-                        .filter(([_, task]) => task.category === currentCategory)
-                        .map(([key, task]) => ({ key, ...task }));
-                }
-
-                if (tasksToSend.length === 0) {
-                    document.getElementById('error').textContent = "Nenhuma tarefa encontrada na categoria selecionada!";
-                    log("Erro: Nenhuma tarefa para enviar na categoria " + currentCategory);
-                    return;
-                }
-
-                tasksToSend.forEach(task => {
-                    const newTaskRef = ref(dbComplex, `tasks/${task.key}`);
-                    set(newTaskRef, {
-                        text: task.text,
-                        dueDate: task.dueDate,
-                        priority: task.priority,
-                        notes: task.notes,
-                        completed: task.completed,
-                        category: task.category,
-                        subtasks: task.subtasks || [],
-                        expanded: task.expanded,
-                        notesVisible: task.notesVisible
-                    }).then(() => {
-                        remove(ref(dbShared, `tasks/${task.key}`));
-                        log(`Tarefa ${task.key} enviada para projetos complexos`);
-                    }).catch(error => {
-                        log(`Erro ao enviar tarefa ${task.key}: ${error.message}`);
-                    });
+            li.querySelector('.up-btn').addEventListener('click', (e) => {
+                e.stopPropagation();
+                moveLevelUp(key);
+            });
+            li.querySelector('.down-btn').addEventListener('click', (e) => {
+                e.stopPropagation();
+                moveLevelDown(key);
+            });
+            const categoryBtn = li.querySelector('.category-btn');
+            categoryBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                toggleCategoryDropdown(categoryBtn.parentElement);
+            });
+            li.querySelectorAll('.dropdown-item').forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const newCategory = item.getAttribute('data-category');
+                    changeCategory(key, newCategory);
+                    item.closest('.dropdown-content').style.display = 'none';
                 });
-
-                document.getElementById('success').textContent = `Tarefas da categoria "${currentCategory}" enviadas para projetos complexos!`;
-            }, { onlyOnce: true });
-        }
-
-        function shareTasks() {
-            onValue(tasksRefShared, (snapshot) => {
-                const tasks = snapshot.val();
-                if (!tasks) {
-                    document.getElementById('error').textContent = "Nenhuma tarefa para compartilhar!";
-                    log("Erro: Nenhuma tarefa para compartilhar");
-                    return;
-                }
-
-                let textContent = "Tarefas Compartilhadas:\n\n";
-                Object.entries(tasks)
-                    .filter(([_, task]) => currentCategory === 'all' || task.category === currentCategory)
-                    .sort((a, b) => {
-                        if (a[1].completed !== b[1].completed) return a[1].completed - b[1].completed;
-                        const dateA = a[1].dueDate || '9999-12-31';
-                        const dateB = b[1].dueDate || '9999-12-31';
-                        if (dateA !== dateB) return dateA.localeCompare(dateB);
-                        return b[1].priority - a[1].priority;
-                    })
-                    .forEach(([_, task]) => {
-                        const status = task.completed ? "[Concluída]" : "[Pendente]";
-                        textContent += `${task.text} | Data: ${task.dueDate || 'Sem data'} | Prioridade: ${task.priority} ${status}\n`;
-                        if (task.notes) textContent += `Notas: ${task.notes}\n`;
-                        if (task.subtasks && task.subtasks.length > 0) {
-                            textContent += "Subtarefas:\n";
-                            const appendSubtasks = (subtasks, level = 1) => {
-                                subtasks.forEach((subtask, index) => {
-                                    const indent = "  ".repeat(level);
-                                    const subStatus = subtask.completed ? "[Concluída]" : "[Pendente]";
-                                    textContent += `${indent}${subtask.text} | Data: ${subtask.dueDate || 'Sem data'} | Prioridade: ${subtask.priority} ${subStatus}\n`;
-                                    if (subtask.notes) textContent += `${indent}Notas: ${subtask.notes}\n`;
-                                    if (subtask.subtasks && subtask.subtasks.length > 0) {
-                                        appendSubtasks(subtask.subtasks, level + 1);
-                                    }
-                                });
-                            };
-                            appendSubtasks(task.subtasks);
-                        }
-                        textContent += "\n";
-                    });
-
-                navigator.clipboard.writeText(textContent)
-                    .then(() => {
-                        document.getElementById('success').textContent = "Tarefas copiadas para a área de transferência!";
-                        log("Tarefas copiadas para compartilhamento");
-                    })
-                    .catch(error => {
-                        document.getElementById('error').textContent = "Erro ao copiar tarefas!";
-                        log(`Erro ao copiar tarefas: ${error.message}`);
-                    });
-            }, { onlyOnce: true });
-        }
-
-        function exportToTxt() {
-            const txtNote = document.getElementById('txtNote');
-            txtNote.style.display = 'block';
-            txtNote.value = '';
-
-            onValue(tasksRefShared, (snapshot) => {
-                const tasks = snapshot.val();
-                if (!tasks) {
-                    txtNote.value = "Nenhuma tarefa encontrada.";
-                    return;
-                }
-
-                let textContent = "";
-                Object.entries(tasks)
-                    .filter(([_, task]) => currentCategory === 'all' || task.category === currentCategory)
-                    .sort((a, b) => {
-                        if (a[1].completed !== b[1].completed) return a[1].completed - b[1].completed;
-                        const dateA = a[1].dueDate || '9999-12-31';
-                        const dateB = b[1].dueDate || '9999-12-31';
-                        if (dateA !== dateB) return dateA.localeCompare(dateB);
-                        return b[1].priority - a[1].priority;
-                    })
-                    .forEach(([_, task]) => {
-                        const status = task.completed ? "[Concluída]" : "[Pendente]";
-                        textContent += `${task.text} | Data: ${task.dueDate || 'Sem data'} | Prioridade: ${task.priority} ${status}\n`;
-                        if (task.notes) textContent += `Notas: ${task.notes}\n`;
-                        if (task.subtasks && task.subtasks.length > 0) {
-                            textContent += "Subtarefas:\n";
-                            const appendSubtasks = (subtasks, level = 1) => {
-                                subtasks.forEach((subtask) => {
-                                    const indent = "  ".repeat(level);
-                                    const subStatus = subtask.completed ? "[Concluída]" : "[Pendente]";
-                                    textContent += `${indent}${subtask.text} | Data: ${subtask.dueDate || 'Sem data'} | Prioridade: ${subtask.priority} ${subStatus}\n`;
-                                    if (subtask.notes) textContent += `${indent}Notas: ${subtask.notes}\n`;
-                                    if (subtask.subtasks && subtask.subtasks.length > 0) {
-                                        appendSubtasks(subtask.subtasks, level + 1);
-                                    }
-                                });
-                            };
-                            appendSubtasks(task.subtasks);
-                        }
-                        textContent += "\n";
-                    });
-
-                txtNote.value = textContent;
-                txtNote.scrollIntoView({ behavior: 'smooth' });
-                log("Tarefas exportadas para textarea");
-            }, { onlyOnce: true });
-        }
-
-        // Eventos
-        document.getElementById('actionButton').addEventListener('click', (e) => {
-            e.preventDefault();
-            saveTask();
-        });
-
-        document.getElementById('taskInput').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                saveTask();
+            });
+            li.querySelector('.edit-btn').addEventListener('click', (e) => {
+                e.stopPropagation();
+                editTask(key);
+            });
+            li.querySelector('.delete-btn').addEventListener('click', (e) => {
+                e.stopPropagation();
+                deleteTask(key);
+            });
+            const subtaskBtn = li.querySelector('.subtask-btn');
+            if (subtaskBtn) {
+                subtaskBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    addSubtask(key);
+                });
             }
-        });
-
-        document.getElementById('mainProjectsBtn').addEventListener('click', () => setCategory('mainProjects'));
-        document.getElementById('proposedBtn').addEventListener('click', () => setCategory('proposed'));
-        document.getElementById('inProgressBtn').addEventListener('click', () => setCategory('inProgress'));
-        document.getElementById('futureBtn').addEventListener('click', () => setCategory('future'));
-        document.getElementById('allBtn').addEventListener('click', () => setCategory('all'));
-
-        document.getElementById('deleteCategoryBtn').addEventListener('click', deleteCategory);
-        document.getElementById('sendToComplexBtn').addEventListener('click', sendToComplex);
-        document.getElementById('shareBtn').addEventListener('click', shareTasks);
-        document.getElementById('txtBtn').addEventListener('click', exportToTxt);
-        document.getElementById('searchBtn').addEventListener('click', searchTasks);
-        document.getElementById('backBtn').addEventListener('click', () => {
-            resetForm();
-            renderTasks();
-            document.getElementById('success').textContent = '';
-            document.getElementById('backBtn').style.display = 'none';
-        });
-
-        // Inicialização
-        setCategory('mainProjects');
-        document.addEventListener('click', (e) => {
-            document.querySelectorAll('.dropdown-content').forEach(dropdown => {
-                if (!dropdown.parentElement.contains(e.target)) {
-                    dropdown.style.display = 'none';
-                }
+            const notesIndicator = li.querySelector('.has-notes');
+            if (notesIndicator) {
+                notesIndicator.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    toggleNotes(li, key);
+                });
+            }
+            li.querySelector('textarea').addEventListener('change', (e) => {
+                updateNotes(key, e.target);
+            });
+            li.querySelector('input[type="checkbox"]').addEventListener('click', (e) => {
+                e.stopPropagation();
+                toggleTask(key);
             });
         });
+    });
+}
 
-        log("Aplicativo inicializado com sucesso!");
-    </script>
+function exportTasksToTxt() {
+    onValue(tasksRefShared, (snapshot) => {
+        const tasks = snapshot.val();
+        if (!tasks) {
+            document.getElementById('txtNote').value = "Nenhuma tarefa para exportar.";
+            document.getElementById('txtNote').style.display = 'block';
+            return;
+        }
+
+        let txtContent = `=== Tarefas Exportadas (${currentCategory === 'all' ? 'Todas' : currentCategory}) ===\n\n`;
+        const exportSubtasks = (subtasks, level) => {
+            subtasks.forEach((subtask, index) => {
+                txtContent += `${'  '.repeat(level)}- ${subtask.text} | Data: ${subtask.dueDate || 'Sem data'} | Prioridade: ${subtask.priority || 1} | ${subtask.completed ? '[Concluída]' : ''}\n`;
+                if (subtask.notes) txtContent += `${'  '.repeat(level + 1)}Notas: ${subtask.notes}\n`;
+                if (subtask.subtasks && subtask.subtasks.length > 0) {
+                    exportSubtasks(subtask.subtasks, level + 1);
+                }
+            });
+        };
+
+        Object.entries(tasks)
+            .filter(([_, task]) => currentCategory === 'all' || task.category === currentCategory)
+            .sort((a, b) => {
+                if (a[1].completed !== b[1].completed) return a[1].completed - b[1].completed;
+                const dateA = a[1].dueDate || '9999-12-31';
+                const dateB = b[1].dueDate || '9999-12-31';
+                if (dateA !== dateB) return dateA.localeCompare(dateB);
+                return b[1].priority - a[1].priority;
+            })
+            .forEach(([_, task]) => {
+                txtContent += `- ${task.text} | Data: ${task.dueDate || 'Sem data'} | Prioridade: ${task.priority || 1} | ${task.completed ? '[Concluída]' : ''}\n`;
+                if (task.notes) txtContent += `  Notas: ${task.notes}\n`;
+                if (task.subtasks && task.subtasks.length > 0) {
+                    exportSubtasks(task.subtasks, 1);
+                }
+            });
+
+        document.getElementById('txtNote').value = txtContent;
+        document.getElementById('txtNote').style.display = 'block';
+    });
+}
+
+function deleteCategoryTasks() {
+    if (currentCategory === 'all') {
+        document.getElementById('error').textContent = "Não é possível excluir todas as categorias de uma vez!";
+        return;
+    }
+    if (confirm(`Tem certeza que deseja excluir todas as tarefas da categoria "${currentCategory}"?`)) {
+        onValue(tasksRefShared, (snapshot) => {
+            const tasks = snapshot.val();
+            if (!tasks) return;
+
+            const updates = {};
+            Object.entries(tasks).forEach(([key, task]) => {
+                if (task.category === currentCategory) {
+                    updates[key] = null;
+                }
+            });
+
+            update(tasksRefShared, updates)
+                .then(() => {
+                    document.getElementById('success').textContent = `Tarefas da categoria "${currentCategory}" excluídas com sucesso!`;
+                    renderTasks();
+                })
+                .catch(error => log(`Erro ao excluir tarefas da categoria: ${error.message}`));
+        }, { onlyOnce: true });
+    }
+}
+
+function sendToComplexTasks() {
+    if (currentCategory === 'all') {
+        document.getElementById('error').textContent = "Selecione uma categoria específica para enviar!";
+        return;
+    }
+
+    onValue(tasksRefShared, (snapshot) => {
+        const tasks = snapshot.val();
+        if (!tasks) return;
+
+        const tasksToSend = {};
+        Object.entries(tasks).forEach(([key, task]) => {
+            if (task.category === currentCategory) {
+                tasksToSend[key] = { ...task, sharedFrom: 'Projetos Compartilhados' };
+            }
+        });
+
+        update(tasksRefComplex, tasksToSend)
+            .then(() => {
+                document.getElementById('success').textContent = `Tarefas da categoria "${currentCategory}" enviadas para Projetos Complexos!`;
+            })
+            .catch(error => log(`Erro ao enviar tarefas: ${error.message}`));
+    }, { onlyOnce: true });
+}
+
+function shareTask() {
+    const taskText = document.getElementById('taskInput').value.trim();
+    if (!taskText) {
+        document.getElementById('error').textContent = "Digite uma tarefa para compartilhar!";
+        return;
+    }
+
+    const dueDate = document.getElementById('dueDate').value || null;
+    const priority = parseInt(document.getElementById('priority').value) || 1;
+
+    const newTask = {
+        text: taskText,
+        dueDate: dueDate,
+        priority: Math.min(Math.max(priority, 1), 1000),
+        notes: "",
+        completed: false,
+        category: currentCategory,
+        subtasks: [],
+        sharedFrom: 'Projetos Compartilhados'
+    };
+
+    push(tasksRefComplex, newTask)
+        .then(() => {
+            document.getElementById('success').textContent = "Tarefa compartilhada com Projetos Complexos!";
+            resetForm();
+        })
+        .catch(error => log(`Erro ao compartilhar tarefa: ${error.message}`));
+}
+
+document.getElementById('actionButton').addEventListener('click', saveTask);
+document.getElementById('txtBtn').addEventListener('click', exportTasksToTxt);
+document.getElementById('searchBtn').addEventListener('click', searchTasks);
+document.getElementById('shareBtn').addEventListener('click', shareTask);
+document.getElementById('sendToComplexBtn').addEventListener('click', sendToComplexTasks);
+document.getElementById('deleteCategoryBtn').addEventListener('click', deleteCategoryTasks);
+document.getElementById('mainProjectsBtn').addEventListener('click', () => setCategory('mainProjects'));
+document.getElementById('proposedBtn').addEventListener('click', () => setCategory('proposed'));
+document.getElementById('inProgressBtn').addEventListener('click', () => setCategory('inProgress'));
+document.getElementById('futureBtn').addEventListener('click', () => setCategory('future'));
+document.getElementById('allBtn').addEventListener('click', () => setCategory('all'));
+document.getElementById('backBtn').addEventListener('click', () => {
+    document.getElementById('taskInput').value = '';
+    document.getElementById('backBtn').style.display = 'none';
+    renderTasks();
+});
+
+setCategory('mainProjects');
+</script>
 </body>
 </html>
