@@ -15,7 +15,12 @@
             align-items: center; 
             flex-direction: column;
         }
-        #appScreen { display: none; padding: 20px; margin-right: -50px; } /* Ajuste para recuar 5 caracteres à esquerda */
+        #appScreen { 
+            display: none; 
+            padding: 20px; 
+            overflow-x: hidden; /* Impede barra de rolagem horizontal */
+            box-sizing: border-box; /* Inclui padding na largura total */
+        }
         .login-container, .register-container { background: rgba(0, 0, 0, 0.8); padding: 20px; border-radius: 10px; text-align: center; }
         .login-container input, .register-container input { 
             width: 100%; max-width: 300px; font-size: 18px; padding: 10px; margin: 10px 0; background: #333; color: #e0e0e0; border: 1px solid #555; border-radius: 5px; }
@@ -28,17 +33,17 @@
         #usersList div { margin: 10px 0; display: flex; justify-content: space-between; align-items: center; }
         #usersList button { font-size: 14px; padding: 5px; }
         #message { color: #ff5555; margin-top: 10px; }
-        .header { display: flex; justify-content: space-between; align-items: center; }
+        .header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
         h1 { margin: 0; color: #ffffff; }
-        .category-buttons { display: flex; gap: 10px; align-items: center; }
+        .category-buttons { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
         input, button { font-size: 18px; padding: 10px; margin: 5px; background: #333; color: #e0e0e0; border: 1px solid #555; }
-        #taskInput { width: 600px; max-width: 100%; }
+        #taskInput { width: 600px; max-width: 100%; box-sizing: border-box; }
         button:hover { background: #555; }
         button.active { background: #555; font-weight: bold; }
         .small-btn { font-size: 14px; padding: 5px; width: 30px; height: 30px; line-height: 20px; text-align: center; }
         ul { list-style-type: none; padding: 0; }
         li { font-size: 18px; margin: 10px 0; background: #2a2a2a; padding: 10px; border-radius: 5px; cursor: pointer; }
-        .task-row { display: flex; align-items: center; gap: 10px; }
+        .task-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
         .notes { display: none; margin-top: 10px; padding: 10px; background: #333; border-radius: 5px; width: 100%; }
         .notes.visible { display: block; }
         textarea { width: 100%; background: #444; color: #e0e0e0; border: 1px solid #555; padding: 5px; box-sizing: border-box; }
@@ -805,7 +810,6 @@
                         .then(() => log(`Subtarefa excluída com sucesso: ${parentKey}/${path}/${index}`))
                         .catch(error => log(`Erro ao excluir subtarefa: ${error.message}`));
                 }, { onlyOnce: true });
-            }
         }
 
         function toggleNotes(li, key, path = '') {
