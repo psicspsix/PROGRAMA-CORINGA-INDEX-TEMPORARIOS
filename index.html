@@ -156,9 +156,12 @@
         }
         #botoesFimJogo {
             display: none;
-            margin-top: 20px;
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
+            position: fixed;
+            left: 20px;
+            top: 20px;
+            width: 200px;
+            display: flex;
+            flex-direction: column;
             gap: 10px;
         }
         #botoesFimJogo button {
@@ -200,8 +203,8 @@
         <pre id="forca"></pre>
         <p id="mensagem"></p>
         <p id="exemploFrases"></p>
-        <div id="botoesFimJogo"></div>
     </div>
+    <div id="botoesFimJogo"></div>
     <button id="chatBtn">Chat</button>
     <div id="chatContainer">
         <div id="chatMessages"></div>
@@ -252,7 +255,7 @@
      |
      |
 =========`,
-            ` +---+
+            ` +\index{---+
  |   |
  O   |
  |   |
@@ -602,9 +605,15 @@
                 botoesFimJogo.innerHTML = `
                     <button onclick="jogarNovamente()">Jogar Novamente</button>
                     <button onclick="window.open('https://translate.google.com.br/?sl=auto&tl=pt&text=${encodeURIComponent(jogo.palavra)}%0A&op=translate', '_blank')">Mostrar Tradução da Palavra</button>
+                    <button onclick="window.open('https://www.reverso.net/tradu%C3%A7%C3%A3o-texto#sl=eng&tl=por&text=${encodeURIComponent(jogo.palavra)}%250A', '_blank')">Mostrar Palavra em Frases</button>
+                    <button onclick="window.open('https://www.ccaa.com.br/blog/expressoes-em-ingles/', '_blank')">35 Expressões CCAA</button>
+                    <button onclick="window.open('https://www.wizard.com.br/idiomas/20-expressoes-em-ingles-mais-usadas-em-uma-conversa/', '_blank')">20 Expressões Wizard</button>
+                    <button onclick="window.open('https://fisk.com.br/blog/20-expressoes-idiomaticas-em-ingles', '_blank')">20 Expressões Fisk</button>
+                    <button onclick="window.open('https://www.ef.com.br/guia-de-ingles/expressoes-idiomaticas-em-ingles/', '_blank')">Expressões EF Brasil</button>
+                    <button onclick="window.open('https://www.youtube.com/watch?v=BIAITFJ8uTI&t=82s', '_blank')">Vídeo Teacher Carlos</button>
                 `;
                 document.getElementById('exemploFrases').textContent = jogo.frases.join(' | ');
-                botoesFimJogo.style.display = 'grid';
+                botoesFimJogo.style.display = 'flex';
             } else {
                 document.getElementById('mensagem').textContent = jogo.palavra ? '' : 'Aguardando palavra do fornecedor...';
                 document.getElementById('exemploFrases').textContent = jogo.frases.join(' | ');
@@ -613,7 +622,7 @@
         }
 
         async function adivinharLetra() {
-            if (papel !== 'adivinhador' || jogo.estado !== 'em andamento') return;
+            if (papel !== 'adivinhador' || jogo.estado !== 'em andarmento') return;
             const letra = document.getElementById('letraInput').value.trim().toLowerCase();
             if (!letra || letra.length !== 1 || !/[a-záéíóúâêîôûãõç]/.test(letra)) {
                 alert('Digite uma letra válida (a-z, acentos ou ç).');
