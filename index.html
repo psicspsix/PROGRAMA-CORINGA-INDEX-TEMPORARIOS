@@ -113,6 +113,7 @@
             background: rgba(0, 0, 0, 0.8);
             padding: 20px;
             box-sizing: border-box;
+            display: flex;
             flex-direction: column;
         }
         #chatMessages {
@@ -122,6 +123,22 @@
             padding: 10px;
             border: 1px solid #555555;
             border-radius: 5px;
+        }
+        #chatInputContainer {
+            display: flex;
+            flex-direction: column;
+        }
+        #chatInput {
+            resize: none;
+            height: 60px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+        #fecharChatBtn {
+            background-color: #444444;
+            padding: 10px 20px;
+            align-self: flex-end;
+            order: -1;
         }
         .mensagem {
             margin: 5px 0;
@@ -187,7 +204,10 @@
     <button id="chatBtn" style="display: none;">Chat</button>
     <div id="chatContainer">
         <div id="chatMessages"></div>
-        <textarea id="chatInput" placeholder="Digite sua mensagem..."></textarea>
+        <div id="chatInputContainer">
+            <button id="fecharChatBtn">Fechar Chat</button>
+            <textarea id="chatInput" placeholder="Digite sua mensagem..."></textarea>
+        </div>
     </div>
 
     <script type="module">
@@ -195,7 +215,7 @@
         import { getDatabase, ref, set, get, update, onValue, push } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
         const firebaseConfig = {
-            apiKey: "AIzaSyDYju4ux-XrvEXaP2aSXbY2 ${{secrets.FIREBASE_API_KEY}}",
+            apiKey: "AIzaSyDYju4ux-XrvEXaP2aSXbY2eJd_Qj4AKow",
             authDomain: "jogo-de-forca-b905b.firebaseapp.com",
             databaseURL: "https://jogo-de-forca-b905b-default-rtdb.firebaseio.com",
             projectId: "jogo-de-forca-b905b",
@@ -268,7 +288,6 @@
 =========`
         ];
 
-        // Função para normalizar letras (remove acentos e converte ç para c)
         function normalizarLetra(letra) {
             if (!letra) return letra;
             return letra.toLowerCase()
@@ -280,7 +299,6 @@
                 .replace(/[ç]/g, 'c');
         }
 
-        // Normaliza uma palavra inteira
         function normalizarPalavra(palavra) {
             return palavra.split('').map(normalizarLetra).join('');
         }
@@ -676,7 +694,6 @@
             document.getElementById('letraInput').focus();
         }
 
-        // Adiciona eventos aos botões
         document.getElementById('jogarSozinhoBtn').addEventListener('click', () => {
             console.log('Botão Jogar Sozinho clicado');
             iniciarJogoSolo();
@@ -717,7 +734,11 @@
             toggleChat();
         });
 
-        // Adiciona suporte à tecla Enter em todos os campos
+        document.getElementById('fecharChatBtn').addEventListener('click', () => {
+            console.log('Botão Fechar Chat clicado');
+            toggleChat();
+        });
+
         document.getElementById('letraInput').addEventListener('keypress', (event) => {
             if (event.key === 'Enter') {
                 console.log('Tecla Enter pressionada no campo letraInput');
@@ -747,7 +768,8 @@
             }
         });
 
-        // Inicializa a tela inicial
+        window.jogarNovamenteSolo = jogarNovamenteSolo;
+
         mostrarTela('inicial');
     </script>
 </body>
