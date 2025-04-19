@@ -232,10 +232,11 @@
         let modo = '';
         let papel = '';
         let idJogo = '';
-        let jogo = { palavra: '', letrasAdivinhadas: [], erros: 0, estado: 'em andamento', frases: [], chatAberto: false };
+        let jogo = { palavra: '', letrasAdivinhadas: [], erros: 0, estado: 'em andamento', frases: [], chatAberto: false, fornecedor: '', adivinhador: '' };
         let unsubscribeJogo = null;
         let unsubscribeChat = null;
         let chatAberto = false;
+        let jogadorId = Math.random().toString(36).substr(2, 9);
 
         const forcaEstagios = [
             ` +---+
@@ -428,13 +429,16 @@
                 const papelAnterior = papel;
                 papel = papelAnterior === 'fornecedor' ? 'adivinhador' : 'fornecedor';
                 try {
-                    await set(ref(db, `jogos/${idJogo}`), {
+                    const jogoRef = ref(db, `jogos/${idJogo}`);
+                    await update(jogoRef, {
                         palavra: '',
                         letrasAdivinhadas: [],
                         erros: 0,
                         estado: 'em andamento',
                         frases: [],
-                        chatAberto: false
+                        chatAberto: false,
+                        fornecedor: papel === 'fornecedor' ? jogadorId : jogo.adivinhador,
+                        adivinhador: papel === 'adivinhador' ? jogadorId : jogo.fornecedor
                     });
                     await set(ref(db, `jogos/${idJogo}/chat`), null);
                     if (papel === 'fornecedor') {
@@ -471,7 +475,9 @@
                     frases: palavraAleatoria.flexoes && palavraAleatoria.flexoes.length > 0
                         ? [`Flexões: ${palavraAleatoria.flexoes.join(', ')}`]
                         : [`Frequência: ${palavraAleatoria.frequencia}`],
-                    chatAberto: false
+                    chatAberto: false,
+                    fornecedor: '',
+                    adivinhador: ''
                 };
             } catch (error) {
                 console.error('Erro ao carregar palavra:', error);
@@ -494,7 +500,9 @@
                 erros: 0,
                 estado: 'em andamento',
                 frases: [`Você usou "${palavra}" em uma frase!`, `Ótimo, "${palavra}" foi escolhida!`],
-                chatAberto: false
+                chatAberto: false,
+                fornecedor: jogadorId,
+                adivinhador: ''
             };
             try {
                 const jogoRef = ref(db, `jogos/${idJogo}`);
@@ -505,6 +513,7 @@
                 unsubscribeJogo = onValue(jogoRef, (snapshot) => {
                     if (snapshot.exists()) {
                         jogo = validateJogo(snapshot.val());
+                        papel = jogo.fornecedor === jogadorId ? 'fornecedor' : 'adivinhador';
                         exibirJogo();
                         if (jogo.chatAberto && !chatAberto) toggleChat();
                         else if (!jogo.chatAberto && chatAberto) toggleChat();
@@ -528,7 +537,9 @@
                 erros: Number.isInteger(data.erros) ? data.erros : 0,
                 estado: data.estado || 'em andamento',
                 frases: Array.isArray(data.frases) ? data.frases : [`Jogo com ID ${idJogo}`],
-                chatAberto: data.chatAberto || false
+                chatAberto: data.chatAberto || false,
+                fornecedor: data.fornecedor || '',
+                adivinhador: data.adivinhador || ''
             };
         }
 
@@ -549,11 +560,13 @@
                     if (!jogo.palavra) {
                         alert('Aguardando o fornecedor escolher uma palavra.');
                     }
+                    await update(jogoRef, { adivinhador: jogadorId });
                     mostrarTela('jogo');
                     exibirJogo();
                     unsubscribeJogo = onValue(jogoRef, (snapshot) => {
                         if (snapshot.exists()) {
                             jogo = validateJogo(snapshot.val());
+                            papel = jogo.fornecedor === jogadorId ? 'fornecedor' : 'adivinhador';
                             exibirJogo();
                             if (jogo.chatAberto && !chatAberto) toggleChat();
                             else if (!jogo.chatAberto && chatAberto) toggleChat();
