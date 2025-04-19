@@ -138,7 +138,7 @@
             background-color: #444444;
             padding: 10px 20px;
             align-self: flex-end;
-            order: -1;
+            margin-bottom: 10px;
         }
         .mensagem {
             margin: 5px 0;
@@ -419,11 +419,43 @@
             exibirJogo();
         }
 
-        async function jogarNovamenteSolo() {
-            console.log('Jogando novamente no modo solo');
-            await carregarNovaPalavra();
-            document.getElementById('telaJogo').scrollIntoView({ behavior: 'smooth' });
-            exibirJogo();
+        async function jogarNovamente() {
+            console.log('Jogando novamente');
+            if (modo === 'solo') {
+                await carregarNovaPalavra();
+                exibirJogo();
+                document.getElementById('telaJogo').scrollIntoView({ behavior: 'smooth' });
+            } else if (modo === 'multiplayer') {
+                const papelAnterior = papel;
+                papel = papelAnterior === 'fornecedor' ? 'adivinhador' : 'fornecedor';
+                if (papel === 'fornecedor') {
+                    jogo = { palavra: '', letrasAdivinhadas: [], erros: 0, estado: 'em andamento', frases: [] };
+                    try {
+                        const jogoRef = ref(db, `jogos/${idJogo}`);
+                        await set(jogoRef, jogo);
+                        const chatRef = ref(db, `jogos/${idJogo}/chat`);
+                        await set(chatRef, null);
+                        mostrarCriarJogo();
+                    } catch (error) {
+                        console.error('Erro ao reiniciar jogo:', error);
+                        alert('Erro ao reiniciar jogo: ' + error.message);
+                    }
+                } else {
+                    jogo = { palavra: '', letrasAdivinhadas: [], erros: 0, estado: 'em andamento', frases: [] };
+                    try {
+                        const jogoRef = ref(db, `jogos/${idJogo}`);
+                        await set(jogoRef, jogo);
+                        const chatRef = ref(db, `jogos/${idJogo}/chat`);
+                        await set(chatRef, null);
+                        alert('Aguardando o outro jogador escolher uma nova palavra.');
+                        mostrarTela('jogo');
+                        exibirJogo();
+                    } catch (error) {
+                        console.error('Erro ao reiniciar jogo:', error);
+                        alert('Erro ao reiniciar jogo: ' + error.message);
+                    }
+                }
+            }
         }
 
         async function carregarNovaPalavra() {
@@ -555,39 +587,6 @@
             }
         }
 
-        async function jogarNovamente() {
-            console.log('Jogando novamente no modo multiplayer');
-            const papelAnterior = papel;
-            papel = papelAnterior === 'fornecedor' ? 'adivinhador' : 'fornecedor';
-            if (papel === 'fornecedor') {
-                jogo = { palavra: '', letrasAdivinhadas: [], erros: 0, estado: 'em andamento', frases: [] };
-                try {
-                    const jogoRef = ref(db, `jogos/${idJogo}`);
-                    await set(jogoRef, jogo);
-                    const chatRef = ref(db, `jogos/${idJogo}/chat`);
-                    await set(chatRef, null);
-                    mostrarCriarJogo();
-                } catch (error) {
-                    console.error('Erro ao reiniciar jogo:', error);
-                    alert('Erro ao reiniciar jogo: ' + error.message);
-                }
-            } else {
-                jogo = { palavra: '', letrasAdivinhadas: [], erros: 0, estado: 'em andamento', frases: [] };
-                try {
-                    const jogoRef = ref(db, `jogos/${idJogo}`);
-                    await set(jogoRef, jogo);
-                    const chatRef = ref(db, `jogos/${idJogo}/chat`);
-                    await set(chatRef, null);
-                    alert('Aguardando o outro jogador escolher uma nova palavra.');
-                    mostrarTela('jogo');
-                    exibirJogo();
-                } catch (error) {
-                    console.error('Erro ao reiniciar jogo:', error);
-                    alert('Erro ao reiniciar jogo: ' + error.message);
-                }
-            }
-        }
-
         function exibirJogo() {
             console.log('Exibindo estado do jogo:', jogo);
             if (!jogo || !jogo.palavra) {
@@ -615,7 +614,7 @@
                 if (modo === 'solo') {
                     document.getElementById('mensagem').textContent = jogo.estado === 'vencido' ? 'Você venceu!' : `Você perdeu! A palavra era: ${jogo.palavra}`;
                     botoesFimJogo.innerHTML = `
-                        <button onclick="jogarNovamenteSolo()">Jogar Novamente</button>
+                        <button onclick="jogarNovamente()">Jogar Novamente</button>
                         <button onclick="window.open('https://translate.google.com.br/?sl=auto&tl=pt&text=${encodeURIComponent(jogo.palavra)}%0A&op=translate', '_blank')">Mostrar Tradução da Palavra</button>
                         <button onclick="window.open('https://www.reverso.net/tradu%C3%A7%C3%A3o-texto#sl=eng&tl=por&text=${encodeURIComponent(jogo.palavra)}%250A', '_blank')">Mostrar Palavra em Frases</button>
                         <button onclick="window.open('https://www.ccaa.com.br/blog/expressoes-em-ingles/', '_blank')">35 Expressões CCAA</button>
@@ -768,7 +767,7 @@
             }
         });
 
-        window.jogarNovamenteSolo = jogarNovamenteSolo;
+        window.jogarNovamente = jogarNovamente;
 
         mostrarTela('inicial');
     </script>
