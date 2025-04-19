@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preencher Banco de Palavras do Jogo de Forca</title>
+    <style>
+        body {
+            background-color: #000000;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        button, input[type="file"] {
+            background-color: #333333;
+            color: #ffffff;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            cursor: pointer;
+            border-radius: 5px;
+            margin: 10px;
+        }
+        button:hover, input[type="file"]:hover {
+            background-color: #555555;
+        }
+        #status {
+            font-size: 1.2em;
+            margin-top: 20px;
+            text-align: center;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+    </style>
+</head>
+<body>
+    <h1>Preencher Banco de Palavras</h1>
+    <input type="file" id="csvInput" accept=".csv">
+    <button id="preencherBtn">Preencher Banco</button>
+    <div id="status"></div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        // Configuração do Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyDYju4ux-XrvEXaP2aSXbY2eJd_Qj4AKow",
+            authDomain: "jogo-de-forca-b905b.firebaseapp.com",
+            databaseURL: "https://jogo-de-forca-b905b-default-rtdb.firebaseio.com",
+            projectId: "jogo-de-forca-b905b",
+            storageBucket: "jogo-de-forca-b905b.firebasestorage.app",
+            messagingSenderId: "18562245618",
+            appId: "1:18562245618:web:f73368efe7b2b4a97fc16b",
+            measurementId: "G-WMMXLXSY1R"
+        };
+
+        // Inicializar Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const statusDiv = document.getElementById('status');
+
+        // Função para processar o CSV com separador ;
+        function processarCSV(file, callback) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const text = e.target.result;
+                const linhas = text.split('\n').map(linha => linha.trim()).filter(linha => linha);
+                const palavras = [];
+                let erros = [];
+
+                // Ignorar o cabeçalho (primeira linha)
+                for (let i = 1; i < linhas.length; i++) {
+                    // Dividir a linha usando ; como separador
+                    const colunas = linhas[i].split(';').map(col => col.trim());
+                    if (colunas.length < 2) {
+                        erros.push(`Linha ${i + 1}: Formato inválido (menos de 2 colunas).`);
+                        continue;
+                    }
+
+                    const palavra = colunas[0].toLowerCase();
+                    const frequencia = colunas[1];
+                    const flexoes = colunas[2] ? colunas[2].split(',').map(f => f.trim().toLowerCase()).filter(f => f) : [];
+
+                    // Validações
+                    if (!palavra.match(/^[a-z]+$/)) {
+                        erros.push(`Linha ${i + 1}: Palavra "${palavra}" contém caracteres inválidos.`);
+                        continue;
+                    }
+                    if (!frequencia.match(/^\d+$/)) {
+                        erros.push(`Linha ${i + 1}: Frequência "${frequencia}" não é um número válido.`);
+                        continue;
+                    }
+                    for (let flexao of flexoes) {
+                        if (!flexao.match(/^[a-z]+$/)) {
+                            erros.push(`Linha ${i + 1}: Flexão "${flexao}" contém caracteres inválidos.`);
+                            break;
+                        }
+                    }
+
+                    palavras.push({
+                        palavra: palavra,
+                        frequencia: parseInt(frequencia),
+                        flexoes: flexoes
+                    });
+                }
+
+                if (erros.length > 0) {
+                    statusDiv.textContent = `Erros encontrados:\n${erros.join('\n')}`;
+                    return;
+                }
+
+                if (palavras.length === 0) {
+                    statusDiv.textContent = 'Nenhuma palavra válida encontrada no CSV.';
+                    return;
+                }
+
+                callback(palavras);
+            };
+            reader.readAsText(file);
+        }
+
+        // Função para preencher o banco
+        async function preencherBanco(palavras) {
+            statusDiv.textContent = `Preenchendo banco com ${palavras.length} palavras...`;
+            try {
+                const palavrasRef = ref(db, 'palavras');
+                const palavrasObj = {};
+                palavras.forEach((item, index) => {
+                    palavrasObj[index] = {
+                        palavra: item.palavra,
+                        frequencia: item.frequencia,
+                        flexoes: item.flexoes
+                    };
+                });
+                await set(palavrasRef, palavrasObj);
+                statusDiv.textContent = `Banco preenchido com sucesso! ${palavras.length} palavras adicionadas.`;
+            } catch (error) {
+                console.error('Erro ao preencher banco:', error);
+                statusDiv.textContent = 'Erro ao preencher banco: ' + error.message;
+            }
+        }
+
+        // Evento do botão
+        document.getElementById('preencherBtn').addEventListener('click', () => {
+            const csvInput = document.getElementById('csvInput');
+            if (!csvInput.files || csvInput.files.length === 0) {
+                statusDiv.textContent = 'Selecione um arquivo CSV primeiro.';
+                return;
+            }
+
+            const file = csvInput.files[0];
+            processarCSV(file, preencherBanco);
+        });
+    </script>
+</body>
+</html>
