@@ -92,6 +92,10 @@
             font-size: 16px;
             margin-top: 10px;
         }
+        #placar {
+            font-size: 16px;
+            margin-top: 10px;
+        }
         #fornecedorView, #adivinhadorView {
             margin-bottom: 20px;
         }
@@ -200,6 +204,7 @@
         <pre id="forca"></pre>
         <p id="mensagem"></p>
         <p id="exemploFrases"></p>
+        <p id="placar"></p>
         <div id="botoesFimJogo"></div>
     </div>
     <button id="chatBtn">Chat</button>
@@ -232,7 +237,17 @@
         let modo = '';
         let papel = '';
         let idJogo = '';
-        let jogo = { palavra: '', letrasAdivinhadas: [], erros: 0, estado: 'em andamento', frases: [], chatAberto: false, fornecedor: '', adivinhador: '' };
+        let jogo = {
+            palavra: '',
+            letrasAdivinhadas: [],
+            erros: 0,
+            estado: 'em andamento',
+            frases: [],
+            chatAberto: false,
+            fornecedor: '',
+            adivinhador: '',
+            placar: { fornecedor: { vitorias: 0, derrotas: 0 }, adivinhador: { vitorias: 0, derrotas: 0 } }
+        };
         let unsubscribeJogo = null;
         let unsubscribeChat = null;
         let chatAberto = false;
@@ -426,10 +441,10 @@
                 exibirJogo();
                 document.getElementById('telaJogo').scrollIntoView({ behavior: 'smooth' });
             } else if (modo === 'multiplayer') {
-                const papelAnterior = papel;
-                papel = papelAnterior === 'fornecedor' ? 'adivinhador' : 'fornecedor';
                 try {
                     const jogoRef = ref(db, `jogos/${idJogo}`);
+                    const novoFornecedor = jogo.adivinhador;
+                    const novoAdivinhador = jogo.fornecedor;
                     await update(jogoRef, {
                         palavra: '',
                         letrasAdivinhadas: [],
@@ -437,10 +452,11 @@
                         estado: 'em andamento',
                         frases: [],
                         chatAberto: false,
-                        fornecedor: papel === 'fornecedor' ? jogadorId : jogo.adivinhador,
-                        adivinhador: papel === 'adivinhador' ? jogadorId : jogo.fornecedor
+                        fornecedor: novoFornecedor,
+                        adivinhador: novoAdivinhador
                     });
                     await set(ref(db, `jogos/${idJogo}/chat`), null);
+                    papel = jogadorId === novoFornecedor ? 'fornecedor' : 'adivinhador';
                     if (papel === 'fornecedor') {
                         mostrarTela('inicial');
                         mostrarCriarJogo();
@@ -477,7 +493,8 @@
                         : [`Frequência: ${palavraAleatoria.frequencia}`],
                     chatAberto: false,
                     fornecedor: '',
-                    adivinhador: ''
+                    adivinhador: '',
+                    placar: jogo.placar || { fornecedor: { vitorias: 0, derrotas: 0 }, adivinhador: { vitorias: 0, derrotas: 0 } }
                 };
             } catch (error) {
                 console.error('Erro ao carregar palavra:', error);
@@ -502,7 +519,8 @@
                 frases: [`Você usou "${palavra}" em uma frase!`, `Ótimo, "${palavra}" foi escolhida!`],
                 chatAberto: false,
                 fornecedor: jogadorId,
-                adivinhador: ''
+                adivinhador: '',
+                placar: jogo.placar || { fornecedor: { vitorias: 0, derrotas: 0 }, adivinhador: { vitorias: 0, derrotas: 0 } }
             };
             try {
                 const jogoRef = ref(db, `jogos/${idJogo}`);
@@ -539,7 +557,8 @@
                 frases: Array.isArray(data.frases) ? data.frases : [`Jogo com ID ${idJogo}`],
                 chatAberto: data.chatAberto || false,
                 fornecedor: data.fornecedor || '',
-                adivinhador: data.adivinhador || ''
+                adivinhador: data.adivinhador || '',
+                placar: data.placar || { fornecedor: { vitorias: 0, derrotas: 0 }, adivinhador: { vitorias: 0, derrotas: 0 } }
             };
         }
 
@@ -589,6 +608,7 @@
             if (!jogo || typeof jogo !== 'object') {
                 document.getElementById('mensagem').textContent = 'Erro: Jogo inválido.';
                 document.getElementById('botoesFimJogo').style.display = 'none';
+                document.getElementById('placar').textContent = '';
                 return;
             }
             if (papel === 'fornecedor') {
@@ -620,6 +640,7 @@
                         <button onclick="window.open('https://www.ef.com.br/guia-de-ingles/expressoes-idiomaticas-em-ingles/', '_blank')">Expressões EF Brasil</button>
                         <button onclick="window.open('https://www.youtube.com/watch?v=BIAITFJ8uTI&t=82s', '_blank')">Vídeo Teacher Carlos</button>
                     `;
+                    document.getElementById('placar').textContent = '';
                 } else {
                     if (papel === 'adivinhador') {
                         document.getElementById('mensagem').textContent = jogo.estado === 'vencido' ? 'Você venceu!' : `Você perdeu! A palavra era: ${jogo.palavra}`;
@@ -636,6 +657,7 @@
                         <button onclick="window.open('https://www.ef.com.br/guia-de-ingles/expressoes-idiomaticas-em-ingles/', '_blank')">Expressões EF Brasil</button>
                         <button onclick="window.open('https://www.youtube.com/watch?v=BIAITFJ8uTI&t=82s', '_blank')">Vídeo Teacher Carlos</button>
                     `;
+                    document.getElementById('placar').textContent = `Placar: Fornecedor (Vitórias: ${jogo.placar.fornecedor.vitorias}, Derrotas: ${jogo.placar.fornecedor.derrotas}) | Adivinhador (Vitórias: ${jogo.placar.adivinhador.vitorias}, Derrotas: ${jogo.placar.adivinhador.derrotas})`;
                 }
                 document.getElementById('exemploFrases').textContent = jogo.frases.join(' | ');
                 botoesFimJogo.style.display = 'grid';
@@ -643,6 +665,7 @@
             } else {
                 document.getElementById('mensagem').textContent = jogo.palavra ? '' : 'Aguardando palavra do fornecedor...';
                 document.getElementById('exemploFrases').textContent = '';
+                document.getElementById('placar').textContent = modo === 'multiplayer' ? `Placar: Fornecedor (Vitórias: ${jogo.placar.fornecedor.vitorias}, Derrotas: ${jogo.placar.fornecedor.derrotas}) | Adivinhador (Vitórias: ${jogo.placar.adivinhador.vitorias}, Derrotas: ${jogo.placar.adivinhador.derrotas})` : '';
                 botoesFimJogo.style.display = 'none';
             }
         }
@@ -668,11 +691,19 @@
                 });
                 if (letrasFaltando.length === 0) {
                     jogo.estado = 'vencido';
+                    if (modo === 'multiplayer') {
+                        jogo.placar.adivinhador.vitorias += 1;
+                        jogo.placar.fornecedor.derrotas += 1;
+                    }
                 }
             } else {
                 jogo.erros += 1;
                 if (jogo.erros >= 6) {
                     jogo.estado = 'perdido';
+                    if (modo === 'multiplayer') {
+                        jogo.placar.fornecedor.vitorias += 1;
+                        jogo.placar.adivinhador.derrotas += 1;
+                    }
                 }
             }
             if (modo === 'multiplayer') {
