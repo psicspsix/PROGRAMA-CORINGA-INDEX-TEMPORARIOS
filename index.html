@@ -28,7 +28,7 @@
             background: rgba(0, 0, 0, 0.7);
             padding: 20px;
             border-radius: 10px;
-            display: block;
+            display: none;
         }
         #telaJogo {
             display: none;
@@ -102,7 +102,6 @@
             background-color: #444444;
             padding: 10px 20px;
             z-index: 1000;
-            display: none;
         }
         #chatContainer {
             display: none;
@@ -139,7 +138,7 @@
             background-color: #444444;
             padding: 10px 20px;
             align-self: flex-end;
-            margin-bottom: 10px;
+            order: -1;
         }
         .mensagem {
             margin: 5px 0;
@@ -156,12 +155,9 @@
         }
         #botoesFimJogo {
             display: none;
-            position: fixed;
-            left: 20px;
-            top: 20px;
-            width: 200px;
-            display: flex;
-            flex-direction: column;
+            margin-top: 20px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
             gap: 10px;
         }
         #botoesFimJogo button {
@@ -203,9 +199,9 @@
         <pre id="forca"></pre>
         <p id="mensagem"></p>
         <p id="exemploFrases"></p>
+        <div id="botoesFimJogo"></div>
     </div>
-    <div id="botoesFimJogo"></div>
-    <button id="chatBtn">Chat</button>
+    <button id="chatBtn" style="display: none;">Chat</button>
     <div id="chatContainer">
         <div id="chatMessages"></div>
         <div id="chatInputContainer">
@@ -255,7 +251,7 @@
      |
      |
 =========`,
-            ` +\index{---+
+            ` +---+
  |   |
  O   |
  |   |
@@ -308,20 +304,23 @@
         }
 
         function mostrarTela(tela) {
+            console.log(`Mostrando tela: ${tela}`);
             document.getElementById('telaInicial').style.display = 'none';
             document.getElementById('telaJogo').style.display = 'none';
             document.getElementById('chatBtn').style.display = 'none';
-            document.getElementById('chatContainer').style.display = 'none';
-            chatAberto = false;
             if (tela === 'inicial') {
                 document.getElementById('telaInicial').style.display = 'block';
                 document.getElementById('opcoesMultiplayer').style.display = 'none';
                 document.getElementById('criarJogo').style.display = 'none';
                 document.getElementById('entrarJogo').style.display = 'none';
-                if (unsubscribeJogo) unsubscribeJogo();
-                if (unsubscribeChat) unsubscribeChat();
-                unsubscribeJogo = null;
-                unsubscribeChat = null;
+                if (unsubscribeJogo) {
+                    unsubscribeJogo();
+                    unsubscribeJogo = null;
+                }
+                if (unsubscribeChat) {
+                    unsubscribeChat();
+                    unsubscribeChat = null;
+                }
             } else if (tela === 'jogo') {
                 document.getElementById('telaJogo').style.display = 'block';
                 if (modo === 'multiplayer') {
@@ -334,20 +333,22 @@
         }
 
         function mostrarOpcoesMultiplayer() {
+            console.log('Mostrando opções multiplayer');
             document.getElementById('opcoesMultiplayer').style.display = 'block';
             document.getElementById('criarJogo').style.display = 'none';
             document.getElementById('entrarJogo').style.display = 'none';
         }
 
         function mostrarCriarJogo() {
+            console.log('Mostrando criar jogo');
             document.getElementById('opcoesMultiplayer').style.display = 'none';
             document.getElementById('criarJogo').style.display = 'block';
             document.getElementById('entrarJogo').style.display = 'none';
             document.getElementById('palavraInput').focus();
-            document.getElementById('palavraInput').value = '';
         }
 
         function mostrarEntrarJogo() {
+            console.log('Mostrando entrar jogo');
             document.getElementById('opcoesMultiplayer').style.display = 'none';
             document.getElementById('entrarJogo').style.display = 'block';
             document.getElementById('criarJogo').style.display = 'none';
@@ -364,12 +365,10 @@
                 chatContainer.style.display = 'flex';
                 chatBtn.textContent = 'Fechar Chat';
                 document.getElementById('chatInput').focus();
-                update(ref(db, `jogos/${idJogo}`), { chatAberto: true });
             } else {
                 telaJogo.classList.remove('chat-aberto');
                 chatContainer.style.display = 'none';
                 chatBtn.textContent = 'Chat';
-                update(ref(db, `jogos/${idJogo}`), { chatAberto: false });
                 if (papel === 'adivinhador') {
                     document.getElementById('letraInput').focus();
                 }
@@ -412,6 +411,7 @@
         }
 
         async function iniciarJogoSolo() {
+            console.log('Iniciando jogo solo');
             modo = 'solo';
             papel = 'adivinhador';
             await carregarNovaPalavra();
@@ -419,36 +419,11 @@
             exibirJogo();
         }
 
-        async function jogarNovamente() {
-            if (modo === 'solo') {
-                await carregarNovaPalavra();
-                exibirJogo();
-            } else if (modo === 'multiplayer') {
-                const papelAnterior = papel;
-                papel = papelAnterior === 'fornecedor' ? 'adivinhador' : 'fornecedor';
-                try {
-                    await set(ref(db, `jogos/${idJogo}`), {
-                        palavra: '',
-                        letrasAdivinhadas: [],
-                        erros: 0,
-                        estado: 'em andamento',
-                        frases: [],
-                        chatAberto: false
-                    });
-                    await set(ref(db, `jogos/${idJogo}/chat`), null);
-                    if (papel === 'fornecedor') {
-                        mostrarTela('inicial');
-                        mostrarCriarJogo();
-                    } else {
-                        alert('Aguardando o outro jogador escolher uma nova palavra.');
-                        mostrarTela('jogo');
-                        exibirJogo();
-                    }
-                } catch (error) {
-                    console.error('Erro ao reiniciar jogo:', error);
-                    alert('Erro ao reiniciar jogo: ' + error.message);
-                }
-            }
+        async function jogarNovamenteSolo() {
+            console.log('Jogando novamente no modo solo');
+            await carregarNovaPalavra();
+            document.getElementById('telaJogo').scrollIntoView({ behavior: 'smooth' });
+            exibirJogo();
         }
 
         async function carregarNovaPalavra() {
@@ -457,7 +432,7 @@
                 const snapshot = await get(palavrasRef);
                 const palavras = snapshot.val();
                 if (!palavras || Object.keys(palavras).length === 0) {
-                    alert('Nenhuma palavra encontrada no banco de dados.');
+                    alert('Nenhuma palavra encontrada no banco de dados. Preencha o banco primeiro.');
                     return;
                 }
                 const palavrasArray = Object.values(palavras);
@@ -478,6 +453,7 @@
         }
 
         async function criarJogo() {
+            console.log('Criando jogo multiplayer');
             const palavra = document.getElementById('palavraInput').value.trim().toLowerCase();
             if (!palavra.match(/^[a-záéíóúâêîôûãõç]+$/)) {
                 alert('Digite uma palavra válida (apenas letras, incluindo acentos e ç).');
@@ -491,8 +467,7 @@
                 letrasAdivinhadas: [],
                 erros: 0,
                 estado: 'em andamento',
-                frases: [`Você usou "${palavra}" em uma frase!`],
-                chatAberto: false
+                frases: [`Você usou "${palavra}" em uma frase!`, `Ótimo, "${palavra}" foi escolhida!`]
             };
             try {
                 const jogoRef = ref(db, `jogos/${idJogo}`);
@@ -504,11 +479,10 @@
                     if (snapshot.exists()) {
                         jogo = validateJogo(snapshot.val());
                         exibirJogo();
-                        if (jogo.chatAberto && !chatAberto) toggleChat();
-                        else if (!jogo.chatAberto && chatAberto) toggleChat();
                     }
                 });
-                unsubscribeChat = onValue(ref(db, `jogos/${idJogo}/chat`), exibirMensagens);
+                const chatRef = ref(db, `jogos/${idJogo}/chat`);
+                unsubscribeChat = onValue(chatRef, exibirMensagens);
             } catch (error) {
                 console.error('Erro ao criar jogo:', error);
                 alert('Erro ao criar o jogo: ' + error.message);
@@ -520,17 +494,27 @@
         }
 
         function validateJogo(data) {
+            if (!data || typeof data !== 'object') {
+                console.error('Dados do jogo inválidos:', data);
+                return {
+                    palavra: '',
+                    letrasAdivinhadas: [],
+                    erros: 0,
+                    estado: 'em andamento',
+                    frases: ['Jogo inválido']
+                };
+            }
             return {
                 palavra: data.palavra || '',
                 letrasAdivinhadas: Array.isArray(data.letrasAdivinhadas) ? data.letrasAdivinhadas : [],
                 erros: Number.isInteger(data.erros) ? data.erros : 0,
                 estado: data.estado || 'em andamento',
-                frases: Array.isArray(data.frases) ? data.frases : [`Jogo com ID ${idJogo}`],
-                chatAberto: data.chatAberto || false
+                frases: Array.isArray(data.frases) ? data.frases : [`Jogo com ID ${idJogo}`]
             };
         }
 
         async function entrarJogo() {
+            console.log('Entrando em jogo multiplayer');
             const id = document.getElementById('idJogoInput').value.trim();
             if (!id) {
                 alert('Digite um ID de jogo válido.');
@@ -544,8 +528,9 @@
                 const snapshot = await get(jogoRef);
                 if (snapshot.exists()) {
                     jogo = validateJogo(snapshot.val());
+                    console.log('Jogo carregado:', jogo);
                     if (!jogo.palavra) {
-                        alert('Aguardando o fornecedor escolher uma palavra.');
+                        throw new Error('Palavra do jogo não encontrada.');
                     }
                     mostrarTela('jogo');
                     exibirJogo();
@@ -553,14 +538,14 @@
                         if (snapshot.exists()) {
                             jogo = validateJogo(snapshot.val());
                             exibirJogo();
-                            if (jogo.chatAberto && !chatAberto) toggleChat();
-                            else if (!jogo.chatAberto && chatAberto) toggleChat();
                         } else {
+                            console.log('Jogo não existe mais.');
                             alert('O jogo foi removido ou não existe.');
                             mostrarTela('inicial');
                         }
                     });
-                    unsubscribeChat = onValue(ref(db, `jogos/${idJogo}/chat`), exibirMensagens);
+                    const chatRef = ref(db, `jogos/${idJogo}/chat`);
+                    unsubscribeChat = onValue(chatRef, exibirMensagens);
                 } else {
                     alert('Jogo não encontrado.');
                 }
@@ -570,8 +555,42 @@
             }
         }
 
+        async function jogarNovamente() {
+            console.log('Jogando novamente no modo multiplayer');
+            const papelAnterior = papel;
+            papel = papelAnterior === 'fornecedor' ? 'adivinhador' : 'fornecedor';
+            if (papel === 'fornecedor') {
+                jogo = { palavra: '', letrasAdivinhadas: [], erros: 0, estado: 'em andamento', frases: [] };
+                try {
+                    const jogoRef = ref(db, `jogos/${idJogo}`);
+                    await set(jogoRef, jogo);
+                    const chatRef = ref(db, `jogos/${idJogo}/chat`);
+                    await set(chatRef, null);
+                    mostrarCriarJogo();
+                } catch (error) {
+                    console.error('Erro ao reiniciar jogo:', error);
+                    alert('Erro ao reiniciar jogo: ' + error.message);
+                }
+            } else {
+                jogo = { palavra: '', letrasAdivinhadas: [], erros: 0, estado: 'em andamento', frases: [] };
+                try {
+                    const jogoRef = ref(db, `jogos/${idJogo}`);
+                    await set(jogoRef, jogo);
+                    const chatRef = ref(db, `jogos/${idJogo}/chat`);
+                    await set(chatRef, null);
+                    alert('Aguardando o outro jogador escolher uma nova palavra.');
+                    mostrarTela('jogo');
+                    exibirJogo();
+                } catch (error) {
+                    console.error('Erro ao reiniciar jogo:', error);
+                    alert('Erro ao reiniciar jogo: ' + error.message);
+                }
+            }
+        }
+
         function exibirJogo() {
-            if (!jogo || typeof jogo !== 'object') {
+            console.log('Exibindo estado do jogo:', jogo);
+            if (!jogo || !jogo.palavra) {
                 document.getElementById('mensagem').textContent = 'Erro: Jogo inválido.';
                 document.getElementById('botoesFimJogo').style.display = 'none';
                 return;
@@ -595,34 +614,45 @@
             if (jogo.estado === 'vencido' || jogo.estado === 'perdido') {
                 if (modo === 'solo') {
                     document.getElementById('mensagem').textContent = jogo.estado === 'vencido' ? 'Você venceu!' : `Você perdeu! A palavra era: ${jogo.palavra}`;
+                    botoesFimJogo.innerHTML = `
+                        <button onclick="jogarNovamenteSolo()">Jogar Novamente</button>
+                        <button onclick="window.open('https://translate.google.com.br/?sl=auto&tl=pt&text=${encodeURIComponent(jogo.palavra)}%0A&op=translate', '_blank')">Mostrar Tradução da Palavra</button>
+                        <button onclick="window.open('https://www.reverso.net/tradu%C3%A7%C3%A3o-texto#sl=eng&tl=por&text=${encodeURIComponent(jogo.palavra)}%250A', '_blank')">Mostrar Palavra em Frases</button>
+                        <button onclick="window.open('https://www.ccaa.com.br/blog/expressoes-em-ingles/', '_blank')">35 Expressões CCAA</button>
+                        <button onclick="window.open('https://www.wizard.com.br/idiomas/20-expressoes-em-ingles-mais-usadas-em-uma-conversa/', '_blank')">20 Expressões Wizard</button>
+                        <button onclick="window.open('https://fisk.com.br/blog/20-expressoes-idiomaticas-em-ingles', '_blank')">20 Expressões Fisk</button>
+                        <button onclick="window.open('https://www.ef.com.br/guia-de-ingles/expressoes-idiomaticas-em-ingles/', '_blank')">Expressões EF Brasil</button>
+                        <button onclick="window.open('https://www.youtube.com/watch?v=BIAITFJ8uTI&t=82s', '_blank')">Vídeo Teacher Carlos</button>
+                    `;
                 } else {
                     if (papel === 'adivinhador') {
                         document.getElementById('mensagem').textContent = jogo.estado === 'vencido' ? 'Você venceu!' : `Você perdeu! A palavra era: ${jogo.palavra}`;
-                    } else {
+                    } else if (papel === 'fornecedor') {
                         document.getElementById('mensagem').textContent = jogo.estado === 'vencido' ? 'Você perdeu!' : 'Você venceu!';
                     }
+                    botoesFimJogo.innerHTML = `
+                        <button onclick="jogarNovamente()">Jogar Novamente</button>
+                        <button onclick="window.open('https://translate.google.com.br/?sl=auto&tl=pt&text=${encodeURIComponent(jogo.palavra)}%0A&op=translate', '_blank')">Mostrar Tradução da Palavra</button>
+                        <button onclick="window.open('https://www.reverso.net/tradu%C3%A7%C3%A3o-texto#sl=eng&tl=por&text=${encodeURIComponent(jogo.palavra)}%250A', '_blank')">Mostrar Palavra em Frases</button>
+                        <button onclick="window.open('https://www.ccaa.com.br/blog/expressoes-em-ingles/', '_blank')">35 Expressões CCAA</button>
+                        <button onclick="window.open('https://www.wizard.com.br/idiomas/20-expressoes-em-ingles-mais-usadas-em-uma-conversa/', '_blank')">20 Expressões Wizard</button>
+                        <button onclick="window.open('https://fisk.com.br/blog/20-expressoes-idiomaticas-em-ingles', '_blank')">20 Expressões Fisk</button>
+                        <button onclick="window.open('https://www.ef.com.br/guia-de-ingles/expressoes-idiomaticas-em-ingles/', '_blank')">Expressões EF Brasil</button>
+                        <button onclick="window.open('https://www.youtube.com/watch?v=BIAITFJ8uTI&t=82s', '_blank')">Vídeo Teacher Carlos</button>
+                    `;
                 }
-                botoesFimJogo.innerHTML = `
-                    <button onclick="jogarNovamente()">Jogar Novamente</button>
-                    <button onclick="window.open('https://translate.google.com.br/?sl=auto&tl=pt&text=${encodeURIComponent(jogo.palavra)}%0A&op=translate', '_blank')">Mostrar Tradução da Palavra</button>
-                    <button onclick="window.open('https://www.reverso.net/tradu%C3%A7%C3%A3o-texto#sl=eng&tl=por&text=${encodeURIComponent(jogo.palavra)}%250A', '_blank')">Mostrar Palavra em Frases</button>
-                    <button onclick="window.open('https://www.ccaa.com.br/blog/expressoes-em-ingles/', '_blank')">35 Expressões CCAA</button>
-                    <button onclick="window.open('https://www.wizard.com.br/idiomas/20-expressoes-em-ingles-mais-usadas-em-uma-conversa/', '_blank')">20 Expressões Wizard</button>
-                    <button onclick="window.open('https://fisk.com.br/blog/20-expressoes-idiomaticas-em-ingles', '_blank')">20 Expressões Fisk</button>
-                    <button onclick="window.open('https://www.ef.com.br/guia-de-ingles/expressoes-idiomaticas-em-ingles/', '_blank')">Expressões EF Brasil</button>
-                    <button onclick="window.open('https://www.youtube.com/watch?v=BIAITFJ8uTI&t=82s', '_blank')">Vídeo Teacher Carlos</button>
-                `;
                 document.getElementById('exemploFrases').textContent = jogo.frases.join(' | ');
-                botoesFimJogo.style.display = 'flex';
+                botoesFimJogo.style.display = 'grid';
+                document.getElementById('telaJogo').scrollIntoView({ behavior: 'smooth' });
             } else {
-                document.getElementById('mensagem').textContent = jogo.palavra ? '' : 'Aguardando palavra do fornecedor...';
-                document.getElementById('exemploFrases').textContent = jogo.frases.join(' | ');
+                document.getElementById('mensagem').textContent = '';
+                document.getElementById('exemploFrases').textContent = '';
                 botoesFimJogo.style.display = 'none';
             }
         }
 
         async function adivinharLetra() {
-            if (papel !== 'adivinhador' || jogo.estado !== 'em andarmento') return;
+            if (papel !== 'adivinhador' || jogo.estado !== 'em andamento') return;
             const letra = document.getElementById('letraInput').value.trim().toLowerCase();
             if (!letra || letra.length !== 1 || !/[a-záéíóúâêîôûãõç]/.test(letra)) {
                 alert('Digite uma letra válida (a-z, acentos ou ç).');
@@ -651,7 +681,8 @@
             }
             if (modo === 'multiplayer') {
                 try {
-                    await update(ref(db, `jogos/${idJogo}`), jogo);
+                    const jogoRef = ref(db, `jogos/${idJogo}`);
+                    await update(jogoRef, jogo);
                 } catch (error) {
                     console.error('Erro ao atualizar jogo:', error);
                     alert('Erro ao atualizar o jogo: ' + error.message);
@@ -663,26 +694,82 @@
             document.getElementById('letraInput').focus();
         }
 
-        document.getElementById('jogarSozinhoBtn').addEventListener('click', iniciarJogoSolo);
-        document.getElementById('jogarComAmigoBtn').addEventListener('click', mostrarOpcoesMultiplayer);
-        document.getElementById('criarJogoBtn').addEventListener('click', mostrarCriarJogo);
-        document.getElementById('entrarJogoBtn').addEventListener('click', mostrarEntrarJogo);
-        document.getElementById('criarJogoSubmitBtn').addEventListener('click', criarJogo);
-        document.getElementById('entrarJogoSubmitBtn').addEventListener('click', entrarJogo);
-        document.getElementById('adivinharBtn').addEventListener('click', adivinharLetra);
-        document.getElementById('chatBtn').addEventListener('click', toggleChat);
-        document.getElementById('fecharChatBtn').addEventListener('click', toggleChat);
-        document.getElementById('letraInput').addEventListener('keypress', (e) => e.key === 'Enter' && adivinharLetra());
-        document.getElementById('palavraInput').addEventListener('keypress', (e) => e.key === 'Enter' && criarJogo());
-        document.getElementById('idJogoInput').addEventListener('keypress', (e) => e.key === 'Enter' && entrarJogo());
-        document.getElementById('chatInput').addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
+        document.getElementById('jogarSozinhoBtn').addEventListener('click', () => {
+            console.log('Botão Jogar Sozinho clicado');
+            iniciarJogoSolo();
+        });
+
+        document.getElementById('jogarComAmigoBtn').addEventListener('click', () => {
+            console.log('Botão Jogar com Amigo clicado');
+            mostrarOpcoesMultiplayer();
+        });
+
+        document.getElementById('criarJogoBtn').addEventListener('click', () => {
+            console.log('Botão Criar Jogo clicado');
+            mostrarCriarJogo();
+        });
+
+        document.getElementById('entrarJogoBtn').addEventListener('click', () => {
+            console.log('Botão Entrar Jogo clicado');
+            mostrarEntrarJogo();
+        });
+
+        document.getElementById('criarJogoSubmitBtn').addEventListener('click', () => {
+            console.log('Botão Criar clicado');
+            criarJogo();
+        });
+
+        document.getElementById('entrarJogoSubmitBtn').addEventListener('click', () => {
+            console.log('Botão Entrar clicado');
+            entrarJogo();
+        });
+
+        document.getElementById('adivinharBtn').addEventListener('click', () => {
+            console.log('Botão Adivinhar clicado');
+            adivinharLetra();
+        });
+
+        document.getElementById('chatBtn').addEventListener('click', () => {
+            console.log('Botão Chat clicado');
+            toggleChat();
+        });
+
+        document.getElementById('fecharChatBtn').addEventListener('click', () => {
+            console.log('Botão Fechar Chat clicado');
+            toggleChat();
+        });
+
+        document.getElementById('letraInput').addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
+                console.log('Tecla Enter pressionada no campo letraInput');
+                adivinharLetra();
+            }
+        });
+
+        document.getElementById('palavraInput').addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
+                console.log('Tecla Enter pressionada no campo palavraInput');
+                criarJogo();
+            }
+        });
+
+        document.getElementById('idJogoInput').addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
+                console.log('Tecla Enter pressionada no campo idJogoInput');
+                entrarJogo();
+            }
+        });
+
+        document.getElementById('chatInput').addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                console.log('Tecla Enter pressionada no campo chatInput');
                 enviarMensagem();
             }
         });
 
-        window.jogarNovamente = jogarNovamente;
+        window.jogarNovamenteSolo = jogarNovamenteSolo;
+
         mostrarTela('inicial');
     </script>
 </body>
