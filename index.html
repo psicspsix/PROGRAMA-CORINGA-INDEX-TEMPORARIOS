@@ -375,12 +375,30 @@
             const telaJogo = document.getElementById('telaJogo');
             const chatContainer = document.getElementById('chatContainer');
             const chatBtn = document.getElementById('chatBtn');
+            console.log(`Toggling chat: chatAberto=${chatAberto}`);
             if (chatAberto) {
                 telaJogo.classList.add('chat-aberto');
                 chatContainer.style.display = 'flex';
                 chatBtn.textContent = 'Fechar Chat';
                 document.getElementById('chatInput').focus();
                 update(ref(db, `jogos/${idJogo}`), { chatAberto: true });
+                // Garante que apenas um botão Fechar Chat existe
+                const chatInputContainer = document.getElementById('chatInputContainer');
+                chatInputContainer.innerHTML = `
+                    <button id="fecharChatBtn">Fechar Chat</button>
+                    <textarea id="chatInput" placeholder="Digite sua mensagem..."></textarea>
+                `;
+                document.getElementById('fecharChatBtn').addEventListener('click', () => {
+                    console.log('Botão Fechar Chat clicado');
+                    toggleChat();
+                });
+                document.getElementById('chatInput').addEventListener('keydown', (event) => {
+                    if (event.key === 'Enter' && !event.shiftKey) {
+                        event.preventDefault();
+                        console.log('Tecla Enter pressionada no campo chatInput');
+                        enviarMensagem();
+                    }
+                });
             } else {
                 telaJogo.classList.remove('chat-aberto');
                 chatContainer.style.display = 'none';
@@ -628,18 +646,19 @@
             document.getElementById('forca').textContent = forcaEstagios[jogo.erros];
             const botoesFimJogo = document.getElementById('botoesFimJogo');
             if (jogo.estado === 'vencido' || jogo.estado === 'perdido') {
+                const botoesHTML = `
+                    <button onclick="jogarNovamente()">Jogar Novamente</button>
+                    <button onclick="window.open('https://translate.google.com.br/?sl=auto&tl=pt&text=${encodeURIComponent(jogo.palavra)}%0A&op=translate', '_blank')">Mostrar Tradução da Palavra</button>
+                    <button onclick="window.open('https://www.reverso.net/tradu%C3%A7%C3%A3o-texto#sl=eng&tl=por&text=${encodeURIComponent(jogo.palavra)}%250A', '_blank')">Mostrar Palavra em Frases</button>
+                    <button onclick="window.open('https://www.ccaa.com.br/blog/expressoes-em-ingles/', '_blank')">35 Expressões CCAA</button>
+                    <button onclick="window.open('https://www.wizard.com.br/idiomas/20-expressoes-em-ingles-mais-usadas-em-uma-conversa/', '_blank')">20 Expressões Wizard</button>
+                    <button onclick="window.open('https://fisk.com.br/blog/20-expressoes-idiomaticas-em-ingles', '_blank')">20 Expressões Fisk</button>
+                    <button onclick="window.open('https://www.ef.com.br/guia-de-ingles/expressoes-idiomaticas-em-ingles/', '_blank')">Expressões EF Brasil</button>
+                    <button onclick="window.open('https://www.youtube.com/watch?v=BIAITFJ8uTI&t=82s', '_blank')">Vídeo Teacher Carlos</button>
+                `;
                 if (modo === 'solo') {
                     document.getElementById('mensagem').textContent = jogo.estado === 'vencido' ? 'Você venceu!' : `Você perdeu! A palavra era: ${jogo.palavra}`;
-                    botoesFimJogo.innerHTML = `
-                        <button onclick="jogarNovamente()">Jogar Novamente</button>
-                        <button onclick="window.open('https://translate.google.com.br/?sl=auto&tl=pt&text=${encodeURIComponent(jogo.palavra)}%0A&op=translate', '_blank')">Mostrar Tradução da Palavra</button>
-                        <button onclick="window.open('https://www.reverso.net/tradu%C3%A7%C3%A3o-texto#sl=eng&tl=por&text=${encodeURIComponent(jogo.palavra)}%250A', '_blank')">Mostrar Palavra em Frases</button>
-                        <button onclick="window.open('https://www.ccaa.com.br/blog/expressoes-em-ingles/', '_blank')">35 Expressões CCAA</button>
-                        <button onclick="window.open('https://www.wizard.com.br/idiomas/20-expressoes-em-ingles-mais-usadas-em-uma-conversa/', '_blank')">20 Expressões Wizard</button>
-                        <button onclick="window.open('https://fisk.com.br/blog/20-expressoes-idiomaticas-em-ingles', '_blank')">20 Expressões Fisk</button>
-                        <button onclick="window.open('https://www.ef.com.br/guia-de-ingles/expressoes-idiomaticas-em-ingles/', '_blank')">Expressões EF Brasil</button>
-                        <button onclick="window.open('https://www.youtube.com/watch?v=BIAITFJ8uTI&t=82s', '_blank')">Vídeo Teacher Carlos</button>
-                    `;
+                    botoesFimJogo.innerHTML = botoesHTML;
                     document.getElementById('placar').textContent = '';
                 } else {
                     if (papel === 'adivinhador') {
@@ -647,16 +666,7 @@
                     } else {
                         document.getElementById('mensagem').textContent = jogo.estado === 'vencido' ? 'Você perdeu!' : 'Você venceu!';
                     }
-                    botoesFimJogo.innerHTML = `
-                        <button onclick="jogarNovamente()">Jogar Novamente</button>
-                        <button onclick="window.open('https://translate.google.com.br/?sl=auto&tl=pt&text=${encodeURIComponent(jogo.palavra)}%0A&op=translate', '_blank')">Mostrar Tradução da Palavra</button>
-                        <button onclick="window.open('https://www.reverso.net/tradu%C3%A7%C3%A3o-texto#sl=eng&tl=por&text=${encodeURIComponent(jogo.palavra)}%250A', '_blank')">Mostrar Palavra em Frases</button>
-                        <button onclick="window.open('https://www.ccaa.com.br/blog/expressoes-em-ingles/', '_blank')">35 Expressões CCAA</button>
-                        <button onclick="window.open('https://www.wizard.com.br/idiomas/20-expressoes-em-ingles-mais-usadas-em-uma-conversa/', '_blank')">20 Expressões Wizard</button>
-                        <button onclick="window.open('https://fisk.com.br/blog/20-expressoes-idiomaticas-em-ingles', '_blank')">20 Expressões Fisk</button>
-                        <button onclick="window.open('https://www.ef.com.br/guia-de-ingles/expressoes-idiomaticas-em-ingles/', '_blank')">Expressões EF Brasil</button>
-                        <button onclick="window.open('https://www.youtube.com/watch?v=BIAITFJ8uTI&t=82s', '_blank')">Vídeo Teacher Carlos</button>
-                    `;
+                    botoesFimJogo.innerHTML = botoesHTML;
                     document.getElementById('placar').textContent = `Placar: Fornecedor (Vitórias: ${jogo.placar.fornecedor.vitorias}, Derrotas: ${jogo.placar.fornecedor.derrotas}) | Adivinhador (Vitórias: ${jogo.placar.adivinhador.vitorias}, Derrotas: ${jogo.placar.adivinhador.derrotas})`;
                 }
                 document.getElementById('exemploFrases').textContent = jogo.frases.join(' | ');
@@ -684,6 +694,7 @@
             }
             jogo.letrasAdivinhadas.push(letra);
             const palavraNormalizada = normalizarPalavra(jogo.palavra);
+            let jogoTerminou = false;
             if (palavraNormalizada.includes(letraNormalizada)) {
                 const letrasFaltando = palavraNormalizada.split('').filter((l, i) => {
                     const letraOriginalNormalizada = normalizarLetra(jogo.palavra[i]);
@@ -695,6 +706,7 @@
                         jogo.placar.adivinhador.vitorias += 1;
                         jogo.placar.fornecedor.derrotas += 1;
                     }
+                    jogoTerminou = true;
                 }
             } else {
                 jogo.erros += 1;
@@ -704,9 +716,10 @@
                         jogo.placar.fornecedor.vitorias += 1;
                         jogo.placar.adivinhador.derrotas += 1;
                     }
+                    jogoTerminou = true;
                 }
             }
-            if (modo === 'multiplayer') {
+            if (modo === 'multiplayer' || jogoTerminou) {
                 try {
                     const jogoRef = ref(db, `jogos/${idJogo}`);
                     await update(jogoRef, jogo);
@@ -761,11 +774,6 @@
             toggleChat();
         });
 
-        document.getElementById('fecharChatBtn').addEventListener('click', () => {
-            console.log('Botão Fechar Chat clicado');
-            toggleChat();
-        });
-
         document.getElementById('letraInput').addEventListener('keypress', (event) => {
             if (event.key === 'Enter') {
                 console.log('Tecla Enter pressionada no campo letraInput');
@@ -784,14 +792,6 @@
             if (event.key === 'Enter') {
                 console.log('Tecla Enter pressionada no campo idJogoInput');
                 entrarJogo();
-            }
-        });
-
-        document.getElementById('chatInput').addEventListener('keydown', (event) => {
-            if (event.key === 'Enter' && !event.shiftKey) {
-                event.preventDefault();
-                console.log('Tecla Enter pressionada no campo chatInput');
-                enviarMensagem();
             }
         });
 
