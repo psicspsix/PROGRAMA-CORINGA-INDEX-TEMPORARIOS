@@ -629,7 +629,7 @@
                 document.getElementById('telaJogo').scrollIntoView({ behavior: 'smooth' });
             } else {
                 document.getElementById('mensagem').textContent = jogo.palavra ? '' : 'Aguardando palavra do fornecedor...';
-                document.getElementById('exemploFrases').textContent = jogo.frases.join(' | ');
+                document.getElementById('exemploFrases').textContent = '';
                 botoesFimJogo.style.display = 'none';
             }
         }
