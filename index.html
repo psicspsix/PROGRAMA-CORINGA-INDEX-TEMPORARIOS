@@ -266,6 +266,7 @@
         let modo = '';
         let papel = '';
         let idJogo = '';
+        let jogadorId = Math.random().toString(36).substr(2, 9);
         let jogo = {
             palavra: '',
             letrasAdivinhadas: [],
@@ -275,12 +276,11 @@
             chatAberto: false,
             jogador1: '',
             jogador2: '',
-            placar: { jogador1: { vitorias: 0 }, jogador2: { vitorias: 0 } }
+            placar: {}
         };
         let unsubscribeJogo = null;
         let unsubscribeChat = null;
         let chatAberto = false;
-        let jogadorId = Math.random().toString(36).substr(2, 9);
 
         const forcaEstagios = [
             ` +---+
@@ -490,6 +490,7 @@
                     const jogoRef = ref(db, `jogos/${idJogo}`);
                     const novoJogador1 = jogo.jogador2;
                     const novoJogador2 = jogo.jogador1;
+                    const placarAtual = jogo.placar;
                     jogo = {
                         palavra: '',
                         letrasAdivinhadas: [],
@@ -499,7 +500,7 @@
                         chatAberto: false,
                         jogador1: novoJogador1,
                         jogador2: novoJogador2,
-                        placar: jogo.placar
+                        placar: placarAtual
                     };
                     await set(jogoRef, jogo);
                     await set(ref(db, `jogos/${idJogo}/chat`), null);
@@ -542,7 +543,7 @@
                     chatAberto: false,
                     jogador1: '',
                     jogador2: '',
-                    placar: jogo.placar || { jogador1: { vitorias: 0 }, jogador2: { vitorias: 0 } }
+                    placar: jogo.placar || {}
                 };
             } catch (error) {
                 console.error('Erro ao carregar palavra:', error);
@@ -568,7 +569,10 @@
                 chatAberto: false,
                 jogador1: jogadorId,
                 jogador2: jogo.jogador2 || '',
-                placar: jogo.placar || { jogador1: { vitorias: 0 }, jogador2: { vitorias: 0 } }
+                placar: {
+                    [jogadorId]: { vitorias: 0 },
+                    [jogo.jogador2 || 'jogador2']: { vitorias: 0 }
+                }
             };
             try {
                 const jogoRef = ref(db, `jogos/${idJogo}`);
@@ -604,6 +608,9 @@
         }
 
         function validateJogo(data) {
+            const placar = data.placar || {};
+            if (!placar[data.jogador1]) placar[data.jogador1] = { vitorias: 0 };
+            if (!placar[data.jogador2]) placar[data.jogador2] = { vitorias: 0 };
             return {
                 palavra: data.palavra || '',
                 letrasAdivinhadas: Array.isArray(data.letrasAdivinhadas) ? data.letrasAdivinhadas : [],
@@ -613,7 +620,7 @@
                 chatAberto: data.chatAberto || false,
                 jogador1: data.jogador1 || '',
                 jogador2: data.jogador2 || '',
-                placar: data.placar || { jogador1: { vitorias: 0 }, jogador2: { vitorias: 0 } }
+                placar: placar
             };
         }
 
@@ -631,10 +638,14 @@
                 const snapshot = await get(jogoRef);
                 if (snapshot.exists()) {
                     jogo = validateJogo(snapshot.val());
+                    if (!jogo.placar[jogadorId]) jogo.placar[jogadorId] = { vitorias: 0 };
+                    if (!jogo.jogador2) {
+                        jogo.jogador2 = jogadorId;
+                        await update(jogoRef, { jogador2: jogadorId, placar: jogo.placar });
+                    }
                     if (!jogo.palavra && jogo.estado === 'aguardando_palavra') {
                         alert('Aguardando o Jogador 1 escolher uma palavra.');
                     }
-                    await update(jogoRef, { jogador2: jogadorId });
                     mostrarTela('jogo');
                     exibirJogo();
                     unsubscribeJogo = onValue(jogoRef, (snapshot) => {
@@ -692,7 +703,7 @@
             }
             document.getElementById('forca').textContent = forcaEstagios[jogo.erros];
             const botoesFimJogo = document.getElementById('botoesFimJogo');
-            const adivinhador = papel === 'jogador2' ? 'jogador2' : 'jogador1';
+            const adivinhador = papel;
             const observador = papel === 'jogador2' ? 'jogador1' : 'jogador2';
             if (jogo.estado === 'vencido' || jogo.estado === 'perdido') {
                 const botoesHTML = `
@@ -716,7 +727,7 @@
                         document.getElementById('mensagem').textContent = jogo.estado === 'vencido' ? 'Você perdeu!' : 'Você venceu!';
                     }
                     botoesFimJogo.innerHTML = botoesHTML;
-                    document.getElementById('placar').textContent = `Placar: Jogador 1 (Vitórias: ${jogo.placar.jogador1.vitorias}) | Jogador 2 (Vitórias: ${jogo.placar.jogador2.vitorias})`;
+                    document.getElementById('placar').textContent = `Placar: Jogador 1 (Vitórias: ${jogo.placar[jogo.jogador1].vitorias}) | Jogador 2 (Vitórias: ${jogo.placar[jogo.jogador2].vitorias})`;
                 }
                 document.getElementById('exemploFrases').textContent = jogo.frases.join(' | ');
                 botoesFimJogo.style.display = 'grid';
@@ -724,14 +735,13 @@
             } else {
                 document.getElementById('mensagem').textContent = jogo.palavra ? '' : 'Aguardando palavra do Jogador 1...';
                 document.getElementById('exemploFrases').textContent = '';
-                document.getElementById('placar').textContent = modo === 'multiplayer' ? `Placar: Jogador 1 (Vitórias: ${jogo.placar.jogador1.vitorias}) | Jogador 2 (Vitórias: ${jogo.placar.jogador2.vitorias})` : '';
+                document.getElementById('placar').textContent = modo === 'multiplayer' ? `Placar: Jogador 1 (Vitórias: ${jogo.placar[jogo.jogador1].vitorias}) | Jogador 2 (Vitórias: ${jogo.placar[jogo.jogador2].vitorias})` : '';
                 botoesFimJogo.style.display = 'none';
             }
         }
 
         async function adivinharLetra() {
             const adivinhador = papel;
-            const observador = papel === 'jogador2' ? 'jogador1' : 'jogador2';
             if (adivinhador !== papel || jogo.estado !== 'em andamento') {
                 console.log('Adivinhar letra bloqueado: papel=', papel, 'estado=', jogo.estado);
                 return;
@@ -764,24 +774,15 @@
             if (letrasFaltando.length === 0) {
                 jogo.estado = 'vencido';
                 if (modo === 'multiplayer') {
-                    if (adivinhador === 'jogador2') {
-                        jogo.placar.jogador2.vitorias += 1;
-                        console.log(`Vitória do Adivinhador (Jogador 2) - Placar: J1: ${jogo.placar.jogador1.vitorias}, J2: ${jogo.placar.jogador2.vitorias}`);
-                    } else {
-                        jogo.placar.jogador1.vitorias += 1;
-                        console.log(`Vitória do Adivinhador (Jogador 1) - Placar: J1: ${jogo.placar.jogador1.vitorias}, J2: ${jogo.placar.jogador2.vitorias}`);
-                    }
+                    jogo.placar[jogadorId].vitorias += 1;
+                    console.log(`Vitória do Adivinhador (ID: ${jogadorId}) - Placar: J1 (${jogo.jogador1}): ${jogo.placar[jogo.jogador1].vitorias}, J2 (${jogo.jogador2}): ${jogo.placar[jogo.jogador2].vitorias}`);
                 }
             } else if (jogo.erros >= 6) {
                 jogo.estado = 'perdido';
                 if (modo === 'multiplayer') {
-                    if (observador === 'jogador1') {
-                        jogo.placar.jogador1.vitorias += 1;
-                        console.log(`Vitória do Observador (Jogador 1) - Placar: J1: ${jogo.placar.jogador1.vitorias}, J2: ${jogo.placar.jogador2.vitorias}`);
-                    } else {
-                        jogo.placar.jogador2.vitorias += 1;
-                        console.log(`Vitória do Observador (Jogador 2) - Placar: J1: ${jogo.placar.jogador1.vitorias}, J2: ${jogo.placar.jogador2.vitorias}`);
-                    }
+                    const idObservador = jogadorId === jogo.jogador1 ? jogo.jogador2 : jogo.jogador1;
+                    jogo.placar[idObservador].vitorias += 1;
+                    console.log(`Vitória do Observador (ID: ${idObservador}) - Placar: J1 (${jogo.jogador1}): ${jogo.placar[jogo.jogador1].vitorias}, J2 (${jogo.jogador2}): ${jogo.placar[jogo.jogador2].vitorias}`);
                 }
             }
             if (modo === 'multiplayer') {
