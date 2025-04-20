@@ -153,7 +153,7 @@
             position: fixed;
             bottom: 20px;
             right: 20px;
-            display: none;
+            display: block;
         }
         #closeChatBtn {
             background-color: #444444;
@@ -351,12 +351,13 @@
             document.getElementById('telaInicial').style.display = 'none';
             document.getElementById('telaJogo').style.display = 'none';
             document.getElementById('chatContainer').style.display = 'none';
+            document.getElementById('chatBtn').style.display = 'none';
+            document.getElementById('closeChatBtn').style.display = 'none';
             if (tela === 'inicial') {
-                document.getElementById('telaInicial').style.display = 'block';
+                document.getElementById('telaInicial').style.display = 'flex';
                 document.getElementById('opcoesMultiplayer').style.display = 'none';
                 document.getElementById('criarJogo').style.display = 'none';
                 document.getElementById('entrarJogo').style.display = 'none';
-                document.getElementById('chatBtn').style.display = 'none';
                 if (unsubscribeJogo) {
                     unsubscribeJogo();
                     unsubscribeJogo = null;
@@ -368,13 +369,9 @@
             } else if (tela === 'jogo') {
                 document.getElementById('telaJogo').style.display = 'block';
                 if (modo === 'multiplayer') {
-                    document.getElementById('chatBtn').style.display = 'block';
+                    document.getElementById('chatBtn').style.display = chatAberto ? 'none' : 'block';
                     document.getElementById('closeChatBtn').style.display = chatAberto ? 'block' : 'none';
-                    if (chatAberto) {
-                        document.getElementById('chatContainer').style.display = 'flex';
-                    } else {
-                        document.getElementById('chatContainer').style.display = 'none';
-                    }
+                    document.getElementById('chatContainer').style.display = chatAberto ? 'flex' : 'none';
                 }
                 if (papel === 'jogador2') {
                     document.getElementById('letraInput').focus();
@@ -383,7 +380,7 @@
         }
 
         function mostrarOpcoesMultiplayer() {
-            document.getElementById('opcoesMultiplayer').style.display = 'block';
+            document.getElementById('opcoesMultiplayer').style.display = 'flex';
             document.getElementById('criarJogo').style.display = 'none';
             document.getElementById('entrarJogo').style.display = 'none';
         }
@@ -412,14 +409,14 @@
             if (chatAberto) {
                 telaJogo.classList.add('chat-aberto');
                 chatContainer.style.display = 'flex';
-                chatBtn.textContent = 'Fechar Chat';
+                chatBtn.style.display = 'none';
                 closeChatBtn.style.display = 'block';
                 document.getElementById('chatInput').focus();
                 update(ref(db, `jogos/${idJogo}`), { chatAberto: true });
             } else {
                 telaJogo.classList.remove('chat-aberto');
                 chatContainer.style.display = 'none';
-                chatBtn.textContent = 'Abrir Chat';
+                chatBtn.style.display = 'block';
                 closeChatBtn.style.display = 'none';
                 update(ref(db, `jogos/${idJogo}`), { chatAberto: false });
                 if (papel === 'jogador2') {
@@ -713,7 +710,10 @@
         }
 
         async function adivinharLetra() {
-            if (papel !== 'jogador2' || jogo.estado !== 'em andamento') return;
+            if (papel !== 'jogador2' || jogo.estado !== 'em andamento') {
+                console.log('Adivinhar letra bloqueado: papel=', papel, 'estado=', jogo.estado);
+                return;
+            }
             const letra = document.getElementById('letraInput').value.trim().toLowerCase();
             if (!letra || letra.length !== 1 || !/[a-záéíóúâêîôûãõç]/.test(letra)) {
                 alert('Digite uma letra válida (a-z, acentos ou ç).');
@@ -724,28 +724,32 @@
                 alert('Você já adivinhou essa letra.');
                 return;
             }
+            console.log('Letra adivinhada:', letra, 'Normalizada:', letraNormalizada);
             jogo.letrasAdivinhadas.push(letra);
             const palavraNormalizada = normalizarPalavra(jogo.palavra);
-            if (palavraNormalizada.includes(letraNormalizada)) {
-                const letrasFaltando = palavraNormalizada.split('').filter((l, i) => {
-                    const letraOriginalNormalizada = normalizarLetra(jogo.palavra[i]);
-                    return !jogo.letrasAdivinhadas.some(la => normalizarLetra(la) === letraOriginalNormalizada);
-                });
-                if (letrasFaltando.length === 0) {
-                    jogo.estado = 'vencido';
-                    if (modo === 'multiplayer') {
-                        jogo.placar.jogador2.vitorias += 1;
-                        console.log(`Vitória do Jogador 2 - Placar: J1: ${jogo.placar.jogador1.vitorias}, J2: ${jogo.placar.jogador2.vitorias}`);
-                    }
-                }
-            } else {
+            let letrasFaltando = palavraNormalizada.split('').filter((l, i) => {
+                const letraOriginalNormalizada = normalizarLetra(jogo.palavra[i]);
+                return !jogo.letrasAdivinhadas.some(la => normalizarLetra(la) === letraOriginalNormalizada);
+            });
+            if (!palavraNormalizada.includes(letraNormalizada)) {
                 jogo.erros += 1;
-                if (jogo.erros >= 6) {
-                    jogo.estado = 'perdido';
-                    if (modo === 'multiplayer') {
-                        jogo.placar.jogador1.vitorias += 1;
-                        console.log(`Vitória do Jogador 1 - Placar: J1: ${jogo.placar.jogador1.vitorias}, J2: ${jogo.placar.jogador2.vitorias}`);
-                    }
+                console.log('Erro cometido. Total de erros:', jogo.erros);
+            }
+            letrasFaltando = palavraNormalizada.split('').filter((l, i) => {
+                const letraOriginalNormalizada = normalizarLetra(jogo.palavra[i]);
+                return !jogo.letrasAdivinhadas.some(la => normalizarLetra(la) === letraOriginalNormalizada);
+            });
+            if (letrasFaltando.length === 0) {
+                jogo.estado = 'vencido';
+                if (modo === 'multiplayer') {
+                    jogo.placar.jogador2.vitorias += 1;
+                    console.log(`Vitória do Jogador 2 - Placar: J1: ${jogo.placar.jogador1.vitorias}, J2: ${jogo.placar.jogador2.vitorias}`);
+                }
+            } else if (jogo.erros >= 6) {
+                jogo.estado = 'perdido';
+                if (modo === 'multiplayer') {
+                    jogo.placar.jogador1.vitorias += 1;
+                    console.log(`Vitória do Jogador 1 - Placar: J1: ${jogo.placar.jogador1.vitorias}, J2: ${jogo.placar.jogador2.vitorias}`);
                 }
             }
             if (modo === 'multiplayer') {
@@ -757,6 +761,7 @@
                         estado: jogo.estado,
                         placar: jogo.placar
                     });
+                    console.log('Jogo atualizado no Firebase:', jogo);
                 } catch (error) {
                     console.error('Erro ao atualizar jogo:', error);
                     alert('Erro ao atualizar o jogo: ' + error.message);
@@ -803,7 +808,7 @@
         });
 
         document.getElementById('chatBtn').addEventListener('click', () => {
-            console.log('Botão Chat clicado');
+            console.log('Botão Abrir Chat clicado');
             toggleChat();
         });
 
