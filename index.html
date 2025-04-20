@@ -373,7 +373,7 @@
                     document.getElementById('closeChatBtn').style.display = chatAberto ? 'block' : 'none';
                     document.getElementById('chatContainer').style.display = chatAberto ? 'flex' : 'none';
                 }
-                if (papel === 'jogador2') {
+                if (papel === 'jogador2' && jogo.estado === 'em andamento') {
                     document.getElementById('letraInput').focus();
                 }
             }
@@ -419,7 +419,7 @@
                 chatBtn.style.display = 'block';
                 closeChatBtn.style.display = 'none';
                 update(ref(db, `jogos/${idJogo}`), { chatAberto: false });
-                if (papel === 'jogador2') {
+                if (papel === 'jogador2' && jogo.estado === 'em andamento') {
                     document.getElementById('letraInput').focus();
                 }
             }
@@ -492,6 +492,7 @@
                     await set(jogoRef, jogo);
                     await set(ref(db, `jogos/${idJogo}/chat`), null);
                     papel = jogadorId === novoJogador1 ? 'jogador1' : 'jogador2';
+                    console.log(`Papéis invertidos: jogadorId=${jogadorId}, novo papel=${papel}`);
                     if (papel === 'jogador1') {
                         mostrarTela('inicial');
                         mostrarCriarJogo();
@@ -566,7 +567,8 @@
                 unsubscribeJogo = onValue(jogoRef, (snapshot) => {
                     if (snapshot.exists()) {
                         jogo = validateJogo(snapshot.val());
-                        papel = jogo.jogador1 === jogadorId ? 'jogador1' : 'jogador2';
+                        papel = jogadorId === jogo.jogador1 ? 'jogador1' : 'jogador2';
+                        console.log(`Snapshot recebido: papel=${papel}, estado=${jogo.estado}, placar=`, jogo.placar);
                         if (jogo.estado === 'aguardando_palavra' && papel === 'jogador1') {
                             mostrarTela('inicial');
                             mostrarCriarJogo();
@@ -626,7 +628,8 @@
                     unsubscribeJogo = onValue(jogoRef, (snapshot) => {
                         if (snapshot.exists()) {
                             jogo = validateJogo(snapshot.val());
-                            papel = jogo.jogador1 === jogadorId ? 'jogador1' : 'jogador2';
+                            papel = jogadorId === jogo.jogador1 ? 'jogador1' : 'jogador2';
+                            console.log(`Snapshot recebido: papel=${papel}, estado=${jogo.estado}, placar=`, jogo.placar);
                             if (jogo.estado === 'aguardando_palavra' && papel === 'jogador1') {
                                 mostrarTela('inicial');
                                 mostrarCriarJogo();
@@ -658,7 +661,9 @@
                 document.getElementById('placar').textContent = '';
                 return;
             }
-            if (papel === 'jogador1' && jogo.estado !== 'aguardando_palavra') {
+            const adivinhador = papel === 'jogador2' ? 'jogador2' : 'jogador1';
+            const observador = papel === 'jogador2' ? 'jogador1' : 'jogador2';
+            if (papel === observador && jogo.estado !== 'aguardando_palavra') {
                 document.getElementById('jogador1View').style.display = 'block';
                 document.getElementById('jogador2View').style.display = 'none';
                 document.getElementById('palavraCompleta').textContent = jogo.palavra;
@@ -690,7 +695,7 @@
                     botoesFimJogo.innerHTML = botoesHTML;
                     document.getElementById('placar').textContent = '';
                 } else {
-                    if (papel === 'jogador2') {
+                    if (papel === adivinhador) {
                         document.getElementById('mensagem').textContent = jogo.estado === 'vencido' ? 'Você venceu!' : `Você perdeu! A palavra era: ${jogo.palavra}`;
                     } else {
                         document.getElementById('mensagem').textContent = jogo.estado === 'vencido' ? 'Você perdeu!' : 'Você venceu!';
@@ -710,7 +715,9 @@
         }
 
         async function adivinharLetra() {
-            if (papel !== 'jogador2' || jogo.estado !== 'em andamento') {
+            const adivinhador = papel;
+            const observador = papel === 'jogador2' ? 'jogador1' : 'jogador2';
+            if (adivinhador !== papel || jogo.estado !== 'em andamento') {
                 console.log('Adivinhar letra bloqueado: papel=', papel, 'estado=', jogo.estado);
                 return;
             }
@@ -724,7 +731,7 @@
                 alert('Você já adivinhou essa letra.');
                 return;
             }
-            console.log('Letra adivinhada:', letra, 'Normalizada:', letraNormalizada);
+            console.log(`Letra adivinhada: ${letra}, Normalizada: ${letraNormalizada}, Adivinhador: ${adivinhador}`);
             jogo.letrasAdivinhadas.push(letra);
             const palavraNormalizada = normalizarPalavra(jogo.palavra);
             let letrasFaltando = palavraNormalizada.split('').filter((l, i) => {
@@ -733,7 +740,7 @@
             });
             if (!palavraNormalizada.includes(letraNormalizada)) {
                 jogo.erros += 1;
-                console.log('Erro cometido. Total de erros:', jogo.erros);
+                console.log(`Erro cometido. Total de erros: ${jogo.erros}`);
             }
             letrasFaltando = palavraNormalizada.split('').filter((l, i) => {
                 const letraOriginalNormalizada = normalizarLetra(jogo.palavra[i]);
@@ -742,14 +749,24 @@
             if (letrasFaltando.length === 0) {
                 jogo.estado = 'vencido';
                 if (modo === 'multiplayer') {
-                    jogo.placar.jogador2.vitorias += 1;
-                    console.log(`Vitória do Jogador 2 - Placar: J1: ${jogo.placar.jogador1.vitorias}, J2: ${jogo.placar.jogador2.vitorias}`);
+                    if (adivinhador === 'jogador2') {
+                        jogo.placar.jogador2.vitorias += 1;
+                        console.log(`Vitória do Adivinhador (Jogador 2) - Placar: J1: ${jogo.placar.jogador1.vitorias}, J2: ${jogo.placar.jogador2.vitorias}`);
+                    } else {
+                        jogo.placar.jogador1.vitorias += 1;
+                        console.log(`Vitória do Adivinhador (Jogador 1) - Placar: J1: ${jogo.placar.jogador1.vitorias}, J2: ${jogo.placar.jogador2.vitorias}`);
+                    }
                 }
             } else if (jogo.erros >= 6) {
                 jogo.estado = 'perdido';
                 if (modo === 'multiplayer') {
-                    jogo.placar.jogador1.vitorias += 1;
-                    console.log(`Vitória do Jogador 1 - Placar: J1: ${jogo.placar.jogador1.vitorias}, J2: ${jogo.placar.jogador2.vitorias}`);
+                    if (observador === 'jogador1') {
+                        jogo.placar.jogador1.vitorias += 1;
+                        console.log(`Vitória do Observador (Jogador 1) - Placar: J1: ${jogo.placar.jogador1.vitorias}, J2: ${jogo.placar.jogador2.vitorias}`);
+                    } else {
+                        jogo.placar.jogador2.vitorias += 1;
+                        console.log(`Vitória do Observador (Jogador 2) - Placar: J1: ${jogo.placar.jogador1.vitorias}, J2: ${jogo.placar.jogador2.vitorias}`);
+                    }
                 }
             }
             if (modo === 'multiplayer') {
