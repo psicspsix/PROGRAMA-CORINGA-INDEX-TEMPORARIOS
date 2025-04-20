@@ -110,7 +110,7 @@
         }
         #mensagem {
             font-size: 18px;
-            color: #ff5555;
+            color: #ffff00;
         }
         #exemploFrases {
             font-size: 16px;
@@ -276,6 +276,8 @@
             chatAberto: false,
             jogador1: '',
             jogador2: '',
+            jogador1Inicial: '',
+            jogador2Inicial: '',
             placar: {}
         };
         let unsubscribeJogo = null;
@@ -283,55 +285,13 @@
         let chatAberto = false;
 
         const forcaEstagios = [
-            ` +---+
- |   |
-     |
-     |
-     |
-     |
-=========`,
-            ` +---+
- |   |
- O   |
-     |
-     |
-     |
-=========`,
-            ` +---+
- |   |
- O   |
- |   |
-     |
-     |
-=========`,
-            ` +---+
- |   |
- O   |
-/|   |
-     |
-     |
-=========`,
-            ` +---+
- |   |
- O   |
-/|\\  |
-     |
-     |
-=========`,
-            ` +---+
- |   |
- O   |
-/|\\  |
-/    |
-     |
-=========`,
-            ` +---+
- |   |
- O   |
-/|\\  |
-/ \\  |
-     |
-=========`
+            ` +---+\n |   |\n     |\n     |\n     |\n     |\n=========`,
+            ` +---+\n |   |\n O   |\n     |\n     |\n     |\n=========`,
+            ` +---+\n |   |\n O   |\n |   |\n     |\n     |\n=========`,
+            ` +---+\n |   |\n O   |\n/|   |\n     |\n     |\n=========`,
+            ` +---+\n |   |\n O   |\n/|\\  |\n     |\n     |\n=========`,
+            ` +---+\n |   |\n O   |\n/|\\  |\n/    |\n     |\n=========`,
+            ` +---+\n |   |\n O   |\n/|\\  |\n/ \\  |\n     |\n=========`
         ];
 
         function normalizarLetra(letra) {
@@ -488,6 +448,18 @@
             } else if (modo === 'multiplayer') {
                 try {
                     const jogoRef = ref(db, `jogos/${idJogo}`);
+                    const snapshot = await get(jogoRef);
+                    if (!snapshot.exists()) {
+                        alert('O jogo não existe mais.');
+                        mostrarTela('inicial');
+                        return;
+                    }
+                    const jogoAtual = snapshot.val();
+                    if (jogoAtual.estado === 'reiniciando') {
+                        console.log('Jogo já está sendo reiniciado por outro jogador.');
+                        return;
+                    }
+                    await update(jogoRef, { estado: 'reiniciando' });
                     const novoJogador1 = jogo.jogador2;
                     const novoJogador2 = jogo.jogador1;
                     const placarAtual = jogo.placar;
@@ -500,6 +472,8 @@
                         chatAberto: false,
                         jogador1: novoJogador1,
                         jogador2: novoJogador2,
+                        jogador1Inicial: jogo.jogador1Inicial || jogo.jogador1,
+                        jogador2Inicial: jogo.jogador2Inicial || jogo.jogador2,
                         placar: placarAtual
                     });
                     await set(jogoRef, jogo);
@@ -514,6 +488,7 @@
                         mostrarTela('jogo');
                         exibirJogo();
                     }
+                    await update(jogoRef, { estado: 'aguardando_palavra' });
                 } catch (error) {
                     console.error('Erro ao reiniciar jogo:', error);
                     alert('Erro ao reiniciar jogo: ' + error.message);
@@ -543,6 +518,8 @@
                     chatAberto: false,
                     jogador1: '',
                     jogador2: '',
+                    jogador1Inicial: '',
+                    jogador2Inicial: '',
                     placar: jogo.placar || {}
                 };
             } catch (error) {
@@ -560,6 +537,9 @@
             modo = 'multiplayer';
             papel = 'jogador1';
             idJogo = idJogo || generateUniqueId();
+            const placarAtual = jogo.placar || {};
+            if (!placarAtual[jogadorId]) placarAtual[jogadorId] = { vitorias: 0 };
+            if (jogo.jogador2 && !placarAtual[jogo.jogador2]) placarAtual[jogo.jogador2] = { vitorias: 0 };
             jogo = {
                 palavra: palavra,
                 letrasAdivinhadas: [],
@@ -568,10 +548,10 @@
                 frases: [`Você usou "${palavra}" em uma frase!`, `Ótimo, "${palavra}" foi escolhida!`],
                 chatAberto: false,
                 jogador1: jogadorId,
-                jogador2: '',
-                placar: {
-                    [jogadorId]: { vitorias: 0 }
-                }
+                jogador2: jogo.jogador2 || '',
+                jogador1Inicial: jogo.jogador1Inicial || jogadorId,
+                jogador2Inicial: jogo.jogador2Inicial || jogo.jogador2,
+                placar: placarAtual
             };
             try {
                 const jogoRef = ref(db, `jogos/${idJogo}`);
@@ -619,6 +599,8 @@
                 chatAberto: data.chatAberto || false,
                 jogador1: data.jogador1 || '',
                 jogador2: data.jogador2 || '',
+                jogador1Inicial: data.jogador1Inicial || data.jogador1,
+                jogador2Inicial: data.jogador2Inicial || data.jogador2,
                 placar: placar
             };
         }
@@ -640,7 +622,12 @@
                     if (!jogo.placar[jogadorId]) jogo.placar[jogadorId] = { vitorias: 0 };
                     if (!jogo.jogador2) {
                         jogo.jogador2 = jogadorId;
-                        await update(jogoRef, { jogador2: jogadorId, placar: jogo.placar });
+                        jogo.jogador2Inicial = jogo.jogador2Inicial || jogadorId;
+                        await update(jogoRef, {
+                            jogador2: jogadorId,
+                            jogador2Inicial: jogo.jogador2Inicial,
+                            placar: jogo.placar
+                        });
                     }
                     if (!jogo.palavra && jogo.estado === 'aguardando_palavra') {
                         alert('Aguardando o Jogador 1 escolher uma palavra.');
@@ -702,32 +689,32 @@
             }
             document.getElementById('forca').textContent = forcaEstagios[jogo.erros];
             const botoesFimJogo = document.getElementById('botoesFimJogo');
-            const adivinhador = papel;
-            const observador = papel === 'jogador2' ? 'jogador1' : 'jogador2';
+            const botoesHTML = `
+                <button onclick="jogarNovamente()">Jogar Novamente</button>
+                <button onclick="window.open('https://translate.google.com.br/?sl=auto&tl=pt&text=${encodeURIComponent(jogo.palavra)}%0A&op=translate', '_blank')">Mostrar Tradução da Palavra</button>
+                <button onclick="window.open('https://www.reverso.net/tradu%C3%A7%C3%A3o-texto#sl=eng&tl=por&text=${encodeURIComponent(jogo.palavra)}%250A', '_blank')">Mostrar Palavra em Frases</button>
+                <button onclick="window.open('https://www.ccaa.com.br/blog/expressoes-em-ingles/', '_blank')">35 Expressões CCAA</button>
+                <button onclick="window.open('https://www.wizard.com.br/idiomas/20-expressoes-em-ingles-mais-usadas-em-uma-conversa/', '_blank')">20 Expressões Wizard</button>
+                <button onclick="window.open('https://fisk.com.br/blog/20-expressoes-idiomaticas-em-ingles', '_blank')">20 Expressões Fisk</button>
+                <button onclick="window.open('https://www.ef.com.br/guia-de-ingles/expressoes-idiomaticas-em-ingles/', '_blank')">Expressões EF Brasil</button>
+                <button onclick="window.open('https://www.youtube.com/watch?v=BIAITFJ8uTI&t=82s', '_blank')">Vídeo Teacher Carlos</button>
+            `;
             if (jogo.estado === 'vencido' || jogo.estado === 'perdido') {
-                const botoesHTML = `
-                    <button onclick="jogarNovamente()">Jogar Novamente</button>
-                    <button onclick="window.open('https://translate.google.com.br/?sl=auto&tl=pt&text=${encodeURIComponent(jogo.palavra)}%0A&op=translate', '_blank')">Mostrar Tradução da Palavra</button>
-                    <button onclick="window.open('https://www.reverso.net/tradu%C3%A7%C3%A3o-texto#sl=eng&tl=por&text=${encodeURIComponent(jogo.palavra)}%250A', '_blank')">Mostrar Palavra em Frases</button>
-                    <button onclick="window.open('https://www.ccaa.com.br/blog/expressoes-em-ingles/', '_blank')">35 Expressões CCAA</button>
-                    <button onclick="window.open('https://www.wizard.com.br/idiomas/20-expressoes-em-ingles-mais-usadas-em-uma-conversa/', '_blank')">20 Expressões Wizard</button>
-                    <button onclick="window.open('https://fisk.com.br/blog/20-expressoes-idiomaticas-em-ingles', '_blank')">20 Expressões Fisk</button>
-                    <button onclick="window.open('https://www.ef.com.br/guia-de-ingles/expressoes-idiomaticas-em-ingles/', '_blank')">Expressões EF Brasil</button>
-                    <button onclick="window.open('https://www.youtube.com/watch?v=BIAITFJ8uTI&t=82s', '_blank')">Vídeo Teacher Carlos</button>
-                `;
                 if (modo === 'solo') {
-                    document.getElementById('mensagem').textContent = jogo.estado === 'vencido' ? 'Você venceu!' : `Você perdeu! A palavra era: ${jogo.palavra}`;
+                    document.getElementById('mensagem').textContent = jogo.estado === 'vencido' ? 'VOCÊ VENCEU!' : `VOCÊ PERDEU! A palavra era: ${jogo.palavra}`;
                     botoesFimJogo.innerHTML = botoesHTML;
                     document.getElementById('placar').textContent = '';
                 } else {
-                    if (papel === adivinhador) {
-                        document.getElementById('mensagem').textContent = jogo.estado === 'vencido' ? 'Você venceu!' : `Você perdeu! A palavra era: ${jogo.palavra}`;
+                    if (papel === 'jogador2') {
+                        document.getElementById('mensagem').textContent = jogo.estado === 'vencido' ? 'VOCÊ VENCEU!' : `VOCÊ PERDEU! A palavra era: ${jogo.palavra}`;
                     } else {
-                        document.getElementById('mensagem').textContent = jogo.estado === 'vencido' ? 'Você perdeu!' : 'Você venceu!';
+                        document.getElementById('mensagem').textContent = jogo.estado === 'vencido' ? `VOCÊ PERDEU! A palavra era: ${jogo.palavra}` : 'VOCÊ VENCEU!';
                     }
                     botoesFimJogo.innerHTML = botoesHTML;
-                    const vitoriasJ1 = jogo.placar[jogo.jogador1] ? jogo.placar[jogo.jogador1].vitorias : 0;
-                    const vitoriasJ2 = jogo.placar[jogo.jogador2] ? jogo.placar[jogo.jogador2].vitorias : 0;
+                    const idJogador1 = jogo.jogador1Inicial || jogo.jogador1;
+                    const idJogador2 = jogo.jogador2Inicial || jogo.jogador2;
+                    const vitoriasJ1 = jogo.placar[idJogador1] ? jogo.placar[idJogador1].vitorias : 0;
+                    const vitoriasJ2 = jogo.placar[idJogador2] ? jogo.placar[idJogador2].vitorias : 0;
                     document.getElementById('placar').textContent = `Placar: Jogador 1 (Vitórias: ${vitoriasJ1}) | Jogador 2 (Vitórias: ${vitoriasJ2})`;
                 }
                 document.getElementById('exemploFrases').textContent = jogo.frases.join(' | ');
@@ -736,8 +723,10 @@
             } else {
                 document.getElementById('mensagem').textContent = jogo.palavra ? '' : 'Aguardando palavra do Jogador 1...';
                 document.getElementById('exemploFrases').textContent = '';
-                const vitoriasJ1 = jogo.placar[jogo.jogador1] ? jogo.placar[jogo.jogador1].vitorias : 0;
-                const vitoriasJ2 = jogo.placar[jogo.jogador2] ? jogo.placar[jogo.jogador2].vitorias : 0;
+                const idJogador1 = jogo.jogador1Inicial || jogo.jogador1;
+                const idJogador2 = jogo.jogador2Inicial || jogo.jogador2;
+                const vitoriasJ1 = jogo.placar[idJogador1] ? jogo.placar[idJogador1].vitorias : 0;
+                const vitoriasJ2 = jogo.placar[idJogador2] ? jogo.placar[idJogador2].vitorias : 0;
                 document.getElementById('placar').textContent = modo === 'multiplayer' ? `Placar: Jogador 1 (Vitórias: ${vitoriasJ1}) | Jogador 2 (Vitórias: ${vitoriasJ2})` : '';
                 botoesFimJogo.style.display = 'none';
             }
@@ -770,7 +759,11 @@
                 const letraOriginalNormalizada = normalizarLetra(jogo.palavra[i]);
                 return !jogo.letrasAdivinhadas.some(la => normalizarLetra(la) === letraOriginalNormalizada);
             });
+            exibirJogo();
             if (letrasFaltando.length === 0) {
+                if (modo === 'solo') {
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                }
                 jogo.estado = 'vencido';
                 if (modo === 'multiplayer') {
                     if (!jogo.placar[jogadorId]) jogo.placar[jogadorId] = { vitorias: 0 };
