@@ -245,7 +245,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, set, get, update, onValue, push } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { get-database, ref, set, get, update, onValue, push } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDYju4ux-XrvEXaP2aSXbY2eJd_Qj4AKow",
@@ -661,14 +661,15 @@
                 document.getElementById('placar').textContent = '';
                 return;
             }
-            const adivinhador = papel === 'jogador2' ? 'jogador2' : 'jogador1';
-            const observador = papel === 'jogador2' ? 'jogador1' : 'jogador2';
-            if (papel === observador && jogo.estado !== 'aguardando_palavra') {
+            console.log(`Exibindo jogo: papel=${papel}, estado=${jogo.estado}`);
+            if (papel === 'jogador1' && jogo.estado !== 'aguardando_palavra') {
+                console.log('Mostrando tela de observação (#jogador1View) para Jogador 1');
                 document.getElementById('jogador1View').style.display = 'block';
                 document.getElementById('jogador2View').style.display = 'none';
                 document.getElementById('palavraCompleta').textContent = jogo.palavra;
                 document.getElementById('letrasAdivinhadasJogador1').textContent = jogo.letrasAdivinhadas.join(', ');
             } else {
+                console.log('Mostrando tela de adivinhação (#jogador2View) para Jogador 2');
                 document.getElementById('jogador1View').style.display = 'none';
                 document.getElementById('jogador2View').style.display = 'block';
                 const palavraOculta = jogo.palavra.split('').map((letra, i) => {
@@ -679,6 +680,8 @@
             }
             document.getElementById('forca').textContent = forcaEstagios[jogo.erros];
             const botoesFimJogo = document.getElementById('botoesFimJogo');
+            const adivinhador = papel === 'jogador2' ? 'jogador2' : 'jogador1';
+            const observador = papel === 'jogador2' ? 'jogador1' : 'jogador2';
             if (jogo.estado === 'vencido' || jogo.estado === 'perdido') {
                 const botoesHTML = `
                     <button onclick="jogarNovamente()">Jogar Novamente</button>
@@ -736,7 +739,7 @@
             const palavraNormalizada = normalizarPalavra(jogo.palavra);
             let letrasFaltando = palavraNormalizada.split('').filter((l, i) => {
                 const letraOriginalNormalizada = normalizarLetra(jogo.palavra[i]);
-                return !jogo.letrasAdivinhadas.some(la => normalizarLetra(la) === letraOriginalNormalizada);
+                return ! Wjogo.letrasAdivinhadas.some(la => normalizarLetra(la) === letraOriginalNormalizada);
             });
             if (!palavraNormalizada.includes(letraNormalizada)) {
                 jogo.erros += 1;
