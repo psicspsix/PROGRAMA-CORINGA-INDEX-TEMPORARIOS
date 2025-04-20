@@ -99,6 +99,15 @@
         #jogador1View, #jogador2View {
             margin-bottom: 20px;
         }
+        #chatBtn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #444444;
+            padding: 10px 20px;
+            z-index: 1000;
+            display: none;
+        }
         #chatContainer {
             display: none;
             position: fixed;
@@ -129,12 +138,6 @@
             height: 60px;
             overflow-y: auto;
             margin-top: 10px;
-        }
-        #fecharChatBtn {
-            background-color: #444444;
-            padding: 10px 20px;
-            align-self: flex-end;
-            margin-bottom: 10px;
         }
         .mensagem {
             margin: 5px 0;
@@ -198,10 +201,10 @@
         <p id="placar"></p>
         <div id="botoesFimJogo"></div>
     </div>
+    <button id="chatBtn">Chat</button>
     <div id="chatContainer">
         <div id="chatMessages"></div>
         <div id="chatInputContainer">
-            <button id="fecharChatBtn">Fechar Chat</button>
             <textarea id="chatInput" placeholder="Digite sua mensagem..."></textarea>
         </div>
     </div>
@@ -313,6 +316,7 @@
         function mostrarTela(tela) {
             document.getElementById('telaInicial').style.display = 'none';
             document.getElementById('telaJogo').style.display = 'none';
+            document.getElementById('chatBtn').style.display = 'none';
             document.getElementById('chatContainer').style.display = 'none';
             if (tela === 'inicial') {
                 document.getElementById('telaInicial').style.display = 'block';
@@ -329,8 +333,8 @@
                 }
             } else if (tela === 'jogo') {
                 document.getElementById('telaJogo').style.display = 'block';
-                if (modo === 'multiplayer' && chatAberto) {
-                    document.getElementById('chatContainer').style.display = 'flex';
+                if (modo === 'multiplayer') {
+                    document.getElementById('chatBtn').style.display = 'block';
                 }
                 if (papel === 'jogador2') {
                     document.getElementById('letraInput').focus();
@@ -363,17 +367,18 @@
             chatAberto = !chatAberto;
             const telaJogo = document.getElementById('telaJogo');
             const chatContainer = document.getElementById('chatContainer');
+            const chatBtn = document.getElementById('chatBtn');
             console.log(`Toggling chat: chatAberto=${chatAberto}`);
             if (chatAberto) {
                 telaJogo.classList.add('chat-aberto');
                 chatContainer.style.display = 'flex';
-                document.getElementById('fecharChatBtn').textContent = 'Fechar Chat';
+                chatBtn.textContent = 'Fechar Chat';
                 document.getElementById('chatInput').focus();
                 update(ref(db, `jogos/${idJogo}`), { chatAberto: true });
             } else {
                 telaJogo.classList.remove('chat-aberto');
                 chatContainer.style.display = 'none';
-                document.getElementById('fecharChatBtn').textContent = 'Abrir Chat';
+                chatBtn.textContent = 'Chat';
                 update(ref(db, `jogos/${idJogo}`), { chatAberto: false });
                 if (papel === 'jogador2') {
                     document.getElementById('letraInput').focus();
@@ -736,8 +741,8 @@
             adivinharLetra();
         });
 
-        document.getElementById('fecharChatBtn').addEventListener('click', () => {
-            console.log('Botão Fechar Chat clicado');
+        document.getElementById('chatBtn').addEventListener('click', () => {
+            console.log('Botão Chat clicado');
             toggleChat();
         });
 
