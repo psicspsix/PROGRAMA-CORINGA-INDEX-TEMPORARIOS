@@ -240,7 +240,7 @@
     <button id="closeChatBtn" style="display: none;">Fechar Chat</button>
     <div id="chatContainer">
         <div id="chatMessages"></div>
-        <div id="chatInputContainer">
+        <div id="chatinInputContainer">
             <textarea id="chatInput" placeholder="Digite sua mensagem..."></textarea>
         </div>
     </div>
@@ -491,7 +491,7 @@
                     const novoJogador1 = jogo.jogador2;
                     const novoJogador2 = jogo.jogador1;
                     const placarAtual = jogo.placar;
-                    jogo = {
+                    jogo = validateJogo({
                         palavra: '',
                         letrasAdivinhadas: [],
                         erros: 0,
@@ -501,7 +501,7 @@
                         jogador1: novoJogador1,
                         jogador2: novoJogador2,
                         placar: placarAtual
-                    };
+                    });
                     await set(jogoRef, jogo);
                     await set(ref(db, `jogos/${idJogo}/chat`), null);
                     papel = jogadorId === novoJogador1 ? 'jogador1' : 'jogador2';
@@ -762,35 +762,36 @@
             console.log(`Letra adivinhada: ${letra}, Normalizada: ${letraNormalizada}, Adivinhador: ${adivinhador}`);
             jogo.letrasAdivinhadas.push(letra);
             const palavraNormalizada = normalizarPalavra(jogo.palavra);
-            let letrasFaltando = palavraNormalizada.split('').filter((l, i) => {
-                const letraOriginalNormalizada = normalizarLetra(jogo.palavra[i]);
-                return !jogo.letrasAdivinhadas.some(la => normalizarLetra(la) === letraOriginalNormalizada);
-            });
             if (!palavraNormalizada.includes(letraNormalizada)) {
                 jogo.erros += 1;
                 console.log(`Erro cometido. Total de erros: ${jogo.erros}`);
             }
-            letrasFaltando = palavraNormalizada.split('').filter((l, i) => {
+            const letrasFaltando = palavraNormalizada.split('').filter((l, i) => {
                 const letraOriginalNormalizada = normalizarLetra(jogo.palavra[i]);
                 return !jogo.letrasAdivinhadas.some(la => normalizarLetra(la) === letraOriginalNormalizada);
             });
             if (letrasFaltando.length === 0) {
                 jogo.estado = 'vencido';
                 if (modo === 'multiplayer') {
+                    if (!jogo.placar[jogadorId]) jogo.placar[jogadorId] = { vitorias: 0 };
                     jogo.placar[jogadorId].vitorias += 1;
-                    console.log(`Vitória do Adivinhador (ID: ${jogadorId}) - Placar: J1 (${jogo.jogador1}): ${jogo.placar[jogo.jogador1].vitorias}, J2 (${jogo.jogador2}): ${jogo.placar[jogo.jogador2] ? jogo.placar[jogo.jogador2].vitorias : 0}`);
+                    console.log(`Vitória do Adivinhador (ID: ${jogadorId}) - Placar: J1 (${jogo.jogador1}): ${jogo.placar[jogo.jogador1]?.vitorias || 0}, J2 (${jogo.jogador2}): ${jogo.placar[jogo.jogador2]?.vitorias || 0}`);
                 }
             } else if (jogo.erros >= 6) {
                 jogo.estado = 'perdido';
                 if (modo === 'multiplayer') {
                     const idObservador = jogadorId === jogo.jogador1 ? jogo.jogador2 : jogo.jogador1;
-                    if (idObservador) jogo.placar[idObservador].vitorias += 1;
-                    console.log(`Vitória do Observador (ID: ${idObservador || 'nenhum'}) - Placar: J1 (${jogo.jogador1}): ${jogo.placar[jogo.jogador1].vitorias}, J2 (${jogo.jogador2}): ${jogo.placar[jogo.jogador2] ? jogo.placar[jogo.jogador2].vitorias : 0}`);
+                    if (idObservador) {
+                        if (!jogo.placar[idObservador]) jogo.placar[idObservador] = { vitorias: 0 };
+                        jogo.placar[idObservador].vitorias += 1;
+                        console.log(`Vitória do Observador (ID: ${idObservador}) - Placar: J1 (${jogo.jogador1}): ${jogo.placar[jogo.jogador1]?.vitorias || 0}, J2 (${jogo.jogador2}): ${jogo.placar[jogo.jogador2]?.vitorias || 0}`);
+                    }
                 }
             }
             if (modo === 'multiplayer') {
                 try {
                     const jogoRef = ref(db, `jogos/${idJogo}`);
+                    await new Promise(resolve => setTimeout(resolve, 100));
                     await update(jogoRef, {
                         letrasAdivinhadas: jogo.letrasAdivinhadas,
                         erros: jogo.erros,
