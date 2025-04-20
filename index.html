@@ -99,15 +99,6 @@
         #jogador1View, #jogador2View {
             margin-bottom: 20px;
         }
-        #chatBtn {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background-color: #444444;
-            padding: 10px 20px;
-            z-index: 1000;
-            display: none;
-        }
         #chatContainer {
             display: none;
             position: fixed;
@@ -132,6 +123,12 @@
         #chatInputContainer {
             display: flex;
             flex-direction: column;
+        }
+        #chatBtn {
+            background-color: #444444;
+            padding: 10px 20px;
+            align-self: flex-end;
+            margin-bottom: 10px;
         }
         #chatInput {
             resize: none;
@@ -201,10 +198,10 @@
         <p id="placar"></p>
         <div id="botoesFimJogo"></div>
     </div>
-    <button id="chatBtn">Chat</button>
     <div id="chatContainer">
         <div id="chatMessages"></div>
         <div id="chatInputContainer">
+            <button id="chatBtn">Abrir Chat</button>
             <textarea id="chatInput" placeholder="Digite sua mensagem..."></textarea>
         </div>
     </div>
@@ -316,7 +313,6 @@
         function mostrarTela(tela) {
             document.getElementById('telaInicial').style.display = 'none';
             document.getElementById('telaJogo').style.display = 'none';
-            document.getElementById('chatBtn').style.display = 'none';
             document.getElementById('chatContainer').style.display = 'none';
             if (tela === 'inicial') {
                 document.getElementById('telaInicial').style.display = 'block';
@@ -333,8 +329,8 @@
                 }
             } else if (tela === 'jogo') {
                 document.getElementById('telaJogo').style.display = 'block';
-                if (modo === 'multiplayer') {
-                    document.getElementById('chatBtn').style.display = 'block';
+                if (modo === 'multiplayer' && chatAberto) {
+                    document.getElementById('chatContainer').style.display = 'flex';
                 }
                 if (papel === 'jogador2') {
                     document.getElementById('letraInput').focus();
@@ -378,7 +374,7 @@
             } else {
                 telaJogo.classList.remove('chat-aberto');
                 chatContainer.style.display = 'none';
-                chatBtn.textContent = 'Chat';
+                chatBtn.textContent = 'Abrir Chat';
                 update(ref(db, `jogos/${idJogo}`), { chatAberto: false });
                 if (papel === 'jogador2') {
                     document.getElementById('letraInput').focus();
@@ -439,7 +435,7 @@
                     const jogoRef = ref(db, `jogos/${idJogo}`);
                     const novoJogador1 = jogo.jogador2;
                     const novoJogador2 = jogo.jogador1;
-                    await update(jogoRef, {
+                    jogo = {
                         palavra: '',
                         letrasAdivinhadas: [],
                         erros: 0,
@@ -449,7 +445,8 @@
                         jogador1: novoJogador1,
                         jogador2: novoJogador2,
                         placar: jogo.placar
-                    });
+                    };
+                    await set(jogoRef, jogo);
                     await set(ref(db, `jogos/${idJogo}/chat`), null);
                     papel = jogadorId === novoJogador1 ? 'jogador1' : 'jogador2';
                     if (papel === 'jogador1') {
@@ -458,7 +455,6 @@
                     } else {
                         alert('Aguardando o Jogador 1 escolher uma nova palavra.');
                         mostrarTela('jogo');
-                        jogo.estado = 'aguardando_palavra';
                         exibirJogo();
                     }
                 } catch (error) {
@@ -515,7 +511,7 @@
                 frases: [`Você usou "${palavra}" em uma frase!`, `Ótimo, "${palavra}" foi escolhida!`],
                 chatAberto: false,
                 jogador1: jogadorId,
-                jogador2: '',
+                jogador2: jogo.jogador2 || '',
                 placar: jogo.placar || { jogador1: { vitorias: 0 }, jogador2: { vitorias: 0 } }
             };
             try {
@@ -528,7 +524,13 @@
                     if (snapshot.exists()) {
                         jogo = validateJogo(snapshot.val());
                         papel = jogo.jogador1 === jogadorId ? 'jogador1' : 'jogador2';
-                        exibirJogo();
+                        if (jogo.estado === 'aguardando_palavra' && papel === 'jogador1') {
+                            mostrarTela('inicial');
+                            mostrarCriarJogo();
+                        } else {
+                            mostrarTela('jogo');
+                            exibirJogo();
+                        }
                         if (jogo.chatAberto && !chatAberto) toggleChat();
                         else if (!jogo.chatAberto && chatAberto) toggleChat();
                     }
@@ -572,7 +574,7 @@
                 const snapshot = await get(jogoRef);
                 if (snapshot.exists()) {
                     jogo = validateJogo(snapshot.val());
-                    if (!jogo.palavra && jogo.estado !== 'aguardando_palavra') {
+                    if (!jogo.palavra && jogo.estado === 'aguardando_palavra') {
                         alert('Aguardando o Jogador 1 escolher uma palavra.');
                     }
                     await update(jogoRef, { jogador2: jogadorId });
@@ -582,7 +584,13 @@
                         if (snapshot.exists()) {
                             jogo = validateJogo(snapshot.val());
                             papel = jogo.jogador1 === jogadorId ? 'jogador1' : 'jogador2';
-                            exibirJogo();
+                            if (jogo.estado === 'aguardando_palavra' && papel === 'jogador1') {
+                                mostrarTela('inicial');
+                                mostrarCriarJogo();
+                            } else {
+                                mostrarTela('jogo');
+                                exibirJogo();
+                            }
                             if (jogo.chatAberto && !chatAberto) toggleChat();
                             else if (!jogo.chatAberto && chatAberto) toggleChat();
                         } else {
@@ -607,7 +615,7 @@
                 document.getElementById('placar').textContent = '';
                 return;
             }
-            if (papel === 'jogador1') {
+            if (papel === 'jogador1' && jogo.estado !== 'aguardando_palavra') {
                 document.getElementById('jogador1View').style.display = 'block';
                 document.getElementById('jogador2View').style.display = 'none';
                 document.getElementById('palavraCompleta').textContent = jogo.palavra;
