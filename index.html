@@ -168,7 +168,7 @@
 <body>
     <div id="telaInicial">
         <h1>Jogo de Forca</h1>
-        <button id="jogarSozinhoBtn">Jogar Sozinho</button>
+        <button id="jogarSozinhoBtn">Jogar Sozinho (Palavras em Inglês)</button>
         <button id="jogarComAmigoBtn">Jogar com Amigo</button>
         <div id="opcoesMultiplayer" style="display: none;">
             <button id="criarJogoBtn">Criar Jogo</button>
@@ -697,6 +697,7 @@
                 if (letrasFaltando.length === 0) {
                     jogo.estado = 'vencido';
                     if (modo === 'multiplayer') {
+                        console.log(`Vitória do Jogador 2 (adivinhador, id=${jogo.jogador2})`);
                         jogo.placar.jogador2.vitorias += 1;
                     }
                 }
@@ -705,10 +706,12 @@
                 if (jogo.erros >= 6) {
                     jogo.estado = 'perdido';
                     if (modo === 'multiplayer') {
+                        console.log(`Vitória do Jogador 1 (fornecedor, id=${jogo.jogador1})`);
                         jogo.placar.jogador1.vitorias += 1;
                     }
                 }
             }
+            console.log(`Atribuindo vitória: estado=${jogo.estado}, jogador1Id=${jogo.jogador1}, jogador2Id=${jogo.jogador2}, placar=${JSON.stringify(jogo.placar)}`);
             if (modo === 'multiplayer') {
                 try {
                     const jogoRef = ref(db, `jogos/${idJogo}`);
