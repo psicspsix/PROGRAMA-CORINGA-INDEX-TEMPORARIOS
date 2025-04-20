@@ -139,12 +139,6 @@
             overflow-y: auto;
             margin-top: 10px;
         }
-        #fecharChatBtn {
-            background-color: #444444;
-            padding: 10px 20px;
-            align-self: flex-end;
-            margin-bottom: 10px;
-        }
         .mensagem {
             margin: 5px 0;
             padding: 8px;
@@ -211,7 +205,6 @@
     <div id="chatContainer">
         <div id="chatMessages"></div>
         <div id="chatInputContainer">
-            <button id="fecharChatBtn">Fechar Chat</button>
             <textarea id="chatInput" placeholder="Digite sua mensagem..."></textarea>
         </div>
     </div>
@@ -246,7 +239,7 @@
             chatAberto: false,
             fornecedor: '',
             adivinhador: '',
-            placar: { fornecedor: { vitorias: 0, derrotas: 0 }, adivinhador: { vitorias: 0, derrotas: 0 } }
+            placar: { fornecedor: { vitorias: 0 }, adivinhador: { vitorias: 0 } }
         };
         let unsubscribeJogo = null;
         let unsubscribeChat = null;
@@ -382,23 +375,6 @@
                 chatBtn.textContent = 'Fechar Chat';
                 document.getElementById('chatInput').focus();
                 update(ref(db, `jogos/${idJogo}`), { chatAberto: true });
-                // Garante que apenas um botão Fechar Chat existe
-                const chatInputContainer = document.getElementById('chatInputContainer');
-                chatInputContainer.innerHTML = `
-                    <button id="fecharChatBtn">Fechar Chat</button>
-                    <textarea id="chatInput" placeholder="Digite sua mensagem..."></textarea>
-                `;
-                document.getElementById('fecharChatBtn').addEventListener('click', () => {
-                    console.log('Botão Fechar Chat clicado');
-                    toggleChat();
-                });
-                document.getElementById('chatInput').addEventListener('keydown', (event) => {
-                    if (event.key === 'Enter' && !event.shiftKey) {
-                        event.preventDefault();
-                        console.log('Tecla Enter pressionada no campo chatInput');
-                        enviarMensagem();
-                    }
-                });
             } else {
                 telaJogo.classList.remove('chat-aberto');
                 chatContainer.style.display = 'none';
@@ -471,7 +447,8 @@
                         frases: [],
                         chatAberto: false,
                         fornecedor: novoFornecedor,
-                        adivinhador: novoAdivinhador
+                        adivinhador: novoAdivinhador,
+                        placar: jogo.placar // Mantém o placar
                     });
                     await set(ref(db, `jogos/${idJogo}/chat`), null);
                     papel = jogadorId === novoFornecedor ? 'fornecedor' : 'adivinhador';
@@ -512,7 +489,7 @@
                     chatAberto: false,
                     fornecedor: '',
                     adivinhador: '',
-                    placar: jogo.placar || { fornecedor: { vitorias: 0, derrotas: 0 }, adivinhador: { vitorias: 0, derrotas: 0 } }
+                    placar: { fornecedor: { vitorias: 0 }, adivinhador: { vitorias: 0 } }
                 };
             } catch (error) {
                 console.error('Erro ao carregar palavra:', error);
@@ -538,7 +515,7 @@
                 chatAberto: false,
                 fornecedor: jogadorId,
                 adivinhador: '',
-                placar: jogo.placar || { fornecedor: { vitorias: 0, derrotas: 0 }, adivinhador: { vitorias: 0, derrotas: 0 } }
+                placar: { fornecedor: { vitorias: 0 }, adivinhador: { vitorias: 0 } }
             };
             try {
                 const jogoRef = ref(db, `jogos/${idJogo}`);
@@ -576,7 +553,7 @@
                 chatAberto: data.chatAberto || false,
                 fornecedor: data.fornecedor || '',
                 adivinhador: data.adivinhador || '',
-                placar: data.placar || { fornecedor: { vitorias: 0, derrotas: 0 }, adivinhador: { vitorias: 0, derrotas: 0 } }
+                placar: data.placar || { fornecedor: { vitorias: 0 }, adivinhador: { vitorias: 0 } }
             };
         }
 
@@ -667,7 +644,7 @@
                         document.getElementById('mensagem').textContent = jogo.estado === 'vencido' ? 'Você perdeu!' : 'Você venceu!';
                     }
                     botoesFimJogo.innerHTML = botoesHTML;
-                    document.getElementById('placar').textContent = `Placar: Fornecedor (Vitórias: ${jogo.placar.fornecedor.vitorias}, Derrotas: ${jogo.placar.fornecedor.derrotas}) | Adivinhador (Vitórias: ${jogo.placar.adivinhador.vitorias}, Derrotas: ${jogo.placar.adivinhador.derrotas})`;
+                    document.getElementById('placar').textContent = `Placar: Fornecedor (Vitórias: ${jogo.placar.fornecedor.vitorias}) | Adivinhador (Vitórias: ${jogo.placar.adivinhador.vitorias})`;
                 }
                 document.getElementById('exemploFrases').textContent = jogo.frases.join(' | ');
                 botoesFimJogo.style.display = 'grid';
@@ -675,7 +652,7 @@
             } else {
                 document.getElementById('mensagem').textContent = jogo.palavra ? '' : 'Aguardando palavra do fornecedor...';
                 document.getElementById('exemploFrases').textContent = '';
-                document.getElementById('placar').textContent = modo === 'multiplayer' ? `Placar: Fornecedor (Vitórias: ${jogo.placar.fornecedor.vitorias}, Derrotas: ${jogo.placar.fornecedor.derrotas}) | Adivinhador (Vitórias: ${jogo.placar.adivinhador.vitorias}, Derrotas: ${jogo.placar.adivinhador.derrotas})` : '';
+                document.getElementById('placar').textContent = modo === 'multiplayer' ? `Placar: Fornecedor (Vitórias: ${jogo.placar.fornecedor.vitorias}) | Adivinhador (Vitórias: ${jogo.placar.adivinhador.vitorias})` : '';
                 botoesFimJogo.style.display = 'none';
             }
         }
@@ -694,7 +671,6 @@
             }
             jogo.letrasAdivinhadas.push(letra);
             const palavraNormalizada = normalizarPalavra(jogo.palavra);
-            let jogoTerminou = false;
             if (palavraNormalizada.includes(letraNormalizada)) {
                 const letrasFaltando = palavraNormalizada.split('').filter((l, i) => {
                     const letraOriginalNormalizada = normalizarLetra(jogo.palavra[i]);
@@ -704,9 +680,7 @@
                     jogo.estado = 'vencido';
                     if (modo === 'multiplayer') {
                         jogo.placar.adivinhador.vitorias += 1;
-                        jogo.placar.fornecedor.derrotas += 1;
                     }
-                    jogoTerminou = true;
                 }
             } else {
                 jogo.erros += 1;
@@ -714,12 +688,10 @@
                     jogo.estado = 'perdido';
                     if (modo === 'multiplayer') {
                         jogo.placar.fornecedor.vitorias += 1;
-                        jogo.placar.adivinhador.derrotas += 1;
                     }
-                    jogoTerminou = true;
                 }
             }
-            if (modo === 'multiplayer' || jogoTerminou) {
+            if (modo === 'multiplayer') {
                 try {
                     const jogoRef = ref(db, `jogos/${idJogo}`);
                     await update(jogoRef, jogo);
@@ -727,9 +699,8 @@
                     console.error('Erro ao atualizar jogo:', error);
                     alert('Erro ao atualizar o jogo: ' + error.message);
                 }
-            } else {
-                exibirJogo();
             }
+            exibirJogo();
             document.getElementById('letraInput').value = '';
             document.getElementById('letraInput').focus();
         }
@@ -792,6 +763,14 @@
             if (event.key === 'Enter') {
                 console.log('Tecla Enter pressionada no campo idJogoInput');
                 entrarJogo();
+            }
+        });
+
+        document.getElementById('chatInput').addEventListener('keypress', (event) => {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                console.log('Tecla Enter pressionada no campo chatInput');
+                enviarMensagem();
             }
         });
 
