@@ -101,6 +101,7 @@
             margin-bottom: 20px;
         }
         #chatContainer {
+            display: none;
             position: fixed;
             right: 0;
             top: 0;
@@ -119,24 +120,24 @@
             padding: 10px;
             border: 1px solid #555555;
             border-radius: 5px;
-            display: none;
         }
         #chatInputContainer {
             display: flex;
             flex-direction: column;
         }
         #chatBtn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
             background-color: #444444;
             padding: 10px 20px;
-            align-self: flex-end;
-            margin-bottom: 10px;
+            z-index: 1000;
         }
         #chatInput {
             resize: none;
             height: 60px;
             overflow-y: auto;
             margin-top: 10px;
-            display: none;
         }
         .mensagem {
             margin: 5px 0;
@@ -200,10 +201,10 @@
         <p id="placar"></p>
         <div id="botoesFimJogo"></div>
     </div>
+    <button id="chatBtn">Abrir Chat</button>
     <div id="chatContainer">
         <div id="chatMessages"></div>
         <div id="chatInputContainer">
-            <button id="chatBtn">Abrir Chat</button>
             <textarea id="chatInput" placeholder="Digite sua mensagem..."></textarea>
         </div>
     </div>
@@ -321,6 +322,7 @@
                 document.getElementById('opcoesMultiplayer').style.display = 'none';
                 document.getElementById('criarJogo').style.display = 'none';
                 document.getElementById('entrarJogo').style.display = 'none';
+                document.getElementById('chatBtn').style.display = 'none';
                 if (unsubscribeJogo) {
                     unsubscribeJogo();
                     unsubscribeJogo = null;
@@ -332,13 +334,11 @@
             } else if (tela === 'jogo') {
                 document.getElementById('telaJogo').style.display = 'block';
                 if (modo === 'multiplayer') {
-                    document.getElementById('chatContainer').style.display = 'flex';
-                    if (!chatAberto) {
-                        document.getElementById('chatMessages').style.display = 'none';
-                        document.getElementById('chatInput').style.display = 'none';
+                    document.getElementById('chatBtn').style.display = 'block';
+                    if (chatAberto) {
+                        document.getElementById('chatContainer').style.display = 'flex';
                     } else {
-                        document.getElementById('chatMessages').style.display = 'block';
-                        document.getElementById('chatInput').style.display = 'block';
+                        document.getElementById('chatContainer').style.display = 'none';
                     }
                 }
                 if (papel === 'jogador2') {
@@ -371,21 +371,18 @@
         function toggleChat() {
             chatAberto = !chatAberto;
             const telaJogo = document.getElementById('telaJogo');
-            const chatMessages = document.getElementById('chatMessages');
-            const chatInput = document.getElementById('chatInput');
+            const chatContainer = document.getElementById('chatContainer');
             const chatBtn = document.getElementById('chatBtn');
             console.log(`Toggling chat: chatAberto=${chatAberto}`);
             if (chatAberto) {
                 telaJogo.classList.add('chat-aberto');
-                chatMessages.style.display = 'block';
-                chatInput.style.display = 'block';
+                chatContainer.style.display = 'flex';
                 chatBtn.textContent = 'Fechar Chat';
                 document.getElementById('chatInput').focus();
                 update(ref(db, `jogos/${idJogo}`), { chatAberto: true });
             } else {
                 telaJogo.classList.remove('chat-aberto');
-                chatMessages.style.display = 'none';
-                chatInput.style.display = 'none';
+                chatContainer.style.display = 'none';
                 chatBtn.textContent = 'Abrir Chat';
                 update(ref(db, `jogos/${idJogo}`), { chatAberto: false });
                 if (papel === 'jogador2') {
