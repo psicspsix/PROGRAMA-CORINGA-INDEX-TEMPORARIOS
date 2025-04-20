@@ -65,6 +65,8 @@
             font-size: 1.2em;
             cursor: pointer;
             border-radius: 5px;
+            pointer-events: auto;
+            z-index: 1000;
         }
         button:hover {
             background-color: #555555;
@@ -131,8 +133,8 @@
             background: rgba(0, 0, 0, 0.8);
             padding: 20px;
             box-sizing: border-box;
-            display: flex;
             flex-direction: column;
+            z-index: 999;
         }
         #chatMessages {
             flex-grow: 1;
@@ -153,7 +155,7 @@
             position: fixed;
             bottom: 20px;
             right: 20px;
-            display: block;
+            display: none;
         }
         #closeChatBtn {
             background-color: #444444;
@@ -245,7 +247,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { get-database, ref, set, get, update, onValue, push } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getDatabase, ref, set, get, update, onValue, push } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDYju4ux-XrvEXaP2aSXbY2eJd_Qj4AKow",
@@ -348,13 +350,20 @@
         }
 
         function mostrarTela(tela) {
-            document.getElementById('telaInicial').style.display = 'none';
-            document.getElementById('telaJogo').style.display = 'none';
-            document.getElementById('chatContainer').style.display = 'none';
-            document.getElementById('chatBtn').style.display = 'none';
-            document.getElementById('closeChatBtn').style.display = 'none';
+            const telaInicial = document.getElementById('telaInicial');
+            const telaJogo = document.getElementById('telaJogo');
+            const chatContainer = document.getElementById('chatContainer');
+            const chatBtn = document.getElementById('chatBtn');
+            const closeChatBtn = document.getElementById('closeChatBtn');
+
+            telaInicial.style.display = 'none';
+            telaJogo.style.display = 'none';
+            chatContainer.style.display = 'none';
+            chatBtn.style.display = 'none';
+            closeChatBtn.style.display = 'none';
+
             if (tela === 'inicial') {
-                document.getElementById('telaInicial').style.display = 'flex';
+                telaInicial.style.display = 'flex';
                 document.getElementById('opcoesMultiplayer').style.display = 'none';
                 document.getElementById('criarJogo').style.display = 'none';
                 document.getElementById('entrarJogo').style.display = 'none';
@@ -366,16 +375,18 @@
                     unsubscribeChat();
                     unsubscribeChat = null;
                 }
+                console.log('Tela inicial exibida: #telaInicial=flex, #chatBtn=none, #chatContainer=none');
             } else if (tela === 'jogo') {
-                document.getElementById('telaJogo').style.display = 'block';
+                telaJogo.style.display = 'block';
                 if (modo === 'multiplayer') {
-                    document.getElementById('chatBtn').style.display = chatAberto ? 'none' : 'block';
-                    document.getElementById('closeChatBtn').style.display = chatAberto ? 'block' : 'none';
-                    document.getElementById('chatContainer').style.display = chatAberto ? 'flex' : 'none';
+                    chatBtn.style.display = chatAberto ? 'none' : 'block';
+                    closeChatBtn.style.display = chatAberto ? 'block' : 'none';
+                    chatContainer.style.display = chatAberto ? 'flex' : 'none';
                 }
                 if (papel === 'jogador2' && jogo.estado === 'em andamento') {
                     document.getElementById('letraInput').focus();
                 }
+                console.log(`Tela jogo exibida: modo=${modo}, chatAberto=${chatAberto}, #chatBtn=${chatBtn.style.display}, #chatContainer=${chatContainer.style.display}`);
             }
         }
 
@@ -423,6 +434,7 @@
                     document.getElementById('letraInput').focus();
                 }
             }
+            console.log(`Chat toggled: chatAberto=${chatAberto}, #chatContainer=${chatContainer.style.display}`);
         }
 
         async function enviarMensagem() {
@@ -739,7 +751,7 @@
             const palavraNormalizada = normalizarPalavra(jogo.palavra);
             let letrasFaltando = palavraNormalizada.split('').filter((l, i) => {
                 const letraOriginalNormalizada = normalizarLetra(jogo.palavra[i]);
-                return ! Wjogo.letrasAdivinhadas.some(la => normalizarLetra(la) === letraOriginalNormalizada);
+                return !jogo.letrasAdivinhadas.some(la => normalizarLetra(la) === letraOriginalNormalizada);
             });
             if (!palavraNormalizada.includes(letraNormalizada)) {
                 jogo.erros += 1;
