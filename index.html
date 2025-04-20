@@ -682,7 +682,7 @@
                     const snapshot = await get(jogoRef);
                     if (snapshot.exists()) {
                         jogo = validateJogo(snapshot.val());
-                        console.log(`Exibindo placar: jogadorId=${jogadorId}, papel=${papel}, placar=${JSON.stringify(jogo.placar)}`);
+                        console.log(`Exibindo jogo: estado=${jogo.estado}, jogadorId=${jogadorId}, papel=${papel}, placar=${JSON.stringify(jogo.placar)}`);
                     }
                 } catch (error) {
                     console.error('Erro ao sincronizar placar:', error);
@@ -753,11 +753,13 @@
             }
             jogo.letrasAdivinhadas.push(letra);
             const palavraNormalizada = normalizarPalavra(jogo.palavra);
+            let letrasFaltando = [];
             if (palavraNormalizada.includes(letraNormalizada)) {
-                const letrasFaltando = palavraNormalizada.split('').filter((l, i) => {
+                letrasFaltando = palavraNormalizada.split('').filter((l, i) => {
                     const letraOriginalNormalizada = normalizarLetra(jogo.palavra[i]);
                     return !jogo.letrasAdivinhadas.some(la => normalizarLetra(la) === letraOriginalNormalizada);
                 });
+                console.log(`Adivinhação: letra=${letra}, letrasFaltando=${letrasFaltando.length}, erros=${jogo.erros}`);
                 if (letrasFaltando.length === 0) {
                     jogo.estado = 'vencido';
                     if (modo === 'multiplayer' && papel === 'jogador2') {
@@ -767,6 +769,7 @@
                 }
             } else {
                 jogo.erros += 1;
+                console.log(`Adivinhação: letra=${letra}, erros=${jogo.erros}, letrasFaltando=${letrasFaltando.length}`);
                 if (jogo.erros >= 6) {
                     jogo.estado = 'perdido';
                     if (modo === 'multiplayer' && papel === 'jogador2') {
