@@ -60,6 +60,17 @@
         button:hover {
             background-color: #555555;
         }
+        #jogarSozinhoBtn {
+            white-space: normal;
+            line-height: 1.4;
+            padding: 10px 20px;
+            width: 200px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
         input, textarea {
             font-size: 1.2em;
             padding: 10px;
@@ -458,6 +469,7 @@
                     await set(jogoRef, jogo);
                     await set(ref(db, `jogos/${idJogo}/chat`), null);
                     papel = jogadorId === novoJogador1 ? 'jogador1' : 'jogador2';
+                    console.log(`Troca de papéis: jogadorId=${jogadorId}, novoJogador1=${novoJogador1}, novoJogador2=${novoJogador2}, papel=${papel}`);
                     if (papel === 'jogador1') {
                         mostrarTela('inicial');
                         mostrarCriarJogo();
@@ -533,6 +545,7 @@
                     if (snapshot.exists()) {
                         jogo = validateJogo(snapshot.val());
                         papel = jogo.jogador1 === jogadorId ? 'jogador1' : 'jogador2';
+                        console.log(`Atualização do jogo: jogadorId=${jogadorId}, papel=${papel}, jogador1=${jogo.jogador1}, jogador2=${jogo.jogador2}`);
                         if (jogo.estado === 'aguardando_palavra' && papel === 'jogador1') {
                             mostrarTela('inicial');
                             mostrarCriarJogo();
@@ -593,6 +606,7 @@
                         if (snapshot.exists()) {
                             jogo = validateJogo(snapshot.val());
                             papel = jogo.jogador1 === jogadorId ? 'jogador1' : 'jogador2';
+                            console.log(`Atualização do jogo: jogadorId=${jogadorId}, papel=${papel}, jogador1=${jogo.jogador1}, jogador2=${jogo.jogador2}`);
                             if (jogo.estado === 'aguardando_palavra' && papel === 'jogador1') {
                                 mostrarTela('inicial');
                                 mostrarCriarJogo();
@@ -696,7 +710,7 @@
                 });
                 if (letrasFaltando.length === 0) {
                     jogo.estado = 'vencido';
-                    if (modo === 'multiplayer') {
+                    if (modo === 'multiplayer' && papel === 'jogador2') {
                         console.log(`Vitória do Jogador 2 (adivinhador, id=${jogo.jogador2})`);
                         jogo.placar.jogador2.vitorias += 1;
                     }
@@ -705,7 +719,7 @@
                 jogo.erros += 1;
                 if (jogo.erros >= 6) {
                     jogo.estado = 'perdido';
-                    if (modo === 'multiplayer') {
+                    if (modo === 'multiplayer' && papel === 'jogador2') {
                         console.log(`Vitória do Jogador 1 (fornecedor, id=${jogo.jogador1})`);
                         jogo.placar.jogador1.vitorias += 1;
                     }
