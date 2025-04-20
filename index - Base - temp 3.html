@@ -65,6 +65,8 @@
             font-size: 1.2em;
             cursor: pointer;
             border-radius: 5px;
+            pointer-events: auto;
+            z-index: 1000;
         }
         button:hover {
             background-color: #555555;
@@ -131,8 +133,8 @@
             background: rgba(0, 0, 0, 0.8);
             padding: 20px;
             box-sizing: border-box;
-            display: flex;
             flex-direction: column;
+            z-index: 999;
         }
         #chatMessages {
             flex-grow: 1;
@@ -147,12 +149,22 @@
             flex-direction: column;
         }
         #chatBtn {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
             background-color: #444444;
             padding: 10px 20px;
             z-index: 1000;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: none;
+        }
+        #closeChatBtn {
+            background-color: #444444;
+            padding: 10px 20px;
+            z-index: 1000;
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            display: none;
         }
         #chatInput {
             resize: none;
@@ -225,6 +237,7 @@
         <div id="botoesFimJogo"></div>
     </div>
     <button id="chatBtn">Abrir Chat</button>
+    <button id="closeChatBtn" style="display: none;">Fechar Chat</button>
     <div id="chatContainer">
         <div id="chatMessages"></div>
         <div id="chatInputContainer">
@@ -337,15 +350,23 @@
         }
 
         function mostrarTela(tela) {
-            document.getElementById('telaInicial').style.display = 'none';
-            document.getElementById('telaJogo').style.display = 'none';
-            document.getElementById('chatContainer').style.display = 'none';
+            const telaInicial = document.getElementById('telaInicial');
+            const telaJogo = document.getElementById('telaJogo');
+            const chatContainer = document.getElementById('chatContainer');
+            const chatBtn = document.getElementById('chatBtn');
+            const closeChatBtn = document.getElementById('closeChatBtn');
+
+            telaInicial.style.display = 'none';
+            telaJogo.style.display = 'none';
+            chatContainer.style.display = 'none';
+            chatBtn.style.display = 'none';
+            closeChatBtn.style.display = 'none';
+
             if (tela === 'inicial') {
-                document.getElementById('telaInicial').style.display = 'flex';
+                telaInicial.style.display = 'flex';
                 document.getElementById('opcoesMultiplayer').style.display = 'none';
                 document.getElementById('criarJogo').style.display = 'none';
                 document.getElementById('entrarJogo').style.display = 'none';
-                document.getElementById('chatBtn').style.display = 'none';
                 if (unsubscribeJogo) {
                     unsubscribeJogo();
                     unsubscribeJogo = null;
@@ -354,19 +375,18 @@
                     unsubscribeChat();
                     unsubscribeChat = null;
                 }
+                console.log('Tela inicial exibida: #telaInicial=flex, #chatBtn=none, #chatContainer=none');
             } else if (tela === 'jogo') {
-                document.getElementById('telaJogo').style.display = 'block';
+                telaJogo.style.display = 'block';
                 if (modo === 'multiplayer') {
-                    document.getElementById('chatBtn').style.display = 'block';
-                    if (chatAberto) {
-                        document.getElementById('chatContainer').style.display = 'flex';
-                    } else {
-                        document.getElementById('chatContainer').style.display = 'none';
-                    }
+                    chatBtn.style.display = chatAberto ? 'none' : 'block';
+                    closeChatBtn.style.display = chatAberto ? 'block' : 'none';
+                    chatContainer.style.display = chatAberto ? 'flex' : 'none';
                 }
-                if (papel === 'jogador2') {
+                if (papel === 'jogador2' && jogo.estado === 'em andamento') {
                     document.getElementById('letraInput').focus();
                 }
+                console.log(`Tela jogo exibida: modo=${modo}, chatAberto=${chatAberto}, #chatBtn=${chatBtn.style.display}, #chatContainer=${chatContainer.style.display}`);
             }
         }
 
@@ -396,22 +416,25 @@
             const telaJogo = document.getElementById('telaJogo');
             const chatContainer = document.getElementById('chatContainer');
             const chatBtn = document.getElementById('chatBtn');
-            console.log(`Toggling chat: chatAberto=${chatAberto}`);
+            const closeChatBtn = document.getElementById('closeChatBtn');
             if (chatAberto) {
                 telaJogo.classList.add('chat-aberto');
                 chatContainer.style.display = 'flex';
-                chatBtn.textContent = 'Fechar Chat';
+                chatBtn.style.display = 'none';
+                closeChatBtn.style.display = 'block';
                 document.getElementById('chatInput').focus();
                 update(ref(db, `jogos/${idJogo}`), { chatAberto: true });
             } else {
                 telaJogo.classList.remove('chat-aberto');
                 chatContainer.style.display = 'none';
-                chatBtn.textContent = 'Abrir Chat';
+                chatBtn.style.display = 'block';
+                closeChatBtn.style.display = 'none';
                 update(ref(db, `jogos/${idJogo}`), { chatAberto: false });
-                if (papel === 'jogador2') {
+                if (papel === 'jogador2' && jogo.estado === 'em andamento') {
                     document.getElementById('letraInput').focus();
                 }
             }
+            console.log(`Chat toggled: chatAberto=${chatAberto}, #chatContainer=${chatContainer.style.display}`);
         }
 
         async function enviarMensagem() {
@@ -452,18 +475,6 @@
         async function iniciarJogoSolo() {
             modo = 'solo';
             papel = 'jogador2';
-            jogo = {
-                palavra: '',
-                letrasAdivinhadas: [],
-                erros: 0,
-                estado: 'em andamento',
-                frases: [],
-                chatAberto: false,
-                jogador1: '',
-                jogador2: '',
-                placar: { jogador1: { vitorias: 0 }, jogador2: { vitorias: 0 } }
-            };
-            console.log('Iniciando jogo solo');
             await carregarNovaPalavra();
             mostrarTela('jogo');
             exibirJogo();
@@ -471,18 +482,6 @@
 
         async function jogarNovamente() {
             if (modo === 'solo') {
-                jogo = {
-                    palavra: '',
-                    letrasAdivinhadas: [],
-                    erros: 0,
-                    estado: 'em andamento',
-                    frases: [],
-                    chatAberto: false,
-                    jogador1: '',
-                    jogador2: '',
-                    placar: jogo.placar
-                };
-                console.log('Jogar novamente no modo solo');
                 await carregarNovaPalavra();
                 exibirJogo();
                 document.getElementById('telaJogo').scrollIntoView({ behavior: 'smooth' });
@@ -491,7 +490,6 @@
                     const jogoRef = ref(db, `jogos/${idJogo}`);
                     const novoJogador1 = jogo.jogador2;
                     const novoJogador2 = jogo.jogador1;
-                    console.log(`Antes da troca: placar=${JSON.stringify(jogo.placar)}`);
                     jogo = {
                         palavra: '',
                         letrasAdivinhadas: [],
@@ -506,7 +504,7 @@
                     await set(jogoRef, jogo);
                     await set(ref(db, `jogos/${idJogo}/chat`), null);
                     papel = jogadorId === novoJogador1 ? 'jogador1' : 'jogador2';
-                    console.log(`Troca de papéis: jogadorId=${jogadorId}, novoJogador1=${novoJogador1}, novoJogador2=${novoJogador2}, papel=${papel}, placar=${JSON.stringify(jogo.placar)}`);
+                    console.log(`Papéis invertidos: jogadorId=${jogadorId}, novo papel=${papel}`);
                     if (papel === 'jogador1') {
                         mostrarTela('inicial');
                         mostrarCriarJogo();
@@ -527,29 +525,28 @@
                 const palavrasRef = ref(db, 'palavras');
                 const snapshot = await get(palavrasRef);
                 const palavras = snapshot.val();
-                console.log(`Carregando nova palavra: palavras disponíveis=${palavras ? Object.keys(palavras).length : 0}`);
                 if (!palavras || Object.keys(palavras).length === 0) {
-                    console.error('Nenhuma palavra encontrada no banco de dados.');
                     alert('Nenhuma palavra encontrada no banco de dados.');
-                    jogo.palavra = 'default';
-                    jogo.frases = ['Palavra padrão devido a erro no banco.'];
                     return;
                 }
                 const palavrasArray = Object.values(palavras);
                 const palavraAleatoria = palavrasArray[Math.floor(Math.random() * palavrasArray.length)];
-                jogo.palavra = palavraAleatoria.palavra.toLowerCase();
-                jogo.letrasAdivinhadas = [];
-                jogo.erros = 0;
-                jogo.estado = 'em andamento';
-                jogo.frases = palavraAleatoria.flexoes && palavraAleatoria.flexoes.length > 0
-                    ? [`Flexões: ${palavraAleatoria.flexoes.join(', ')}`]
-                    : [`Frequência: ${palavraAleatoria.frequencia}`];
-                console.log(`Nova palavra carregada: ${jogo.palavra}`);
+                jogo = {
+                    palavra: palavraAleatoria.palavra.toLowerCase(),
+                    letrasAdivinhadas: [],
+                    erros: 0,
+                    estado: 'em andamento',
+                    frases: palavraAleatoria.flexoes && palavraAleatoria.flexoes.length > 0
+                        ? [`Flexões: ${palavraAleatoria.flexoes.join(', ')}`]
+                        : [`Frequência: ${palavraAleatoria.frequencia}`],
+                    chatAberto: false,
+                    jogador1: '',
+                    jogador2: '',
+                    placar: jogo.placar || { jogador1: { vitorias: 0 }, jogador2: { vitorias: 0 } }
+                };
             } catch (error) {
                 console.error('Erro ao carregar palavra:', error);
-                alert('Erro ao carregar palavras do banco de dados: ' + error.message);
-                jogo.palavra = 'default';
-                jogo.frases = ['Palavra padrão devido a erro no banco.'];
+                alert('Erro ao carregar palavras do banco de dados.');
             }
         }
 
@@ -582,8 +579,8 @@
                 unsubscribeJogo = onValue(jogoRef, (snapshot) => {
                     if (snapshot.exists()) {
                         jogo = validateJogo(snapshot.val());
-                        papel = jogo.jogador1 === jogadorId ? 'jogador1' : 'jogador2';
-                        console.log(`Atualização do jogo: jogadorId=${jogadorId}, papel=${papel}, jogador1=${jogo.jogador1}, jogador2=${jogo.jogador2}, placar=${JSON.stringify(jogo.placar)}`);
+                        papel = jogadorId === jogo.jogador1 ? 'jogador1' : 'jogador2';
+                        console.log(`Snapshot recebido: papel=${papel}, estado=${jogo.estado}, placar=`, jogo.placar);
                         if (jogo.estado === 'aguardando_palavra' && papel === 'jogador1') {
                             mostrarTela('inicial');
                             mostrarCriarJogo();
@@ -643,8 +640,8 @@
                     unsubscribeJogo = onValue(jogoRef, (snapshot) => {
                         if (snapshot.exists()) {
                             jogo = validateJogo(snapshot.val());
-                            papel = jogo.jogador1 === jogadorId ? 'jogador1' : 'jogador2';
-                            console.log(`Atualização do jogo: jogadorId=${jogadorId}, papel=${papel}, jogador1=${jogo.jogador1}, jogador2=${jogo.jogador2}, placar=${JSON.stringify(jogo.placar)}`);
+                            papel = jogadorId === jogo.jogador1 ? 'jogador1' : 'jogador2';
+                            console.log(`Snapshot recebido: papel=${papel}, estado=${jogo.estado}, placar=`, jogo.placar);
                             if (jogo.estado === 'aguardando_palavra' && papel === 'jogador1') {
                                 mostrarTela('inicial');
                                 mostrarCriarJogo();
@@ -669,31 +666,22 @@
             }
         }
 
-        async function exibirJogo() {
+        function exibirJogo() {
             if (!jogo || typeof jogo !== 'object') {
                 document.getElementById('mensagem').textContent = 'Erro: Jogo inválido.';
                 document.getElementById('botoesFimJogo').style.display = 'none';
                 document.getElementById('placar').textContent = '';
                 return;
             }
-            if (modo === 'multiplayer') {
-                try {
-                    const jogoRef = ref(db, `jogos/${idJogo}`);
-                    const snapshot = await get(jogoRef);
-                    if (snapshot.exists()) {
-                        jogo = validateJogo(snapshot.val());
-                        console.log(`Exibindo placar: jogadorId=${jogadorId}, papel=${papel}, placar=${JSON.stringify(jogo.placar)}`);
-                    }
-                } catch (error) {
-                    console.error('Erro ao sincronizar placar:', error);
-                }
-            }
+            console.log(`Exibindo jogo: papel=${papel}, estado=${jogo.estado}`);
             if (papel === 'jogador1' && jogo.estado !== 'aguardando_palavra') {
+                console.log('Mostrando tela de observação (#jogador1View) para Jogador 1');
                 document.getElementById('jogador1View').style.display = 'block';
                 document.getElementById('jogador2View').style.display = 'none';
                 document.getElementById('palavraCompleta').textContent = jogo.palavra;
                 document.getElementById('letrasAdivinhadasJogador1').textContent = jogo.letrasAdivinhadas.join(', ');
             } else {
+                console.log('Mostrando tela de adivinhação (#jogador2View) para Jogador 2');
                 document.getElementById('jogador1View').style.display = 'none';
                 document.getElementById('jogador2View').style.display = 'block';
                 const palavraOculta = jogo.palavra.split('').map((letra, i) => {
@@ -704,6 +692,8 @@
             }
             document.getElementById('forca').textContent = forcaEstagios[jogo.erros];
             const botoesFimJogo = document.getElementById('botoesFimJogo');
+            const adivinhador = papel === 'jogador2' ? 'jogador2' : 'jogador1';
+            const observador = papel === 'jogador2' ? 'jogador1' : 'jogador2';
             if (jogo.estado === 'vencido' || jogo.estado === 'perdido') {
                 const botoesHTML = `
                     <button onclick="jogarNovamente()">Jogar Novamente</button>
@@ -720,7 +710,7 @@
                     botoesFimJogo.innerHTML = botoesHTML;
                     document.getElementById('placar').textContent = '';
                 } else {
-                    if (papel === 'jogador2') {
+                    if (papel === adivinhador) {
                         document.getElementById('mensagem').textContent = jogo.estado === 'vencido' ? 'Você venceu!' : `Você perdeu! A palavra era: ${jogo.palavra}`;
                     } else {
                         document.getElementById('mensagem').textContent = jogo.estado === 'vencido' ? 'Você perdeu!' : 'Você venceu!';
@@ -740,7 +730,12 @@
         }
 
         async function adivinharLetra() {
-            if (papel !== 'jogador2' || jogo.estado !== 'em andamento') return;
+            const adivinhador = papel;
+            const observador = papel === 'jogador2' ? 'jogador1' : 'jogador2';
+            if (adivinhador !== papel || jogo.estado !== 'em andamento') {
+                console.log('Adivinhar letra bloqueado: papel=', papel, 'estado=', jogo.estado);
+                return;
+            }
             const letra = document.getElementById('letraInput').value.trim().toLowerCase();
             if (!letra || letra.length !== 1 || !/[a-záéíóúâêîôûãõç]/.test(letra)) {
                 alert('Digite uma letra válida (a-z, acentos ou ç).');
@@ -751,35 +746,54 @@
                 alert('Você já adivinhou essa letra.');
                 return;
             }
+            console.log(`Letra adivinhada: ${letra}, Normalizada: ${letraNormalizada}, Adivinhador: ${adivinhador}`);
             jogo.letrasAdivinhadas.push(letra);
             const palavraNormalizada = normalizarPalavra(jogo.palavra);
-            if (palavraNormalizada.includes(letraNormalizada)) {
-                const letrasFaltando = palavraNormalizada.split('').filter((l, i) => {
-                    const letraOriginalNormalizada = normalizarLetra(jogo.palavra[i]);
-                    return !jogo.letrasAdivinhadas.some(la => normalizarLetra(la) === letraOriginalNormalizada);
-                });
-                if (letrasFaltando.length === 0) {
-                    jogo.estado = 'vencido';
-                    if (modo === 'multiplayer' && papel === 'jogador2') {
-                        console.log(`Vitória do Jogador 2 (adivinhador, id=${jogo.jogador2})`);
+            let letrasFaltando = palavraNormalizada.split('').filter((l, i) => {
+                const letraOriginalNormalizada = normalizarLetra(jogo.palavra[i]);
+                return !jogo.letrasAdivinhadas.some(la => normalizarLetra(la) === letraOriginalNormalizada);
+            });
+            if (!palavraNormalizada.includes(letraNormalizada)) {
+                jogo.erros += 1;
+                console.log(`Erro cometido. Total de erros: ${jogo.erros}`);
+            }
+            letrasFaltando = palavraNormalizada.split('').filter((l, i) => {
+                const letraOriginalNormalizada = normalizarLetra(jogo.palavra[i]);
+                return !jogo.letrasAdivinhadas.some(la => normalizarLetra(la) === letraOriginalNormalizada);
+            });
+            if (letrasFaltando.length === 0) {
+                jogo.estado = 'vencido';
+                if (modo === 'multiplayer') {
+                    if (adivinhador === 'jogador2') {
                         jogo.placar.jogador2.vitorias += 1;
+                        console.log(`Vitória do Adivinhador (Jogador 2) - Placar: J1: ${jogo.placar.jogador1.vitorias}, J2: ${jogo.placar.jogador2.vitorias}`);
+                    } else {
+                        jogo.placar.jogador1.vitorias += 1;
+                        console.log(`Vitória do Adivinhador (Jogador 1) - Placar: J1: ${jogo.placar.jogador1.vitorias}, J2: ${jogo.placar.jogador2.vitorias}`);
                     }
                 }
-            } else {
-                jogo.erros += 1;
-                if (jogo.erros >= 6) {
-                    jogo.estado = 'perdido';
-                    if (modo === 'multiplayer' && papel === 'jogador2') {
-                        console.log(`Vitória do Jogador 1 (fornecedor, id=${jogo.jogador1})`);
+            } else if (jogo.erros >= 6) {
+                jogo.estado = 'perdido';
+                if (modo === 'multiplayer') {
+                    if (observador === 'jogador1') {
                         jogo.placar.jogador1.vitorias += 1;
+                        console.log(`Vitória do Observador (Jogador 1) - Placar: J1: ${jogo.placar.jogador1.vitorias}, J2: ${jogo.placar.jogador2.vitorias}`);
+                    } else {
+                        jogo.placar.jogador2.vitorias += 1;
+                        console.log(`Vitória do Observador (Jogador 2) - Placar: J1: ${jogo.placar.jogador1.vitorias}, J2: ${jogo.placar.jogador2.vitorias}`);
                     }
                 }
             }
-            console.log(`Atribuindo vitória: estado=${jogo.estado}, jogador1Id=${jogo.jogador1}, jogador2Id=${jogo.jogador2}, placar=${JSON.stringify(jogo.placar)}`);
             if (modo === 'multiplayer') {
                 try {
                     const jogoRef = ref(db, `jogos/${idJogo}`);
-                    await update(jogoRef, jogo);
+                    await update(jogoRef, {
+                        letrasAdivinhadas: jogo.letrasAdivinhadas,
+                        erros: jogo.erros,
+                        estado: jogo.estado,
+                        placar: jogo.placar
+                    });
+                    console.log('Jogo atualizado no Firebase:', jogo);
                 } catch (error) {
                     console.error('Erro ao atualizar jogo:', error);
                     alert('Erro ao atualizar o jogo: ' + error.message);
@@ -826,7 +840,12 @@
         });
 
         document.getElementById('chatBtn').addEventListener('click', () => {
-            console.log('Botão Chat clicado');
+            console.log('Botão Abrir Chat clicado');
+            toggleChat();
+        });
+
+        document.getElementById('closeChatBtn').addEventListener('click', () => {
+            console.log('Botão Fechar Chat clicado');
             toggleChat();
         });
 
