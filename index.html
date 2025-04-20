@@ -139,6 +139,12 @@
             overflow-y: auto;
             margin-top: 10px;
         }
+        #fecharChatBtn {
+            background-color: #444444;
+            padding: 10px 20px;
+            align-self: flex-end;
+            margin-bottom: 10px;
+        }
         .mensagem {
             margin: 5px 0;
             padding: 8px;
@@ -205,6 +211,7 @@
     <div id="chatContainer">
         <div id="chatMessages"></div>
         <div id="chatInputContainer">
+            <button id="fecharChatBtn">Fechar Chat</button>
             <textarea id="chatInput" placeholder="Digite sua mensagem..."></textarea>
         </div>
     </div>
@@ -375,6 +382,10 @@
                 chatBtn.textContent = 'Fechar Chat';
                 document.getElementById('chatInput').focus();
                 update(ref(db, `jogos/${idJogo}`), { chatAberto: true });
+                document.getElementById('fecharChatBtn').addEventListener('click', () => {
+                    console.log('Botão Fechar Chat clicado');
+                    toggleChat();
+                });
             } else {
                 telaJogo.classList.remove('chat-aberto');
                 chatContainer.style.display = 'none';
@@ -443,12 +454,12 @@
                         palavra: '',
                         letrasAdivinhadas: [],
                         erros: 0,
-                        estado: 'em andamento',
+                        estado: 'aguardando_palavra',
                         frases: [],
                         chatAberto: false,
                         fornecedor: novoFornecedor,
                         adivinhador: novoAdivinhador,
-                        placar: jogo.placar // Mantém o placar
+                        placar: jogo.placar
                     });
                     await set(ref(db, `jogos/${idJogo}/chat`), null);
                     papel = jogadorId === novoFornecedor ? 'fornecedor' : 'adivinhador';
@@ -458,6 +469,7 @@
                     } else {
                         alert('Aguardando o outro jogador escolher uma nova palavra.');
                         mostrarTela('jogo');
+                        jogo.estado = 'aguardando_palavra';
                         exibirJogo();
                     }
                 } catch (error) {
@@ -489,7 +501,7 @@
                     chatAberto: false,
                     fornecedor: '',
                     adivinhador: '',
-                    placar: { fornecedor: { vitorias: 0 }, adivinhador: { vitorias: 0 } }
+                    placar: jogo.placar || { fornecedor: { vitorias: 0 }, adivinhador: { vitorias: 0 } }
                 };
             } catch (error) {
                 console.error('Erro ao carregar palavra:', error);
@@ -515,7 +527,7 @@
                 chatAberto: false,
                 fornecedor: jogadorId,
                 adivinhador: '',
-                placar: { fornecedor: { vitorias: 0 }, adivinhador: { vitorias: 0 } }
+                placar: jogo.placar || { fornecedor: { vitorias: 0 }, adivinhador: { vitorias: 0 } }
             };
             try {
                 const jogoRef = ref(db, `jogos/${idJogo}`);
@@ -571,7 +583,7 @@
                 const snapshot = await get(jogoRef);
                 if (snapshot.exists()) {
                     jogo = validateJogo(snapshot.val());
-                    if (!jogo.palavra) {
+                    if (!jogo.palavra && jogo.estado !== 'aguardando_palavra') {
                         alert('Aguardando o fornecedor escolher uma palavra.');
                     }
                     await update(jogoRef, { adivinhador: jogadorId });
