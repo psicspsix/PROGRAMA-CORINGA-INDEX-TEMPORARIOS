@@ -29,7 +29,15 @@
             background: rgba(0, 0, 0, 0.7);
             padding: 20px;
             border-radius: 10px;
-            display: block;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #telaInicial > div {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            gap: 10px;
         }
         #telaJogo {
             display: none;
@@ -64,8 +72,8 @@
             white-space: normal;
             line-height: 1.4;
             padding: 10px 20px;
-            width: 200px;
-            height: 60px;
+            width: 160px;
+            height: 50px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -179,8 +187,10 @@
 <body>
     <div id="telaInicial">
         <h1>Jogo de Forca</h1>
-        <button id="jogarSozinhoBtn">Jogar Sozinho (Palavras em Inglês)</button>
-        <button id="jogarComAmigoBtn">Jogar com Amigo</button>
+        <div>
+            <button id="jogarSozinhoBtn">Jogar Sozinho (Palavras em Inglês)</button>
+            <button id="jogarComAmigoBtn">Jogar com Amigo</button>
+        </div>
         <div id="opcoesMultiplayer" style="display: none;">
             <button id="criarJogoBtn">Criar Jogo</button>
             <button id="entrarJogoBtn">Entrar em Jogo</button>
@@ -329,7 +339,7 @@
             document.getElementById('telaJogo').style.display = 'none';
             document.getElementById('chatContainer').style.display = 'none';
             if (tela === 'inicial') {
-                document.getElementById('telaInicial').style.display = 'block';
+                document.getElementById('telaInicial').style.display = 'flex';
                 document.getElementById('opcoesMultiplayer').style.display = 'none';
                 document.getElementById('criarJogo').style.display = 'none';
                 document.getElementById('entrarJogo').style.display = 'none';
@@ -359,7 +369,7 @@
         }
 
         function mostrarOpcoesMultiplayer() {
-            document.getElementById('opcoesMultiplayer').style.display = 'block';
+            document.getElementById('opcoesMultiplayer').style.display = 'flex';
             document.getElementById('criarJogo').style.display = 'none';
             document.getElementById('entrarJogo').style.display = 'none';
         }
@@ -455,6 +465,7 @@
                     const jogoRef = ref(db, `jogos/${idJogo}`);
                     const novoJogador1 = jogo.jogador2;
                     const novoJogador2 = jogo.jogador1;
+                    console.log(`Antes da troca: placar=${JSON.stringify(jogo.placar)}`);
                     jogo = {
                         palavra: '',
                         letrasAdivinhadas: [],
@@ -469,7 +480,7 @@
                     await set(jogoRef, jogo);
                     await set(ref(db, `jogos/${idJogo}/chat`), null);
                     papel = jogadorId === novoJogador1 ? 'jogador1' : 'jogador2';
-                    console.log(`Troca de papéis: jogadorId=${jogadorId}, novoJogador1=${novoJogador1}, novoJogador2=${novoJogador2}, papel=${papel}`);
+                    console.log(`Troca de papéis: jogadorId=${jogadorId}, novoJogador1=${novoJogador1}, novoJogador2=${novoJogador2}, papel=${papel}, placar=${JSON.stringify(jogo.placar)}`);
                     if (papel === 'jogador1') {
                         mostrarTela('inicial');
                         mostrarCriarJogo();
@@ -545,7 +556,7 @@
                     if (snapshot.exists()) {
                         jogo = validateJogo(snapshot.val());
                         papel = jogo.jogador1 === jogadorId ? 'jogador1' : 'jogador2';
-                        console.log(`Atualização do jogo: jogadorId=${jogadorId}, papel=${papel}, jogador1=${jogo.jogador1}, jogador2=${jogo.jogador2}`);
+                        console.log(`Atualização do jogo: jogadorId=${jogadorId}, papel=${papel}, jogador1=${jogo.jogador1}, jogador2=${jogo.jogador2}, placar=${JSON.stringify(jogo.placar)}`);
                         if (jogo.estado === 'aguardando_palavra' && papel === 'jogador1') {
                             mostrarTela('inicial');
                             mostrarCriarJogo();
@@ -606,7 +617,7 @@
                         if (snapshot.exists()) {
                             jogo = validateJogo(snapshot.val());
                             papel = jogo.jogador1 === jogadorId ? 'jogador1' : 'jogador2';
-                            console.log(`Atualização do jogo: jogadorId=${jogadorId}, papel=${papel}, jogador1=${jogo.jogador1}, jogador2=${jogo.jogador2}`);
+                            console.log(`Atualização do jogo: jogadorId=${jogadorId}, papel=${papel}, jogador1=${jogo.jogador1}, jogador2=${jogo.jogador2}, placar=${JSON.stringify(jogo.placar)}`);
                             if (jogo.estado === 'aguardando_palavra' && papel === 'jogador1') {
                                 mostrarTela('inicial');
                                 mostrarCriarJogo();
@@ -631,12 +642,22 @@
             }
         }
 
-        function exibirJogo() {
+        async function exibirJogo() {
             if (!jogo || typeof jogo !== 'object') {
                 document.getElementById('mensagem').textContent = 'Erro: Jogo inválido.';
                 document.getElementById('botoesFimJogo').style.display = 'none';
                 document.getElementById('placar').textContent = '';
                 return;
+            }
+            try {
+                const jogoRef = ref(db, `jogos/${idJogo}`);
+                const snapshot = await get(jogoRef);
+                if (snapshot.exists()) {
+                    jogo = validateJogo(snapshot.val());
+                    console.log(`Exibindo placar: jogadorId=${jogadorId}, papel=${papel}, placar=${JSON.stringify(jogo.placar)}`);
+                }
+            } catch (error) {
+                console.error('Erro ao sincronizar placar:', error);
             }
             if (papel === 'jogador1' && jogo.estado !== 'aguardando_palavra') {
                 document.getElementById('jogador1View').style.display = 'block';
