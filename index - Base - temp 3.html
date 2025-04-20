@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jogo de Forca</title>
-    <link rel="icon" href="https://raw.githubusercontent.com/psicspsix/Jogo-de-Forca/main/psicspsix.jpg">
+    <link rel="icon" href="https://raw.githubusercontent.com/psicspsix/Jogo-de-Forca/main/psicspsix.ico">
     <style>
         body {
             background-image: url('https://raw.githubusercontent.com/psicspsix/Jogo-de-Forca/main/Forca.jpg');
@@ -29,7 +29,16 @@
             background: rgba(0, 0, 0, 0.7);
             padding: 20px;
             border-radius: 10px;
-            display: block;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 600px;
+        }
+        #telaInicial > div {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            gap: 10px;
         }
         #telaJogo {
             display: none;
@@ -59,6 +68,18 @@
         }
         button:hover {
             background-color: #555555;
+        }
+        #jogarSozinhoBtn {
+            white-space: normal;
+            line-height: 1.4;
+            padding: 10px 15px;
+            width: 180px;
+            height: 50px;
+            font-size: 1em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
         }
         input, textarea {
             font-size: 1.2em;
@@ -101,6 +122,7 @@
             margin-bottom: 20px;
         }
         #chatContainer {
+            display: none;
             position: fixed;
             right: 0;
             top: 0;
@@ -119,24 +141,24 @@
             padding: 10px;
             border: 1px solid #555555;
             border-radius: 5px;
-            display: none;
         }
         #chatInputContainer {
             display: flex;
             flex-direction: column;
         }
         #chatBtn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
             background-color: #444444;
             padding: 10px 20px;
-            align-self: flex-end;
-            margin-bottom: 10px;
+            z-index: 1000;
         }
         #chatInput {
             resize: none;
             height: 60px;
             overflow-y: auto;
             margin-top: 10px;
-            display: none;
         }
         .mensagem {
             margin: 5px 0;
@@ -167,8 +189,10 @@
 <body>
     <div id="telaInicial">
         <h1>Jogo de Forca</h1>
-        <button id="jogarSozinhoBtn">Jogar Sozinho</button>
-        <button id="jogarComAmigoBtn">Jogar com Amigo</button>
+        <div>
+            <button id="jogarSozinhoBtn">Jogar Sozinho (Palavras em Inglês)</button>
+            <button id="jogarComAmigoBtn">Jogar com Amigo</button>
+        </div>
         <div id="opcoesMultiplayer" style="display: none;">
             <button id="criarJogoBtn">Criar Jogo</button>
             <button id="entrarJogoBtn">Entrar em Jogo</button>
@@ -200,10 +224,10 @@
         <p id="placar"></p>
         <div id="botoesFimJogo"></div>
     </div>
+    <button id="chatBtn">Abrir Chat</button>
     <div id="chatContainer">
         <div id="chatMessages"></div>
         <div id="chatInputContainer">
-            <button id="chatBtn">Abrir Chat</button>
             <textarea id="chatInput" placeholder="Digite sua mensagem..."></textarea>
         </div>
     </div>
@@ -317,10 +341,11 @@
             document.getElementById('telaJogo').style.display = 'none';
             document.getElementById('chatContainer').style.display = 'none';
             if (tela === 'inicial') {
-                document.getElementById('telaInicial').style.display = 'block';
+                document.getElementById('telaInicial').style.display = 'flex';
                 document.getElementById('opcoesMultiplayer').style.display = 'none';
                 document.getElementById('criarJogo').style.display = 'none';
                 document.getElementById('entrarJogo').style.display = 'none';
+                document.getElementById('chatBtn').style.display = 'none';
                 if (unsubscribeJogo) {
                     unsubscribeJogo();
                     unsubscribeJogo = null;
@@ -332,13 +357,11 @@
             } else if (tela === 'jogo') {
                 document.getElementById('telaJogo').style.display = 'block';
                 if (modo === 'multiplayer') {
-                    document.getElementById('chatContainer').style.display = 'flex';
-                    if (!chatAberto) {
-                        document.getElementById('chatMessages').style.display = 'none';
-                        document.getElementById('chatInput').style.display = 'none';
+                    document.getElementById('chatBtn').style.display = 'block';
+                    if (chatAberto) {
+                        document.getElementById('chatContainer').style.display = 'flex';
                     } else {
-                        document.getElementById('chatMessages').style.display = 'block';
-                        document.getElementById('chatInput').style.display = 'block';
+                        document.getElementById('chatContainer').style.display = 'none';
                     }
                 }
                 if (papel === 'jogador2') {
@@ -348,7 +371,7 @@
         }
 
         function mostrarOpcoesMultiplayer() {
-            document.getElementById('opcoesMultiplayer').style.display = 'block';
+            document.getElementById('opcoesMultiplayer').style.display = 'flex';
             document.getElementById('criarJogo').style.display = 'none';
             document.getElementById('entrarJogo').style.display = 'none';
         }
@@ -371,21 +394,18 @@
         function toggleChat() {
             chatAberto = !chatAberto;
             const telaJogo = document.getElementById('telaJogo');
-            const chatMessages = document.getElementById('chatMessages');
-            const chatInput = document.getElementById('chatInput');
+            const chatContainer = document.getElementById('chatContainer');
             const chatBtn = document.getElementById('chatBtn');
             console.log(`Toggling chat: chatAberto=${chatAberto}`);
             if (chatAberto) {
                 telaJogo.classList.add('chat-aberto');
-                chatMessages.style.display = 'block';
-                chatInput.style.display = 'block';
+                chatContainer.style.display = 'flex';
                 chatBtn.textContent = 'Fechar Chat';
                 document.getElementById('chatInput').focus();
                 update(ref(db, `jogos/${idJogo}`), { chatAberto: true });
             } else {
                 telaJogo.classList.remove('chat-aberto');
-                chatMessages.style.display = 'none';
-                chatInput.style.display = 'none';
+                chatContainer.style.display = 'none';
                 chatBtn.textContent = 'Abrir Chat';
                 update(ref(db, `jogos/${idJogo}`), { chatAberto: false });
                 if (papel === 'jogador2') {
@@ -432,6 +452,18 @@
         async function iniciarJogoSolo() {
             modo = 'solo';
             papel = 'jogador2';
+            jogo = {
+                palavra: '',
+                letrasAdivinhadas: [],
+                erros: 0,
+                estado: 'em andamento',
+                frases: [],
+                chatAberto: false,
+                jogador1: '',
+                jogador2: '',
+                placar: { jogador1: { vitorias: 0 }, jogador2: { vitorias: 0 } }
+            };
+            console.log('Iniciando jogo solo');
             await carregarNovaPalavra();
             mostrarTela('jogo');
             exibirJogo();
@@ -439,6 +471,18 @@
 
         async function jogarNovamente() {
             if (modo === 'solo') {
+                jogo = {
+                    palavra: '',
+                    letrasAdivinhadas: [],
+                    erros: 0,
+                    estado: 'em andamento',
+                    frases: [],
+                    chatAberto: false,
+                    jogador1: '',
+                    jogador2: '',
+                    placar: jogo.placar
+                };
+                console.log('Jogar novamente no modo solo');
                 await carregarNovaPalavra();
                 exibirJogo();
                 document.getElementById('telaJogo').scrollIntoView({ behavior: 'smooth' });
@@ -447,6 +491,7 @@
                     const jogoRef = ref(db, `jogos/${idJogo}`);
                     const novoJogador1 = jogo.jogador2;
                     const novoJogador2 = jogo.jogador1;
+                    console.log(`Antes da troca: placar=${JSON.stringify(jogo.placar)}`);
                     jogo = {
                         palavra: '',
                         letrasAdivinhadas: [],
@@ -461,6 +506,7 @@
                     await set(jogoRef, jogo);
                     await set(ref(db, `jogos/${idJogo}/chat`), null);
                     papel = jogadorId === novoJogador1 ? 'jogador1' : 'jogador2';
+                    console.log(`Troca de papéis: jogadorId=${jogadorId}, novoJogador1=${novoJogador1}, novoJogador2=${novoJogador2}, papel=${papel}, placar=${JSON.stringify(jogo.placar)}`);
                     if (papel === 'jogador1') {
                         mostrarTela('inicial');
                         mostrarCriarJogo();
@@ -481,28 +527,29 @@
                 const palavrasRef = ref(db, 'palavras');
                 const snapshot = await get(palavrasRef);
                 const palavras = snapshot.val();
+                console.log(`Carregando nova palavra: palavras disponíveis=${palavras ? Object.keys(palavras).length : 0}`);
                 if (!palavras || Object.keys(palavras).length === 0) {
+                    console.error('Nenhuma palavra encontrada no banco de dados.');
                     alert('Nenhuma palavra encontrada no banco de dados.');
+                    jogo.palavra = 'default';
+                    jogo.frases = ['Palavra padrão devido a erro no banco.'];
                     return;
                 }
                 const palavrasArray = Object.values(palavras);
                 const palavraAleatoria = palavrasArray[Math.floor(Math.random() * palavrasArray.length)];
-                jogo = {
-                    palavra: palavraAleatoria.palavra.toLowerCase(),
-                    letrasAdivinhadas: [],
-                    erros: 0,
-                    estado: 'em andamento',
-                    frases: palavraAleatoria.flexoes && palavraAleatoria.flexoes.length > 0
-                        ? [`Flexões: ${palavraAleatoria.flexoes.join(', ')}`]
-                        : [`Frequência: ${palavraAleatoria.frequencia}`],
-                    chatAberto: false,
-                    jogador1: '',
-                    jogador2: '',
-                    placar: jogo.placar || { jogador1: { vitorias: 0 }, jogador2: { vitorias: 0 } }
-                };
+                jogo.palavra = palavraAleatoria.palavra.toLowerCase();
+                jogo.letrasAdivinhadas = [];
+                jogo.erros = 0;
+                jogo.estado = 'em andamento';
+                jogo.frases = palavraAleatoria.flexoes && palavraAleatoria.flexoes.length > 0
+                    ? [`Flexões: ${palavraAleatoria.flexoes.join(', ')}`]
+                    : [`Frequência: ${palavraAleatoria.frequencia}`];
+                console.log(`Nova palavra carregada: ${jogo.palavra}`);
             } catch (error) {
                 console.error('Erro ao carregar palavra:', error);
-                alert('Erro ao carregar palavras do banco de dados.');
+                alert('Erro ao carregar palavras do banco de dados: ' + error.message);
+                jogo.palavra = 'default';
+                jogo.frases = ['Palavra padrão devido a erro no banco.'];
             }
         }
 
@@ -536,6 +583,7 @@
                     if (snapshot.exists()) {
                         jogo = validateJogo(snapshot.val());
                         papel = jogo.jogador1 === jogadorId ? 'jogador1' : 'jogador2';
+                        console.log(`Atualização do jogo: jogadorId=${jogadorId}, papel=${papel}, jogador1=${jogo.jogador1}, jogador2=${jogo.jogador2}, placar=${JSON.stringify(jogo.placar)}`);
                         if (jogo.estado === 'aguardando_palavra' && papel === 'jogador1') {
                             mostrarTela('inicial');
                             mostrarCriarJogo();
@@ -596,6 +644,7 @@
                         if (snapshot.exists()) {
                             jogo = validateJogo(snapshot.val());
                             papel = jogo.jogador1 === jogadorId ? 'jogador1' : 'jogador2';
+                            console.log(`Atualização do jogo: jogadorId=${jogadorId}, papel=${papel}, jogador1=${jogo.jogador1}, jogador2=${jogo.jogador2}, placar=${JSON.stringify(jogo.placar)}`);
                             if (jogo.estado === 'aguardando_palavra' && papel === 'jogador1') {
                                 mostrarTela('inicial');
                                 mostrarCriarJogo();
@@ -620,12 +669,24 @@
             }
         }
 
-        function exibirJogo() {
+        async function exibirJogo() {
             if (!jogo || typeof jogo !== 'object') {
                 document.getElementById('mensagem').textContent = 'Erro: Jogo inválido.';
                 document.getElementById('botoesFimJogo').style.display = 'none';
                 document.getElementById('placar').textContent = '';
                 return;
+            }
+            if (modo === 'multiplayer') {
+                try {
+                    const jogoRef = ref(db, `jogos/${idJogo}`);
+                    const snapshot = await get(jogoRef);
+                    if (snapshot.exists()) {
+                        jogo = validateJogo(snapshot.val());
+                        console.log(`Exibindo placar: jogadorId=${jogadorId}, papel=${papel}, placar=${JSON.stringify(jogo.placar)}`);
+                    }
+                } catch (error) {
+                    console.error('Erro ao sincronizar placar:', error);
+                }
             }
             if (papel === 'jogador1' && jogo.estado !== 'aguardando_palavra') {
                 document.getElementById('jogador1View').style.display = 'block';
@@ -699,7 +760,8 @@
                 });
                 if (letrasFaltando.length === 0) {
                     jogo.estado = 'vencido';
-                    if (modo === 'multiplayer') {
+                    if (modo === 'multiplayer' && papel === 'jogador2') {
+                        console.log(`Vitória do Jogador 2 (adivinhador, id=${jogo.jogador2})`);
                         jogo.placar.jogador2.vitorias += 1;
                     }
                 }
@@ -707,11 +769,13 @@
                 jogo.erros += 1;
                 if (jogo.erros >= 6) {
                     jogo.estado = 'perdido';
-                    if (modo === 'multiplayer') {
+                    if (modo === 'multiplayer' && papel === 'jogador2') {
+                        console.log(`Vitória do Jogador 1 (fornecedor, id=${jogo.jogador1})`);
                         jogo.placar.jogador1.vitorias += 1;
                     }
                 }
             }
+            console.log(`Atribuindo vitória: estado=${jogo.estado}, jogador1Id=${jogo.jogador1}, jogador2Id=${jogo.jogador2}, placar=${JSON.stringify(jogo.placar)}`);
             if (modo === 'multiplayer') {
                 try {
                     const jogoRef = ref(db, `jogos/${idJogo}`);
