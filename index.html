@@ -104,7 +104,7 @@
             height: 600px;
             margin: 20px auto;
             overflow: hidden;
-            background: #333333;
+            border: 2px solid #ffffff; /* Borda para depuração */
         }
         #forcaImagem {
             position: absolute;
@@ -116,11 +116,11 @@
             transition: clip-path 0.3s ease;
         }
         #forcaImagem.erro-0 { clip-path: inset(100% 0 0 0); } /* Nada visível */
-        #forcaImagem.erro-1 { clip-path: inset(0 0 75% 0); } /* Cabeça (~25% superior) */
-        #forcaImagem.erro-2 { clip-path: inset(0 0 50% 0); } /* Cabeça + tronco (~50% superior) */
-        #forcaImagem.erro-3 { clip-path: inset(0 0 50% 0); } /* Braço esquerdo (mesma área) */
-        #forcaImagem.erro-4 { clip-path: inset(0 0 50% 0); } /* Braço direito (mesma área) */
-        #forcaImagem.erro-5 { clip-path: inset(0 0 25% 0); } /* Perna esquerda (~75% superior) */
+        #forcaImagem.erro-1 { clip-path: inset(0 0 80% 0); } /* Cabeça (~20% superior) */
+        #forcaImagem.erro-2 { clip-path: inset(0 0 60% 0); } /* Cabeça + tronco (~40% superior) */
+        #forcaImagem.erro-3 { clip-path: inset(0 0 50% 0); } /* + Braço esquerdo (~50% superior) */
+        #forcaImagem.erro-4 { clip-path: inset(0 0 40% 0); } /* + Braço direito (~60% superior) */
+        #forcaImagem.erro-5 { clip-path: inset(0 0 20% 0); } /* + Perna esquerda (~80% superior) */
         #forcaImagem.erro-6 { clip-path: inset(0 0 0 0); } /* Corpo inteiro */
         #palavra {
             font-size: 24px;
@@ -249,7 +249,7 @@
             <button id="adivinharBtn">Enviar</button>
         </div>
         <div id="forcaContainer">
-            <img id="forcaImagem" src="https://raw.githubusercontent.com/psicspsix/PROGRAMA-CORINGA-INDEX-TEMPORARIOS/main/LulaForca.jpg">
+            <img id="forcaImagem" src="https://raw.githubusercontent.com/psicspsix/PROGRAMA-CORINGA-INDEX-TEMPORARIOS/main/LulaForca.jpg" alt="Imagem da forca" onerror="console.error('Erro ao carregar imagem:', this.src); alert('Falha ao carregar a imagem. Verifique a URL ou conexão.');">
         </div>
         <p id="mensagem"></p>
         <p id="exemploFrases"></p>
@@ -699,6 +699,7 @@
             }
             const imagemForca = document.getElementById('forcaImagem');
             imagemForca.className = `erro-${jogo.erros}`;
+            console.log(`Imagem atualizada: class=erro-${jogo.erros}, src=${imagemForca.src}`);
             const botoesFimJogo = document.getElementById('botoesFimJogo');
             const botoesHTML = `
                 <button onclick="jogarNovamente()">Jogar Novamente</button>
@@ -888,6 +889,11 @@
         });
 
         window.jogarNovamente = jogarNovamente;
+
+        // Log para verificar carregamento inicial da imagem
+        const imagemForca = document.getElementById('forcaImagem');
+        imagemForca.onload = () => console.log('Imagem carregada com sucesso:', imagemForca.src);
+        imagemForca.onerror = () => console.error('Erro ao carregar imagem:', imagemForca.src);
 
         mostrarTela('inicial');
     </script>
