@@ -100,8 +100,8 @@
         }
         #forcaContainer {
             position: relative;
-            width: 200px;
-            height: 300px;
+            width: 300px;
+            height: 600px;
             margin: 20px auto;
             overflow: hidden;
             background: #333333;
@@ -115,13 +115,13 @@
             object-fit: cover;
             transition: clip-path 0.3s ease;
         }
-        #forcaImagem.erro-0 { clip-path: inset(100% 0 0 0); }
-        #forcaImagem.erro-1 { clip-path: inset(0 0 66.67% 0); }
-        #forcaImagem.erro-2 { clip-path: inset(0 0 33.33% 0); }
-        #forcaImagem.erro-3 { clip-path: inset(0 0 33.33% 0); }
-        #forcaImagem.erro-4 { clip-path: inset(0 0 33.33% 0); }
-        #forcaImagem.erro-5 { clip-path: inset(0 0 16.67% 0); }
-        #forcaImagem.erro-6 { clip-path: inset(0 0 0 0); }
+        #forcaImagem.erro-0 { clip-path: inset(100% 0 0 0); } /* Nada visível */
+        #forcaImagem.erro-1 { clip-path: inset(0 0 75% 0); } /* Cabeça (~25% superior) */
+        #forcaImagem.erro-2 { clip-path: inset(0 0 50% 0); } /* Cabeça + tronco (~50% superior) */
+        #forcaImagem.erro-3 { clip-path: inset(0 0 50% 0); } /* Braço esquerdo (mesma área) */
+        #forcaImagem.erro-4 { clip-path: inset(0 0 50% 0); } /* Braço direito (mesma área) */
+        #forcaImagem.erro-5 { clip-path: inset(0 0 25% 0); } /* Perna esquerda (~75% superior) */
+        #forcaImagem.erro-6 { clip-path: inset(0 0 0 0); } /* Corpo inteiro */
         #palavra {
             font-size: 24px;
             margin: 20px 0;
@@ -249,7 +249,7 @@
             <button id="adivinharBtn">Enviar</button>
         </div>
         <div id="forcaContainer">
-            <img id="forcaImagem" src="https://example.com/lula_corpo_inteiro.jpg">
+            <img id="forcaImagem" src="https://raw.githubusercontent.com/psicspsix/PROGRAMA-CORINGA-INDEX-TEMPORARIOS/main/LulaForca.jpg">
         </div>
         <p id="mensagem"></p>
         <p id="exemploFrases"></p>
@@ -388,7 +388,7 @@
             const chatBtn = document.getElementById('chatBtn');
             const closeChatBtn = document.getElementById('closeChatBtn');
             if (chatAberto) {
-                telaJogo.classList.add('chat-aberto off-screen">chat-aberto');
+                telaJogo.classList.add('chat-aberto');
                 chatContainer.style.display = 'flex';
                 chatBtn.style.display = 'none';
                 closeChatBtn.style.display = 'block';
