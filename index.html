@@ -98,12 +98,30 @@
             height: 60px;
             overflow-y: auto;
         }
-        #forca {
-            font-family: monospace;
-            white-space: pre;
-            font-size: 24px;
-            margin: 20px 0;
+        #forcaContainer {
+            position: relative;
+            width: 200px;
+            height: 300px;
+            margin: 20px auto;
+            overflow: hidden;
+            background: #333333;
         }
+        #forcaImagem {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: clip-path 0.3s ease;
+        }
+        #forcaImagem.erro-0 { clip-path: inset(100% 0 0 0); }
+        #forcaImagem.erro-1 { clip-path: inset(0 0 66.67% 0); }
+        #forcaImagem.erro-2 { clip-path: inset(0 0 33.33% 0); }
+        #forcaImagem.erro-3 { clip-path: inset(0 0 33.33% 0); }
+        #forcaImagem.erro-4 { clip-path: inset(0 0 33.33% 0); }
+        #forcaImagem.erro-5 { clip-path: inset(0 0 16.67% 0); }
+        #forcaImagem.erro-6 { clip-path: inset(0 0 0 0); }
         #palavra {
             font-size: 24px;
             margin: 20px 0;
@@ -230,7 +248,9 @@
             <input type="text" id="letraInput" maxlength="1" placeholder="Digite uma letra">
             <button id="adivinharBtn">Enviar</button>
         </div>
-        <pre id="forca"></pre>
+        <div id="forcaContainer">
+            <img id="forcaImagem" src="https://example.com/lula_corpo_inteiro.jpg">
+        </div>
         <p id="mensagem"></p>
         <p id="exemploFrases"></p>
         <p id="placar"></p>
@@ -240,7 +260,7 @@
     <button id="closeChatBtn" style="display: none;">Fechar Chat</button>
     <div id="chatContainer">
         <div id="chatMessages"></div>
-        <div id="chatinInputContainer">
+        <div id="chatInputContainer">
             <textarea id="chatInput" placeholder="Digite sua mensagem..."></textarea>
         </div>
     </div>
@@ -283,16 +303,6 @@
         let unsubscribeJogo = null;
         let unsubscribeChat = null;
         let chatAberto = false;
-
-        const forcaEstagios = [
-            ` +---+\n |   |\n     |\n     |\n     |\n     |\n=========`,
-            ` +---+\n |   |\n O   |\n     |\n     |\n     |\n=========`,
-            ` +---+\n |   |\n O   |\n |   |\n     |\n     |\n=========`,
-            ` +---+\n |   |\n O   |\n/|   |\n     |\n     |\n=========`,
-            ` +---+\n |   |\n O   |\n/|\\  |\n     |\n     |\n=========`,
-            ` +---+\n |   |\n O   |\n/|\\  |\n/    |\n     |\n=========`,
-            ` +---+\n |   |\n O   |\n/|\\  |\n/ \\  |\n     |\n=========`
-        ];
 
         function normalizarLetra(letra) {
             if (!letra) return letra;
@@ -378,7 +388,7 @@
             const chatBtn = document.getElementById('chatBtn');
             const closeChatBtn = document.getElementById('closeChatBtn');
             if (chatAberto) {
-                telaJogo.classList.add('chat-aberto');
+                telaJogo.classList.add('chat-aberto off-screen">chat-aberto');
                 chatContainer.style.display = 'flex';
                 chatBtn.style.display = 'none';
                 closeChatBtn.style.display = 'block';
@@ -687,7 +697,8 @@
                 }).join(' ');
                 document.getElementById('palavra').textContent = palavraOculta;
             }
-            document.getElementById('forca').textContent = forcaEstagios[jogo.erros];
+            const imagemForca = document.getElementById('forcaImagem');
+            imagemForca.className = `erro-${jogo.erros}`;
             const botoesFimJogo = document.getElementById('botoesFimJogo');
             const botoesHTML = `
                 <button onclick="jogarNovamente()">Jogar Novamente</button>
