@@ -315,6 +315,8 @@
         let unsubscribeJogo = null;
         let unsubscribeChat = null;
         let chatAberto = false;
+        const imagemOriginal = 'https://raw.githubusercontent.com/psicspsix/Jogo-de-Forca/main/Lorca-Corpo-Completo.jpg';
+        const imagemDerrota = 'https://raw.githubusercontent.com/psicspsix/Jogo-de-Forca/main/Lorca-Corpo-Completo-Enforcado.jpg';
 
         function normalizarLetra(letra) {
             if (!letra) return letra;
@@ -463,6 +465,9 @@
         }
 
         async function jogarNovamente() {
+            const imagemForca = document.getElementById('forcaImagem');
+            imagemForca.src = imagemOriginal; // Restaura a imagem original
+            imagemForca.className = 'erro-0'; // Reseta o estado da imagem
             if (modo === 'solo') {
                 await carregarNovaPalavra();
                 exibirJogo();
@@ -544,6 +549,9 @@
                     jogador2Inicial: '',
                     placar: jogo.placar || {}
                 };
+                const imagemForca = document.getElementById('forcaImagem');
+                imagemForca.src = imagemOriginal; // Garante a imagem original ao carregar nova palavra
+                imagemForca.className = 'erro-0'; // Reseta o estado da imagem
             } catch (error) {
                 console.error('Erro ao carregar palavra:', error);
                 alert('Erro ao carregar palavras do banco de dados.');
@@ -693,6 +701,16 @@
                 return;
             }
             console.log(`Exibindo jogo: papel=${papel}, estado=${jogo.estado}`);
+            const imagemForca = document.getElementById('forcaImagem');
+            if (jogo.estado === 'perdido') {
+                imagemForca.src = imagemDerrota; // Usa a imagem de derrota
+                imagemForca.className = ''; // Remove as classes de recorte para exibir a imagem completa
+                console.log(`Imagem de derrota exibida: src=${imagemForca.src}`);
+            } else {
+                imagemForca.src = imagemOriginal; // Usa a imagem original
+                imagemForca.className = `erro-${jogo.erros}`; // Aplica a classe de erro
+                console.log(`Imagem atualizada: class=erro-${jogo.erros}, src=${imagemForca.src}`);
+            }
             if (papel === 'jogador1' && jogo.estado !== 'aguardando_palavra') {
                 console.log('Mostrando tela de observação (#jogador1View) para Jogador 1');
                 document.getElementById('jogador1View').style.display = 'block';
@@ -709,9 +727,6 @@
                 }).join(' ');
                 document.getElementById('palavra').textContent = palavraOculta;
             }
-            const imagemForca = document.getElementById('forcaImagem');
-            imagemForca.className = `erro-${jogo.erros}`;
-            console.log(`Imagem atualizada: class=erro-${jogo.erros}, src=${imagemForca.src}`);
             const botoesFimJogo = document.getElementById('botoesFimJogo');
             const botoesHTML = `
                 <button onclick="jogarNovamente()">Jogar Novamente</button>
@@ -741,7 +756,6 @@
                     const vitoriasJ2 = jogo.placar[idJogador2] ? jogo.placar[idJogador2].vitorias : 0;
                     document.getElementById('placar').textContent = `Placar: Jogador 1 (Vitórias: ${vitoriasJ1}) | Jogador 2 (Vitórias: ${vitoriasJ2})`;
                 }
-                document.getElementById('exemploFrases').textContent = jogo.frases.join(' | ');
                 botoesFimJogo.style.display = 'grid';
                 document.getElementById('telaJogo').scrollIntoView({ behavior: 'smooth' });
             } else {
