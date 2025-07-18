@@ -372,6 +372,7 @@
                 }
                 if (papel === 'jogador2' && jogo.estado === 'em andamento') {
                     document.getElementById('letraInput').focus();
+                    console.log('Foco definido em letraInput (mostrarTela)');
                 }
                 console.log(`Tela jogo exibida: modo=${modo}, chatAberto=${chatAberto}, #chatBtn=${chatBtn.style.display}, #chatContainer=${chatContainer.style.display}`);
             }
@@ -419,6 +420,7 @@
                 update(ref(db, `jogos/${idJogo}`), { chatAberto: false });
                 if (papel === 'jogador2' && jogo.estado === 'em andamento') {
                     document.getElementById('letraInput').focus();
+                    console.log('Foco definido em letraInput (toggleChat)');
                 }
             }
             console.log(`Chat toggled: chatAberto=${chatAberto}, #chatContainer=${chatContainer.style.display}`);
@@ -465,6 +467,8 @@
             await carregarNovaPalavra();
             mostrarTela('jogo');
             exibirJogo();
+            document.getElementById('letraInput').focus();
+            console.log('Foco definido em letraInput (iniciarJogoSolo)');
         }
 
         async function jogarNovamente() {
@@ -474,6 +478,8 @@
             if (modo === 'solo') {
                 await carregarNovaPalavra();
                 exibirJogo();
+                document.getElementById('letraInput').focus();
+                console.log('Foco definido em letraInput (jogarNovamente, solo)');
                 document.getElementById('telaJogo').scrollIntoView({ behavior: 'smooth' });
             } else if (modo === 'multiplayer') {
                 try {
@@ -517,6 +523,8 @@
                         alert('Aguardando o Jogador 1 escolher uma nova palavra.');
                         mostrarTela('jogo');
                         exibirJogo();
+                        document.getElementById('letraInput').focus();
+                        console.log('Foco definido em letraInput (jogarNovamente, multiplayer, jogador2)');
                     }
                     await update(jogoRef, { estado: 'aguardando_palavra' });
                 } catch (error) {
@@ -603,6 +611,10 @@
                         } else {
                             mostrarTela('jogo');
                             exibirJogo();
+                            if (papel === 'jogador2' && jogo.estado === 'em andamento') {
+                                document.getElementById('letraInput').focus();
+                                console.log('Foco definido em letraInput (onValue, jogador2)');
+                            }
                         }
                         if (jogo.chatAberto && !chatAberto) toggleChat();
                         else if (!jogo.chatAberto && chatAberto) toggleChat();
@@ -667,6 +679,10 @@
                     }
                     mostrarTela('jogo');
                     exibirJogo();
+                    if (jogo.estado === 'em andamento') {
+                        document.getElementById('letraInput').focus();
+                        console.log('Foco definido em letraInput (entrarJogo)');
+                    }
                     unsubscribeJogo = onValue(jogoRef, (snapshot) => {
                         if (snapshot.exists()) {
                             jogo = validateJogo(snapshot.val());
@@ -678,6 +694,10 @@
                             } else {
                                 mostrarTela('jogo');
                                 exibirJogo();
+                                if (papel === 'jogador2' && jogo.estado === 'em andamento') {
+                                    document.getElementById('letraInput').focus();
+                                    console.log('Foco definido em letraInput (onValue, entrarJogo)');
+                                }
                             }
                             if (jogo.chatAberto && !chatAberto) toggleChat();
                             else if (!jogo.chatAberto && chatAberto) toggleChat();
@@ -729,6 +749,10 @@
                     return jogo.letrasAdivinhadas.some(l => normalizarLetra(l) === letraNormalizada) ? letra : '_';
                 }).join(' ');
                 document.getElementById('palavra').textContent = palavraOculta;
+                if (papel === 'jogador2' && jogo.estado === 'em andamento') {
+                    document.getElementById('letraInput').focus();
+                    console.log('Foco definido em letraInput (exibirJogo)');
+                }
             }
             const botoesFimJogo = document.getElementById('botoesFimJogo');
             const botoesHTML = `
