@@ -93,6 +93,10 @@
             border: 1px solid #555555;
             width: calc(100% - 22px);
         }
+        #letraInput {
+            width: 50px; /* Campo menor para uma letra */
+            text-align: center;
+        }
         textarea {
             resize: none;
             height: 60px;
@@ -257,7 +261,6 @@
             <h2>Adivinhe a palavra</h2>
             <p id="palavra"></p>
             <input type="text" id="letraInput" maxlength="1" placeholder="Digite uma letra">
-            <button id="adivinharBtn">Enviar</button>
         </div>
         <div id="forcaContainer">
             <img id="forcaImagem" src="https://raw.githubusercontent.com/psicspsix/Jogo-de-Forca/main/Lorca-Corpo-Completo.jpg" alt="Imagem da forca" onload="console.log('Imagem carregada:', this.src); document.getElementById('erroImagem').style.display = 'none';" onerror="console.error('Erro ao carregar imagem:', this.src); document.getElementById('erroImagem').style.display = 'block';">
@@ -779,11 +782,15 @@
             const letra = document.getElementById('letraInput').value.trim().toLowerCase();
             if (!letra || letra.length !== 1 || !/[a-záéíóúâêîôûãõç]/.test(letra)) {
                 alert('Digite uma letra válida (a-z, acentos ou ç).');
+                document.getElementById('letraInput').value = '';
+                document.getElementById('letraInput').focus();
                 return;
             }
             const letraNormalizada = normalizarLetra(letra);
             if (jogo.letrasAdivinhadas.some(l => normalizarLetra(l) === letraNormalizada)) {
                 alert('Você já adivinhou essa letra.');
+                document.getElementById('letraInput').value = '';
+                document.getElementById('letraInput').focus();
                 return;
             }
             console.log(`Letra adivinhada: ${letra}, Normalizada: ${letraNormalizada}, Adivinhador: ${adivinhador}`);
@@ -870,26 +877,9 @@
             entrarJogo();
         });
 
-        document.getElementById('adivinharBtn').addEventListener('click', () => {
-            console.log('Botão Adivinhar clicado');
+        document.getElementById('letraInput').addEventListener('input', () => {
+            console.log('Evento input disparado no campo letraInput');
             adivinharLetra();
-        });
-
-        document.getElementById('chatBtn').addEventListener('click', () => {
-            console.log('Botão Abrir Chat clicado');
-            toggleChat();
-        });
-
-        document.getElementById('closeChatBtn').addEventListener('click', () => {
-            console.log('Botão Fechar Chat clicado');
-            toggleChat();
-        });
-
-        document.getElementById('letraInput').addEventListener('keypress', (event) => {
-            if (event.key === 'Enter') {
-                console.log('Tecla Enter pressionada no campo letraInput');
-                adivinharLetra();
-            }
         });
 
         document.getElementById('palavraInput').addEventListener('keypress', (event) => {
@@ -912,6 +902,16 @@
                 console.log('Tecla Enter pressionada no campo chatInput');
                 enviarMensagem();
             }
+        });
+
+        document.getElementById('chatBtn').addEventListener('click', () => {
+            console.log('Botão Abrir Chat clicado');
+            toggleChat();
+        });
+
+        document.getElementById('closeChatBtn').addEventListener('click', () => {
+            console.log('Botão Fechar Chat clicado');
+            toggleChat();
         });
 
         window.jogarNovamente = jogarNovamente;
