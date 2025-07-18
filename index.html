@@ -47,6 +47,7 @@
             border-radius: 10px;
             width: 100%;
             max-width: 600px;
+            position: relative; /* Para posicionar mensagemLetraRepetida */
         }
         #telaJogo.chat-aberto {
             margin-left: -20%;
@@ -144,6 +145,20 @@
         #mensagem {
             font-size: 18px;
             color: #ffff00;
+        }
+        #mensagemLetraRepetida {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 48px;
+            color: #ff0000;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 10px;
+            z-index: 1000;
+            text-align: center;
         }
         #exemploFrases {
             font-size: 16px;
@@ -266,6 +281,7 @@
             <img id="forcaImagem" src="https://raw.githubusercontent.com/psicspsix/Jogo-de-Forca/main/Lorca-Corpo-Completo.jpg" alt="Imagem da forca" onload="console.log('Imagem carregada:', this.src); document.getElementById('erroImagem').style.display = 'none';" onerror="console.error('Erro ao carregar imagem:', this.src); document.getElementById('erroImagem').style.display = 'block';">
             <div id="erroImagem">Erro: Não foi possível carregar a imagem.</div>
         </div>
+        <div id="mensagemLetraRepetida">Letra já digitada!</div>
         <p id="mensagem"></p>
         <p id="exemploFrases"></p>
         <p id="placar"></p>
@@ -812,7 +828,12 @@
             }
             const letraNormalizada = normalizarLetra(letra);
             if (jogo.letrasAdivinhadas.some(l => normalizarLetra(l) === letraNormalizada)) {
-                alert('Você já adivinhou essa letra.');
+                console.log(`Letra repetida: ${letra}`);
+                const mensagemRepetida = document.getElementById('mensagemLetraRepetida');
+                mensagemRepetida.style.display = 'block';
+                setTimeout(() => {
+                    mensagemRepetida.style.display = 'none';
+                }, 1000);
                 document.getElementById('letraInput').value = '';
                 document.getElementById('letraInput').focus();
                 return;
