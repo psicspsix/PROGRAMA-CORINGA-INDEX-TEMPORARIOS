@@ -378,7 +378,8 @@
                     unsubscribeChat();
                     unsubscribeChat = null;
                 }
-                console.log('Tela inicial exibida: #telaInicial=flex, #chatBtn=none, #chatContainer=none');
+                jogo.placar = {}; // Reinicia o placar ao voltar para a tela inicial
+                console.log('Tela inicial exibida: #telaInicial=flex, #chatBtn=none, #chatContainer=none, placar reiniciado');
             } else if (tela === 'jogo') {
                 telaJogo.style.display = 'block';
                 if (modo === 'multiplayer') {
@@ -480,11 +481,12 @@
         async function iniciarJogoSolo() {
             modo = 'solo';
             papel = 'jogador2';
+            jogo.placar = { jogador: { vitorias: 0 }, computador: { vitorias: 0 } }; // Inicializa o placar
             await carregarNovaPalavra();
             mostrarTela('jogo');
             exibirJogo();
             document.getElementById('letraInput').focus();
-            console.log('Foco definido em letraInput (iniciarJogoSolo)');
+            console.log('Foco definido em letraInput (iniciarJogoSolo), placar inicial:', jogo.placar);
         }
 
         async function jogarNovamente() {
@@ -495,7 +497,7 @@
                 await carregarNovaPalavra();
                 exibirJogo();
                 document.getElementById('letraInput').focus();
-                console.log('Foco definido em letraInput (jogarNovamente, solo)');
+                console.log('Foco definido em letraInput (jogarNovamente, solo), placar mantido:', jogo.placar);
                 document.getElementById('telaJogo').scrollIntoView({ behavior: 'smooth' });
             } else if (modo === 'multiplayer') {
                 try {
@@ -561,6 +563,7 @@
                 }
                 const palavrasArray = Object.values(palavras);
                 const palavraAleatoria = palavrasArray[Math.floor(Math.random() * palavrasArray.length)];
+                const placarAtual = jogo.placar || { jogador: { vitorias: 0 }, computador: { vitorias: 0 } };
                 jogo = {
                     palavra: palavraAleatoria.palavra.toLowerCase(),
                     letrasAdivinhadas: [],
@@ -574,11 +577,12 @@
                     jogador2: '',
                     jogador1Inicial: '',
                     jogador2Inicial: '',
-                    placar: jogo.placar || {}
+                    placar: placarAtual
                 };
                 const imagemForca = document.getElementById('forcaImagem');
                 imagemForca.src = imagemOriginal;
                 imagemForca.className = 'erro-0';
+                console.log('Nova palavra carregada, placar mantido:', jogo.placar);
             } catch (error) {
                 console.error('Erro ao carregar palavra:', error);
                 alert('Erro ao carregar palavras do banco de dados.');
@@ -739,7 +743,7 @@
                 document.getElementById('placar').textContent = '';
                 return;
             }
-            console.log(`Exibindo jogo: papel=${papel}, estado=${jogo.estado}`);
+            console.log(`Exibindo jogo: modo=${modo}, papel=${papel}, estado=${jogo.estado}, placar=`, jogo.placar);
             const imagemForca = document.getElementById('forcaImagem');
             if (jogo.estado === 'perdido') {
                 imagemForca.src = imagemDerrota;
@@ -786,34 +790,28 @@
                 <button onclick="window.open('https://www.youtube.com/watch?v=BIAITFJ8uTI&t=82s', '_blank')">Vídeo Teacher Carlos</button>
             `;
             if (jogo.estado === 'vencido' || jogo.estado === 'perdido') {
-                if (modo === 'solo') {
-                    document.getElementById('mensagem').textContent = jogo.estado === 'vencido' ? 'VOCÊ VENCEU!' : `VOCÊ PERDEU! A palavra era: ${jogo.palavra}`;
-                    botoesFimJogo.innerHTML = botoesHTML;
-                    document.getElementById('placar').textContent = '';
-                } else {
-                    if (papel === 'jogador2') {
-                        document.getElementById('mensagem').textContent = jogo.estado === 'vencido' ? 'VOCÊ VENCEU!' : `VOCÊ PERDEU! A palavra era: ${jogo.palavra}`;
-                    } else {
-                        document.getElementById('mensagem').textContent = jogo.estado === 'vencido' ? `VOCÊ PERDEU! A palavra era: ${jogo.palavra}` : 'VOCÊ VENCEU!';
-                    }
-                    botoesFimJogo.innerHTML = botoesHTML;
-                    const idJogador1 = jogo.jogador1Inicial || jogo.jogador1;
-                    const idJogador2 = jogo.jogador2Inicial || jogo.jogador2;
-                    const vitoriasJ1 = jogo.placar[idJogador1] ? jogo.placar[idJogador1].vitorias : 0;
-                    const vitoriasJ2 = jogo.placar[idJogador2] ? jogo.placar[idJogador2].vitorias : 0;
-                    document.getElementById('placar').textContent = `Placar: Jogador 1 (Vitórias: ${vitoriasJ1}) | Jogador 2 (Vitórias: ${vitoriasJ2})`;
-                }
+                document.getElementById('mensagem').textContent = jogo.estado === 'vencido' ? 'VOCÊ VENCEU!' : `VOCÊ PERDEU! A palavra era: ${jogo.palavra}`;
+                botoesFimJogo.innerHTML = botoesHTML;
                 botoesFimJogo.style.display = 'grid';
                 document.getElementById('telaJogo').scrollIntoView({ behavior: 'smooth' });
             } else {
                 document.getElementById('mensagem').textContent = jogo.palavra ? '' : 'Aguardando palavra do Jogador 1...';
                 document.getElementById('exemploFrases').textContent = '';
+                botoesFimJogo.style.display = 'none';
+            }
+            // Exibir placar
+            if (modo === 'solo') {
+                const vitoriasJogador = jogo.placar.jogador ? jogo.placar.jogador.vitorias : 0;
+                const vitoriasComputador = jogo.placar.computador ? jogo.placar.computador.vitorias : 0;
+                document.getElementById('placar').textContent = `Placar: Jogador (Vitórias: ${vitoriasJogador}) | Computador (Vitórias: ${vitoriasComputador})`;
+            } else if (modo === 'multiplayer') {
                 const idJogador1 = jogo.jogador1Inicial || jogo.jogador1;
                 const idJogador2 = jogo.jogador2Inicial || jogo.jogador2;
                 const vitoriasJ1 = jogo.placar[idJogador1] ? jogo.placar[idJogador1].vitorias : 0;
                 const vitoriasJ2 = jogo.placar[idJogador2] ? jogo.placar[idJogador2].vitorias : 0;
-                document.getElementById('placar').textContent = modo === 'multiplayer' ? `Placar: Jogador 1 (Vitórias: ${vitoriasJ1}) | Jogador 2 (Vitórias: ${vitoriasJ2})` : '';
-                botoesFimJogo.style.display = 'none';
+                document.getElementById('placar').textContent = `Placar: Jogador 1 (Vitórias: ${vitoriasJ1}) | Jogador 2 (Vitórias: ${vitoriasJ2})`;
+            } else {
+                document.getElementById('placar').textContent = '';
             }
         }
 
@@ -855,18 +853,23 @@
             });
             exibirJogo();
             if (letrasFaltando.length === 0) {
-                if (modo === 'solo') {
-                    await new Promise(resolve => setTimeout(resolve, 100));
-                }
                 jogo.estado = 'vencido';
-                if (modo === 'multiplayer') {
+                if (modo === 'solo') {
+                    if (!jogo.placar.jogador) jogo.placar.jogador = { vitorias: 0 };
+                    jogo.placar.jogador.vitorias += 1;
+                    console.log(`Vitória do Jogador no modo Solo - Placar: Jogador (${jogo.placar.jogador.vitorias}) | Computador (${jogo.placar.computador?.vitorias || 0})`);
+                } else if (modo === 'multiplayer') {
                     if (!jogo.placar[jogadorId]) jogo.placar[jogadorId] = { vitorias: 0 };
                     jogo.placar[jogadorId].vitorias += 1;
                     console.log(`Vitória do Adivinhador (ID: ${jogadorId}) - Placar: J1 (${jogo.jogador1}): ${jogo.placar[jogo.jogador1]?.vitorias || 0}, J2 (${jogo.jogador2}): ${jogo.placar[jogo.jogador2]?.vitorias || 0}`);
                 }
             } else if (jogo.erros >= 6) {
                 jogo.estado = 'perdido';
-                if (modo === 'multiplayer') {
+                if (modo === 'solo') {
+                    if (!jogo.placar.computador) jogo.placar.computador = { vitorias: 0 };
+                    jogo.placar.computador.vitorias += 1;
+                    console.log(`Vitória do Computador no modo Solo - Placar: Jogador (${jogo.placar.jogador?.vitorias || 0}) | Computador (${jogo.placar.computador.vitorias})`);
+                } else if (modo === 'multiplayer') {
                     const idObservador = jogadorId === jogo.jogador1 ? jogo.jogador2 : jogo.jogador1;
                     if (idObservador) {
                         if (!jogo.placar[idObservador]) jogo.placar[idObservador] = { vitorias: 0 };
