@@ -824,7 +824,11 @@
                 document.getElementById('pontosDireita').textContent = `Pontos: ${vitoriasComputador}`;
                 document.getElementById('placar').textContent = ''; // Remove placar antigo
             } else if (modo === 'multiplayer') {
-                const idJogador1 = jogo.jogador1Inicial || jogo:Jogador 1';
+                const idJogador1 = jogo.jogador1Inicial || jogo.jogador1;
+                const idJogador2 = jogo.jogador2Inicial || jogo.jogador2;
+                const vitoriasJ1 = jogo.placar[idJogador1] ? jogo.placar[idJogador1].vitorias : 0;
+                const vitoriasJ2 = jogo.placar[idJogador2] ? jogo.placar[idJogador2].vitorias : 0;
+                document.getElementById('nomeEsquerda').textContent = 'Jogador 1';
                 document.getElementById('pontosEsquerda').textContent = `Pontos: ${vitoriasJ1}`;
                 document.getElementById('nomeDireita').textContent = 'Jogador 2';
                 document.getElementById('pontosDireita').textContent = `Pontos: ${vitoriasJ2}`;
