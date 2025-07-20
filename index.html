@@ -57,6 +57,10 @@
             font-size: 3em;
             margin-bottom: 20px;
         }
+        h3 {
+            font-size: 2em;
+            margin: 0;
+        }
         button {
             background-color: #333333;
             color: #ffffff;
@@ -171,6 +175,26 @@
         #jogador1View, #jogador2View {
             margin-bottom: 20px;
         }
+        #participanteEsquerda, #participanteDireita {
+            position: absolute;
+            top: 20px;
+            text-align: center;
+            z-index: 1000;
+        }
+        #participanteEsquerda {
+            left: -150px;
+        }
+        #participanteDireita {
+            right: -150px;
+        }
+        #participanteEsquerda h3, #participanteDireita h3 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+        #participanteEsquerda p, #participanteDireita p {
+            font-size: 1.5em;
+            margin: 0;
+        }
         #chatContainer {
             display: none;
             position: fixed;
@@ -276,6 +300,14 @@
             <h2>Adivinhe a palavra</h2>
             <p id="palavra"></p>
             <input type="text" id="letraInput" maxlength="1" placeholder="Digite uma letra">
+        </div>
+        <div id="participanteEsquerda">
+            <h3 id="nomeEsquerda"></h3>
+            <p id="pontosEsquerda"></p>
+        </div>
+        <div id="participanteDireita">
+            <h3 id="nomeDireita"></h3>
+            <p id="pontosDireita"></p>
         </div>
         <div id="forcaContainer">
             <img id="forcaImagem" src="https://raw.githubusercontent.com/psicspsix/Jogo-de-Forca/main/Lorca-Corpo-Completo.jpg" alt="Imagem da forca" onload="console.log('Imagem carregada:', this.src); document.getElementById('erroImagem').style.display = 'none';" onerror="console.error('Erro ao carregar imagem:', this.src); document.getElementById('erroImagem').style.display = 'block';">
@@ -741,6 +773,10 @@
                 document.getElementById('mensagem').textContent = 'Erro: Jogo inválido.';
                 document.getElementById('botoesFimJogo').style.display = 'none';
                 document.getElementById('placar').textContent = '';
+                document.getElementById('nomeEsquerda').textContent = '';
+                document.getElementById('pontosEsquerda').textContent = '';
+                document.getElementById('nomeDireita').textContent = '';
+                document.getElementById('pontosDireita').textContent = '';
                 return;
             }
             console.log(`Exibindo jogo: modo=${modo}, papel=${papel}, estado=${jogo.estado}, placar=`, jogo.placar);
@@ -778,6 +814,28 @@
                     console.log('Foco definido em letraInput (exibirJogo)');
                 }
             }
+            // Exibir nomes e pontos dos participantes
+            if (modo === 'solo') {
+                const vitoriasJogador = jogo.placar.jogador ? jogo.placar.jogador.vitorias : 0;
+                const vitoriasComputador = jogo.placar.computador ? jogo.placar.computador.vitorias : 0;
+                document.getElementById('nomeEsquerda').textContent = 'Jogador';
+                document.getElementById('pontosEsquerda').textContent = `Pontos: ${vitoriasJogador}`;
+                document.getElementById('nomeDireita').textContent = 'Computador';
+                document.getElementById('pontosDireita').textContent = `Pontos: ${vitoriasComputador}`;
+                document.getElementById('placar').textContent = ''; // Remove placar antigo
+            } else if (modo === 'multiplayer') {
+                const idJogador1 = jogo.jogador1Inicial || jogo:Jogador 1';
+                document.getElementById('pontosEsquerda').textContent = `Pontos: ${vitoriasJ1}`;
+                document.getElementById('nomeDireita').textContent = 'Jogador 2';
+                document.getElementById('pontosDireita').textContent = `Pontos: ${vitoriasJ2}`;
+                document.getElementById('placar').textContent = ''; // Remove placar antigo
+            } else {
+                document.getElementById('nomeEsquerda').textContent = '';
+                document.getElementById('pontosEsquerda').textContent = '';
+                document.getElementById('nomeDireita').textContent = '';
+                document.getElementById('pontosDireita').textContent = '';
+                document.getElementById('placar').textContent = '';
+            }
             const botoesFimJogo = document.getElementById('botoesFimJogo');
             const botoesHTML = `
                 <button onclick="jogarNovamente()">Jogar Novamente</button>
@@ -798,20 +856,6 @@
                 document.getElementById('mensagem').textContent = jogo.palavra ? '' : 'Aguardando palavra do Jogador 1...';
                 document.getElementById('exemploFrases').textContent = '';
                 botoesFimJogo.style.display = 'none';
-            }
-            // Exibir placar
-            if (modo === 'solo') {
-                const vitoriasJogador = jogo.placar.jogador ? jogo.placar.jogador.vitorias : 0;
-                const vitoriasComputador = jogo.placar.computador ? jogo.placar.computador.vitorias : 0;
-                document.getElementById('placar').textContent = `Placar: Jogador (Vitórias: ${vitoriasJogador}) | Computador (Vitórias: ${vitoriasComputador})`;
-            } else if (modo === 'multiplayer') {
-                const idJogador1 = jogo.jogador1Inicial || jogo.jogador1;
-                const idJogador2 = jogo.jogador2Inicial || jogo.jogador2;
-                const vitoriasJ1 = jogo.placar[idJogador1] ? jogo.placar[idJogador1].vitorias : 0;
-                const vitoriasJ2 = jogo.placar[idJogador2] ? jogo.placar[idJogador2].vitorias : 0;
-                document.getElementById('placar').textContent = `Placar: Jogador 1 (Vitórias: ${vitoriasJ1}) | Jogador 2 (Vitórias: ${vitoriasJ2})`;
-            } else {
-                document.getElementById('placar').textContent = '';
             }
         }
 
