@@ -177,15 +177,15 @@
         }
         #participanteEsquerda, #participanteDireita {
             position: absolute;
-            top: 120px; /* Alinhado com o topo da imagem da forca */
+            top: 120px;
             text-align: center;
             z-index: 1000;
         }
         #participanteEsquerda {
-            left: -350px; /* Afastado 200px adicionais à esquerda */
+            left: -350px;
         }
         #participanteDireita {
-            right: -350px; /* Afastado 200px adicionais à direita */
+            right: -350px;
         }
         #participanteEsquerda h3, #participanteDireita h3 {
             font-size: 2em;
@@ -794,20 +794,24 @@
                 console.log('Mostrando tela de observação (#jogador1View) para Jogador 1');
                 document.getElementById('jogador1View').style.display = 'block';
                 document.getElementById('jogador2View').style.display = 'none';
-                const palavraOculta = jogo.palavra.split('').map((letra, i) => {
-                    const letraNormalizada = normalizarLetra(letra);
-                    return jogo.letrasAdivinhadas.some(l => normalizarLetra(l) === letraNormalizada) ? letra : '_';
-                }).join(' ');
+                const palavraOculta = (jogo.estado === 'vencido' || jogo.estado === 'perdido') 
+                    ? jogo.palavra 
+                    : jogo.palavra.split('').map((letra, i) => {
+                        const letraNormalizada = normalizarLetra(letra);
+                        return jogo.letrasAdivinhadas.some(l => normalizarLetra(l) === letraNormalizada) ? letra : '_';
+                    }).join(' ');
                 document.getElementById('palavraJogador1').textContent = palavraOculta;
                 document.getElementById('letrasAdivinhadasJogador1').textContent = jogo.letrasAdivinhadas.join(', ');
             } else {
                 console.log('Mostrando tela de adivinhação (#jogador2View) para Jogador 2');
                 document.getElementById('jogador1View').style.display = 'none';
                 document.getElementById('jogador2View').style.display = 'block';
-                const palavraOculta = jogo.palavra.split('').map((letra, i) => {
-                    const letraNormalizada = normalizarLetra(letra);
-                    return jogo.letrasAdivinhadas.some(l => normalizarLetra(l) === letraNormalizada) ? letra : '_';
-                }).join(' ');
+                const palavraOculta = (jogo.estado === 'vencido' || jogo.estado === 'perdido') 
+                    ? jogo.palavra 
+                    : jogo.palavra.split('').map((letra, i) => {
+                        const letraNormalizada = normalizarLetra(letra);
+                        return jogo.letrasAdivinhadas.some(l => normalizarLetra(l) === letraNormalizada) ? letra : '_';
+                    }).join(' ');
                 document.getElementById('palavra').textContent = palavraOculta;
                 if (papel === 'jogador2' && jogo.estado === 'em andamento') {
                     document.getElementById('letraInput').focus();
@@ -822,7 +826,11 @@
                 document.getElementById('pontosEsquerda').textContent = `Pontos: ${vitoriasJogador}`;
                 document.getElementById('nomeDireita').textContent = 'Computador';
                 document.getElementById('pontosDireita').textContent = `Pontos: ${vitoriasComputador}`;
-                document.getElementById('placar').textContent = ''; // Remove placar antigo
+                if (jogo.estado === 'vencido' || jogo.estado === 'perdido') {
+                    document.getElementById('placar').textContent = `Placar: Jogador (${vitoriasJogador}) | Computador (${vitoriasComputador})`;
+                } else {
+                    document.getElementById('placar').textContent = '';
+                }
             } else if (modo === 'multiplayer') {
                 const idJogador1 = jogo.jogador1Inicial || jogo.jogador1;
                 const idJogador2 = jogo.jogador2Inicial || jogo.jogador2;
@@ -832,7 +840,11 @@
                 document.getElementById('pontosEsquerda').textContent = `Pontos: ${vitoriasJ1}`;
                 document.getElementById('nomeDireita').textContent = 'Jogador 2';
                 document.getElementById('pontosDireita').textContent = `Pontos: ${vitoriasJ2}`;
-                document.getElementById('placar').textContent = ''; // Remove placar antigo
+                if (jogo.estado === 'vencido' || jogo.estado === 'perdido') {
+                    document.getElementById('placar').textContent = `Placar: Jogador 1 (${vitoriasJ1}) | Jogador 2 (${vitoriasJ2})`;
+                } else {
+                    document.getElementById('placar').textContent = '';
+                }
             } else {
                 document.getElementById('nomeEsquerda').textContent = '';
                 document.getElementById('pontosEsquerda').textContent = '';
