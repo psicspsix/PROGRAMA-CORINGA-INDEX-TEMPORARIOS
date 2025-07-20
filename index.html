@@ -114,7 +114,7 @@
             margin: 20px auto;
             overflow: hidden;
             border: 2px solid #ffffff;
-            background: rgba(0, 0, 0, 0.5 alteraçoes);
+            background: rgba(0, 0, 0, 0.5);
         }
         #forcaImagem {
             position: absolute;
@@ -145,6 +145,13 @@
         #palavra, #palavraJogador1 {
             font-size: 24px;
             margin: 20px 0;
+        }
+        #palavraTopo {
+            position: absolute;
+            top: 20px;
+            width: 100%;
+            text-align: center;
+            font-size: 24px;
         }
         #mensagem {
             font-size: 18px;
@@ -177,15 +184,15 @@
         }
         #participanteEsquerda, #participanteDireita {
             position: absolute;
-            top: 120px; /* Alinhado com o topo da imagem da forca */
+            top: 120px;
             text-align: center;
             z-index: 1000;
         }
         #participanteEsquerda {
-            left: -350px; /* Afastado 200px adicionais à esquerda */
+            left: -300px;
         }
         #participanteDireita {
-            right: -350px; /* Afastado 200px adicionais à direita */
+            right: -300px;
         }
         #participanteEsquerda h3, #participanteDireita h3 {
             font-size: 2em;
@@ -291,6 +298,7 @@
         </div>
     </div>
     <div id="telaJogo">
+        <p id="palavraTopo"></p>
         <div id="jogador1View" style="display: none;">
             <h2>Aguardando o amigo adivinhar...</h2>
             <p>Palavra: <span id="palavraJogador1"></span></p>
@@ -409,7 +417,7 @@
                     unsubscribeChat();
                     unsubscribeChat = null;
                 }
-                jogo.placar = {}; // Reinicia o placar ao voltar para a tela inicial
+                jogo.placar = {};
                 console.log('Tela inicial exibida: #telaInicial=flex, #chatBtn=none, #chatContainer=none, placar reiniciado');
             } else if (tela === 'jogo') {
                 telaJogo.style.display = 'block';
@@ -462,7 +470,6 @@
                 chatContainer.style.display = 'flex';
                 chatBtn.style.display = 'none';
                 closeChatBtn.style.display = 'block';
-                // Apagar o placar ao abrir o chat
                 nomeEsquerda.textContent = '';
                 pontosEsquerda.textContent = '';
                 nomeDireita.textContent = '';
@@ -475,7 +482,6 @@
                 chatContainer.style.display = 'none';
                 chatBtn.style.display = 'block';
                 closeChatBtn.style.display = 'none';
-                // Restaurar o placar ao fechar o chat
                 if (modo === 'multiplayer') {
                     const idJogador1 = jogo.jogador1Inicial || jogo.jogador1;
                     const idJogador2 = jogo.jogador2Inicial || jogo.jogador2;
@@ -503,6 +509,7 @@
                 console.log(`Estado do chat atualizado no Firebase: chatAberto=${novoEstadoChat}`);
             } else {
                 console.error('Jogo não encontrado no Firebase.');
+                alert('Jogo não encontrado.');
             }
         }
 
@@ -544,7 +551,7 @@
         async function iniciarJogoSolo() {
             modo = 'solo';
             papel = 'jogador2';
-            jogo.placar = { jogador: { vitorias: 0 }, computador: { vitorias: 0 } }; // Inicializa o placar
+            jogo.placar = { jogador: { vitorias: 0 }, computador: { vitorias: 0 } };
             await carregarNovaPalavra();
             mostrarTela('jogo');
             exibirJogo();
@@ -715,7 +722,7 @@
 
         function validateJogo(data) {
             const placar = data.placar || {};
-            if (!placar[data.jogador1]) placar[data.jogador1] = { vitorias: 0 };
+            if (data.jogador1 && !placar[data.jogador1]) placar[data.jogador1] = { vitorias: 0 };
             if (data.jogador2 && !placar[data.jogador2]) placar[data.jogador2] = { vitorias: 0 };
             return {
                 palavra: data.palavra || '',
@@ -801,11 +808,8 @@
             if (!jogo || typeof jogo !== 'object') {
                 document.getElementById('mensagem').textContent = 'Erro: Jogo inválido.';
                 document.getElementById('botoesFimJogo').style.display = 'none';
+                document.getElementById('palavraTopo').textContent = '';
                 document.getElementById('placar').textContent = '';
-                document.getElementById('nomeEsquerda').textContent = '';
-                document.getElementById('pontosEsquerda').textContent = '';
-                document.getElementById('nomeDireita').textContent = '';
-                document.getElementById('pontosDireita').textContent = '';
                 return;
             }
             console.log(`Exibindo jogo: modo=${modo}, papel=${papel}, estado=${jogo.estado}, placar=`, jogo.placar);
@@ -819,56 +823,68 @@
                 imagemForca.className = `erro-${jogo.erros}`;
                 console.log(`Imagem atualizada: class=erro-${jogo.erros}, src=${imagemForca.src}`);
             }
+            const palavraOculta = (jogo.estado === 'vencido' || jogo.estado === 'perdido')
+                ? jogo.palavra
+                : jogo.palavra.split('').map((letra, i) => {
+                    const letraNormalizada = normalizarLetra(letra);
+                    return jogo.letrasAdivinhadas.some(l => normalizarLetra(l) === letraNormalizada) ? letra : '_';
+                }).join(' ');
+            document.getElementById('palavraTopo').textContent = (jogo.estado === 'vencido' || jogo.estado === 'perdido') ? `Palavra: ${jogo.palavra}` : '';
             if (papel === 'jogador1' && jogo.estado !== 'aguardando_palavra') {
                 console.log('Mostrando tela de observação (#jogador1View) para Jogador 1');
                 document.getElementById('jogador1View').style.display = 'block';
                 document.getElementById('jogador2View').style.display = 'none';
-                const palavraOculta = jogo.palavra.split('').map((letra, i) => {
-                    const letraNormalizada = normalizarLetra(letra);
-                    return jogo.letrasAdivinhadas.some(l => normalizarLetra(l) === letraNormalizada) ? letra : '_';
-                }).join(' ');
                 document.getElementById('palavraJogador1').textContent = palavraOculta;
                 document.getElementById('letrasAdivinhadasJogador1').textContent = jogo.letrasAdivinhadas.join(', ');
             } else {
                 console.log('Mostrando tela de adivinhação (#jogador2View) para Jogador 2');
                 document.getElementById('jogador1View').style.display = 'none';
                 document.getElementById('jogador2View').style.display = 'block';
-                const palavraOculta = jogo.palavra.split('').map((letra, i) => {
-                    const letraNormalizada = normalizarLetra(letra);
-                    return jogo.letrasAdivinhadas.some(l => normalizarLetra(l) === letraNormalizada) ? letra : '_';
-                }).join(' ');
                 document.getElementById('palavra').textContent = palavraOculta;
                 if (papel === 'jogador2' && jogo.estado === 'em andamento') {
                     document.getElementById('letraInput').focus();
                     console.log('Foco definido em letraInput (exibirJogo)');
                 }
             }
-            // Exibir nomes e pontos dos participantes apenas se o chat estiver fechado
-            if (!jogo.chatAberto) {
-                if (modo === 'solo') {
-                    const vitoriasJogador = jogo.placar.jogador ? jogo.placar.jogador.vitorias : 0;
-                    const vitoriasComputador = jogo.placar.computador ? jogo.placar.computador.vitorias : 0;
+            // Atualizar placar para modo solo
+            if (modo === 'solo') {
+                const vitoriasJogador = jogo.placar.jogador ? jogo.placar.jogador.vitorias : 0;
+                const vitoriasComputador = jogo.placar.computador ? jogo.placar.computador.vitorias : 0;
+                if (!jogo.chatAberto) {
                     document.getElementById('nomeEsquerda').textContent = 'Jogador';
                     document.getElementById('pontosEsquerda').textContent = `Pontos: ${vitoriasJogador}`;
                     document.getElementById('nomeDireita').textContent = 'Computador';
                     document.getElementById('pontosDireita').textContent = `Pontos: ${vitoriasComputador}`;
-                    document.getElementById('placar').textContent = '';
-                } else if (modo === 'multiplayer') {
-                    const idJogador1 = jogo.jogador1Inicial || jogo.jogador1;
-                    const idJogador2 = jogo.jogador2Inicial || jogo.jogador2;
-                    const vitoriasJ1 = jogo.placar[idJogador1] ? jogo.placar[idJogador1].vitorias : 0;
-                    const vitoriasJ2 = jogo.placar[idJogador2] ? jogo.placar[idJogador2].vitorias : 0;
+                } else {
+                    document.getElementById('nomeEsquerda').textContent = '';
+                    document.getElementById('pontosEsquerda').textContent = '';
+                    document.getElementById('nomeDireita').textContent = '';
+                    document.getElementById('pontosDireita').textContent = '';
+                }
+                document.getElementById('placar').textContent = (jogo.estado === 'vencido' || jogo.estado === 'perdido')
+                    ? `Placar: Jogador (${vitoriasJogador}) | Computador (${vitoriasComputador})`
+                    : '';
+            }
+            // Atualizar placar para modo multiplayer
+            else if (modo === 'multiplayer') {
+                const idJogador1 = jogo.jogador1Inicial || jogo.jogador1;
+                const idJogador2 = jogo.jogador2Inicial || jogo.jogador2;
+                const vitoriasJ1 = jogo.placar[idJogador1] ? jogo.placar[idJogador1].vitorias : 0;
+                const vitoriasJ2 = jogo.placar[idJogador2] ? jogo.placar[idJogador2].vitorias : 0;
+                if (!jogo.chatAberto) {
                     document.getElementById('nomeEsquerda').textContent = 'Jogador 1';
                     document.getElementById('pontosEsquerda').textContent = `Pontos: ${vitoriasJ1}`;
                     document.getElementById('nomeDireita').textContent = 'Jogador 2';
                     document.getElementById('pontosDireita').textContent = `Pontos: ${vitoriasJ2}`;
-                    document.getElementById('placar').textContent = '';
+                } else {
+                    document.getElementById('nomeEsquerda').textContent = '';
+                    document.getElementById('pontosEsquerda').textContent = '';
+                    document.getElementById('nomeDireita').textContent = '';
+                    document.getElementById('pontosDireita').textContent = '';
                 }
-            } else {
-                document.getElementById('nomeEsquerda').textContent = '';
-                document.getElementById('pontosEsquerda').textContent = '';
-                document.getElementById('nomeDireita').textContent = '';
-                document.getElementById('pontosDireita').textContent = '';
+                document.getElementById('placar').textContent = (jogo.estado === 'vencido' || jogo.estado === 'perdido')
+                    ? `Placar: Jogador 1 (${vitoriasJ1}) | Jogador 2 (${vitoriasJ2})`
+                    : '';
             }
             const botoesFimJogo = document.getElementById('botoesFimJogo');
             const botoesHTML = `
@@ -894,8 +910,7 @@
         }
 
         async function adivinharLetra() {
-            const adivinhador = papel;
-            if (adivinhador !== papel || jogo.estado !== 'em andamento') {
+            if (papel !== 'jogador2' || jogo.estado !== 'em andamento') {
                 console.log('Adivinhar letra bloqueado: papel=', papel, 'estado=', jogo.estado);
                 return;
             }
@@ -918,7 +933,7 @@
                 document.getElementById('letraInput').focus();
                 return;
             }
-            console.log(`Letra adivinhada: ${letra}, Normalizada: ${letraNormalizada}, Adivinhador: ${adivinhador}`);
+            console.log(`Letra adivinhada: ${letra}, Normalizada: ${letraNormalizada}, Adivinhador: ${papel}`);
             jogo.letrasAdivinhadas.push(letra);
             const palavraNormalizada = normalizarPalavra(jogo.palavra);
             if (!palavraNormalizada.includes(letraNormalizada)) {
@@ -929,37 +944,34 @@
                 const letraOriginalNormalizada = normalizarLetra(jogo.palavra[i]);
                 return !jogo.letrasAdivinhadas.some(la => normalizarLetra(la) === letraOriginalNormalizada);
             });
-            exibirJogo();
             if (letrasFaltando.length === 0) {
                 jogo.estado = 'vencido';
-                if (modo === 'solo') {
+                if (modo === 'multiplayer') {
+                    const idVencedor = jogo.jogador2; // Jogador 2 vence
+                    if (!jogo.placar[idVencedor]) jogo.placar[idVencedor] = { vitorias: 0 };
+                    jogo.placar[idVencedor].vitorias += 1;
+                    console.log(`Vitória do Jogador 2 (ID: ${idVencedor}) - Placar: J1 (${jogo.jogador1}): ${jogo.placar[jogo.jogador1]?.vitorias || 0}, J2 (${jogo.jogador2}): ${jogo.placar[jogo.jogador2]?.vitorias || 0}`);
+                } else if (modo === 'solo') {
                     if (!jogo.placar.jogador) jogo.placar.jogador = { vitorias: 0 };
                     jogo.placar.jogador.vitorias += 1;
                     console.log(`Vitória do Jogador no modo Solo - Placar: Jogador (${jogo.placar.jogador.vitorias}) | Computador (${jogo.placar.computador?.vitorias || 0})`);
-                } else if (modo === 'multiplayer') {
-                    if (!jogo.placar[jogadorId]) jogo.placar[jogadorId] = { vitorias: 0 };
-                    jogo.placar[jogadorId].vitorias += 1;
-                    console.log(`Vitória do Adivinhador (ID: ${jogadorId}) - Placar: J1 (${jogo.jogador1}): ${jogo.placar[jogo.jogador1]?.vitorias || 0}, J2 (${jogo.jogador2}): ${jogo.placar[jogo.jogador2]?.vitorias || 0}`);
                 }
             } else if (jogo.erros >= 6) {
                 jogo.estado = 'perdido';
-                if (modo === 'solo') {
+                if (modo === 'multiplayer') {
+                    const idVencedor = jogo.jogador1; // Jogador 1 vence
+                    if (!jogo.placar[idVencedor]) jogo.placar[idVencedor] = { vitorias: 0 };
+                    jogo.placar[idVencedor].vitorias += 1;
+                    console.log(`Vitória do Jogador 1 (ID: ${idVencedor}) - Placar: J1 (${jogo.jogador1}): ${jogo.placar[jogo.jogador1]?.vitorias || 0}, J2 (${jogo.jogador2}): ${jogo.placar[jogo.jogador2]?.vitorias || 0}`);
+                } else if (modo === 'solo') {
                     if (!jogo.placar.computador) jogo.placar.computador = { vitorias: 0 };
                     jogo.placar.computador.vitorias += 1;
                     console.log(`Vitória do Computador no modo Solo - Placar: Jogador (${jogo.placar.jogador?.vitorias || 0}) | Computador (${jogo.placar.computador.vitorias})`);
-                } else if (modo === 'multiplayer') {
-                    const idObservador = jogadorId === jogo.jogador1 ? jogo.jogador2 : jogo.jogador1;
-                    if (idObservador) {
-                        if (!jogo.placar[idObservador]) jogo.placar[idObservador] = { vitorias: 0 };
-                        jogo.placar[idObservador].vitorias += 1;
-                        console.log(`Vitória do Observador (ID: ${idObservador}) - Placar: J1 (${jogo.jogador1}): ${jogo.placar[jogo.jogador1]?.vitorias || 0}, J2 (${jogo.jogador2}): ${jogo.placar[jogo.jogador2]?.vitorias || 0}`);
-                    }
                 }
             }
             if (modo === 'multiplayer') {
                 try {
                     const jogoRef = ref(db, `jogos/${idJogo}`);
-                    await new Promise(resolve => setTimeout(resolve, 100));
                     await update(jogoRef, {
                         letrasAdivinhadas: jogo.letrasAdivinhadas,
                         erros: jogo.erros,
