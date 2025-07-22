@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -47,6 +48,7 @@
             border-radius: 10px;
             width: 100%;
             max-width: 600px;
+            position: relative;
         }
         #telaJogo.chat-aberto {
             margin-left: -20%;
@@ -55,6 +57,10 @@
         h1, h2 {
             font-size: 3em;
             margin-bottom: 20px;
+        }
+        h3 {
+            font-size: 2em;
+            margin: 0;
         }
         button {
             background-color: #333333;
@@ -92,6 +98,10 @@
             color: #ffffff;
             border: 1px solid #555555;
             width: calc(100% - 22px);
+        }
+        #letraInput {
+            width: 50px;
+            text-align: center;
         }
         textarea {
             resize: none;
@@ -133,13 +143,34 @@
         #forcaImagem.erro-4 { clip-path: inset(0 0 40% 0); }
         #forcaImagem.erro-5 { clip-path: inset(0 0 20% 0); }
         #forcaImagem.erro-6 { clip-path: inset(0 0 0 0); }
-        #palavra {
+        #palavra, #palavraJogador1 {
             font-size: 24px;
             margin: 20px 0;
+        }
+        #palavraTopo {
+            position: absolute;
+            top: 20px;
+            width: 100%;
+            text-align: center;
+            font-size: 24px;
         }
         #mensagem {
             font-size: 18px;
             color: #ffff00;
+        }
+        #mensagemLetraRepetida {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 48px;
+            color: #ff0000;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 10px;
+            z-index: 1000;
+            text-align: center;
         }
         #exemploFrases {
             font-size: 16px;
@@ -151,6 +182,26 @@
         }
         #jogador1View, #jogador2View {
             margin-bottom: 20px;
+        }
+        #participanteEsquerda, #participanteDireita {
+            position: absolute;
+            top: 120px;
+            text-align: center;
+            z-index: 1000;
+        }
+        #participanteEsquerda {
+            left: -300px;
+        }
+        #participanteDireita {
+            right: -300px;
+        }
+        #participanteEsquerda h3, #participanteDireita h3 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+        #participanteEsquerda p, #participanteDireita p {
+            font-size: 1.5em;
+            margin: 0;
         }
         #chatContainer {
             display: none;
@@ -248,21 +299,30 @@
         </div>
     </div>
     <div id="telaJogo">
+        <p id="palavraTopo"></p>
         <div id="jogador1View" style="display: none;">
             <h2>Aguardando o amigo adivinhar...</h2>
-            <p>Palavra: <span id="palavraCompleta"></span></p>
-            <p>Letras adivinhadas: <span id="letrasAdivinhadasJogador1"></span></p>
+            <p>Palavra: <span id="palavraJogador1"></span></p>
+            <p>Letras já escolhidas: <span id="letrasAdivinhadasJogador1"></span></p>
         </div>
         <div id="jogador2View" style="display: none;">
             <h2>Adivinhe a palavra</h2>
             <p id="palavra"></p>
             <input type="text" id="letraInput" maxlength="1" placeholder="Digite uma letra">
-            <button id="adivinharBtn">Enviar</button>
+        </div>
+        <div id="participanteEsquerda">
+            <h3 id="nomeEsquerda"></h3>
+            <p id="pontosEsquerda"></p>
+        </div>
+        <div id="participanteDireita">
+            <h3 id="nomeDireita"></h3>
+            <p id="pontosDireita"></p>
         </div>
         <div id="forcaContainer">
             <img id="forcaImagem" src="https://raw.githubusercontent.com/psicspsix/Jogo-de-Forca/main/Lorca-Corpo-Completo.jpg" alt="Imagem da forca" onload="console.log('Imagem carregada:', this.src); document.getElementById('erroImagem').style.display = 'none';" onerror="console.error('Erro ao carregar imagem:', this.src); document.getElementById('erroImagem').style.display = 'block';">
             <div id="erroImagem">Erro: Não foi possível carregar a imagem.</div>
         </div>
+        <div id="mensagemLetraRepetida">Letra já digitada!</div>
         <p id="mensagem"></p>
         <p id="exemploFrases"></p>
         <p id="placar"></p>
@@ -359,7 +419,8 @@
                     unsubscribeChat();
                     unsubscribeChat = null;
                 }
-                console.log('Tela inicial exibida: #telaInicial=flex, #chatBtn=none, #chatContainer=none');
+                jogo.placar = {};
+                console.log('Tela inicial exibida: #telaInicial=flex, #chatBtn=none, #chatContainer=none, placar reiniciado');
             } else if (tela === 'jogo') {
                 telaJogo.style.display = 'block';
                 if (modo === 'multiplayer') {
@@ -369,6 +430,7 @@
                 }
                 if (papel === 'jogador2' && jogo.estado === 'em andamento') {
                     document.getElementById('letraInput').focus();
+                    console.log('Foco definido em letraInput (mostrarTela)');
                 }
                 console.log(`Tela jogo exibida: modo=${modo}, chatAberto=${chatAberto}, #chatBtn=${chatBtn.style.display}, #chatContainer=${chatContainer.style.display}`);
             }
@@ -401,11 +463,19 @@
             const chatContainer = document.getElementById('chatContainer');
             const chatBtn = document.getElementById('chatBtn');
             const closeChatBtn = document.getElementById('closeChatBtn');
+            const participanteEsquerda = document.getElementById('participanteEsquerda');
+            const participanteDireita = document.getElementById('participanteDireita');
+            const placar = document.getElementById('placar');
             if (chatAberto) {
                 telaJogo.classList.add('chat-aberto');
                 chatContainer.style.display = 'flex';
                 chatBtn.style.display = 'none';
                 closeChatBtn.style.display = 'block';
+                if (modo === 'multiplayer') {
+                    participanteEsquerda.style.display = 'none';
+                    participanteDireita.style.display = 'none';
+                    placar.style.display = 'none';
+                }
                 document.getElementById('chatInput').focus();
                 update(ref(db, `jogos/${idJogo}`), { chatAberto: true });
             } else {
@@ -413,9 +483,14 @@
                 chatContainer.style.display = 'none';
                 chatBtn.style.display = 'block';
                 closeChatBtn.style.display = 'none';
-                update(ref(db, `jogos/${idJogo}`), { chatAberto: false });
+                if (modo === 'multiplayer') {
+                    participanteEsquerda.style.display = 'block';
+                    participanteDireita.style.display = 'block';
+                    placar.style.display = 'block';
+                }
                 if (papel === 'jogador2' && jogo.estado === 'em andamento') {
                     document.getElementById('letraInput').focus();
+                    console.log('Foco definido em letraInput (toggleChat)');
                 }
             }
             console.log(`Chat toggled: chatAberto=${chatAberto}, #chatContainer=${chatContainer.style.display}`);
@@ -459,18 +534,23 @@
         async function iniciarJogoSolo() {
             modo = 'solo';
             papel = 'jogador2';
+            jogo.placar = { jogador: { vitorias: 0 }, computador: { vitorias: 0 } };
             await carregarNovaPalavra();
             mostrarTela('jogo');
             exibirJogo();
+            document.getElementById('letraInput').focus();
+            console.log('Foco definido em letraInput (iniciarJogoSolo), placar inicial:', jogo.placar);
         }
 
         async function jogarNovamente() {
             const imagemForca = document.getElementById('forcaImagem');
-            imagemForca.src = imagemOriginal; // Restaura a imagem original
-            imagemForca.className = 'erro-0'; // Reseta o estado da imagem
+            imagemForca.src = imagemOriginal;
+            imagemForca.className = 'erro-0';
             if (modo === 'solo') {
                 await carregarNovaPalavra();
                 exibirJogo();
+                document.getElementById('letraInput').focus();
+                console.log('Foco definido em letraInput (jogarNovamente, solo), placar mantido:', jogo.placar);
                 document.getElementById('telaJogo').scrollIntoView({ behavior: 'smooth' });
             } else if (modo === 'multiplayer') {
                 try {
@@ -514,6 +594,8 @@
                         alert('Aguardando o Jogador 1 escolher uma nova palavra.');
                         mostrarTela('jogo');
                         exibirJogo();
+                        document.getElementById('letraInput').focus();
+                        console.log('Foco definido em letraInput (jogarNovamente, multiplayer, jogador2)');
                     }
                     await update(jogoRef, { estado: 'aguardando_palavra' });
                 } catch (error) {
@@ -534,6 +616,7 @@
                 }
                 const palavrasArray = Object.values(palavras);
                 const palavraAleatoria = palavrasArray[Math.floor(Math.random() * palavrasArray.length)];
+                const placarAtual = jogo.placar || { jogador: { vitorias: 0 }, computador: { vitorias: 0 } };
                 jogo = {
                     palavra: palavraAleatoria.palavra.toLowerCase(),
                     letrasAdivinhadas: [],
@@ -547,11 +630,12 @@
                     jogador2: '',
                     jogador1Inicial: '',
                     jogador2Inicial: '',
-                    placar: jogo.placar || {}
+                    placar: placarAtual
                 };
                 const imagemForca = document.getElementById('forcaImagem');
-                imagemForca.src = imagemOriginal; // Garante a imagem original ao carregar nova palavra
-                imagemForca.className = 'erro-0'; // Reseta o estado da imagem
+                imagemForca.src = imagemOriginal;
+                imagemForca.className = 'erro-0';
+                console.log('Nova palavra carregada, placar mantido:', jogo.placar);
             } catch (error) {
                 console.error('Erro ao carregar palavra:', error);
                 alert('Erro ao carregar palavras do banco de dados.');
@@ -600,6 +684,10 @@
                         } else {
                             mostrarTela('jogo');
                             exibirJogo();
+                            if (papel === 'jogador2' && jogo.estado === 'em andamento') {
+                                document.getElementById('letraInput').focus();
+                                console.log('Foco definido em letraInput (onValue, jogador2)');
+                            }
                         }
                         if (jogo.chatAberto && !chatAberto) toggleChat();
                         else if (!jogo.chatAberto && chatAberto) toggleChat();
@@ -664,6 +752,10 @@
                     }
                     mostrarTela('jogo');
                     exibirJogo();
+                    if (jogo.estado === 'em andamento') {
+                        document.getElementById('letraInput').focus();
+                        console.log('Foco definido em letraInput (entrarJogo)');
+                    }
                     unsubscribeJogo = onValue(jogoRef, (snapshot) => {
                         if (snapshot.exists()) {
                             jogo = validateJogo(snapshot.val());
@@ -675,6 +767,10 @@
                             } else {
                                 mostrarTela('jogo');
                                 exibirJogo();
+                                if (papel === 'jogador2' && jogo.estado === 'em andamento') {
+                                    document.getElementById('letraInput').focus();
+                                    console.log('Foco definido em letraInput (onValue, entrarJogo)');
+                                }
                             }
                             if (jogo.chatAberto && !chatAberto) toggleChat();
                             else if (!jogo.chatAberto && chatAberto) toggleChat();
@@ -697,35 +793,84 @@
             if (!jogo || typeof jogo !== 'object') {
                 document.getElementById('mensagem').textContent = 'Erro: Jogo inválido.';
                 document.getElementById('botoesFimJogo').style.display = 'none';
+                document.getElementById('palavraTopo').textContent = '';
                 document.getElementById('placar').textContent = '';
+                document.getElementById('nomeEsquerda').textContent = '';
+                document.getElementById('pontosEsquerda').textContent = '';
+                document.getElementById('nomeDireita').textContent = '';
+                document.getElementById('pontosDireita').textContent = '';
                 return;
             }
-            console.log(`Exibindo jogo: papel=${papel}, estado=${jogo.estado}`);
+            console.log(`Exibindo jogo: modo=${modo}, papel=${papel}, estado=${jogo.estado}, placar=`, jogo.placar);
             const imagemForca = document.getElementById('forcaImagem');
             if (jogo.estado === 'perdido') {
-                imagemForca.src = imagemDerrota; // Usa a imagem de derrota
-                imagemForca.className = ''; // Remove as classes de recorte para exibir a imagem completa
+                imagemForca.src = imagemDerrota;
+                imagemForca.className = '';
                 console.log(`Imagem de derrota exibida: src=${imagemForca.src}`);
             } else {
-                imagemForca.src = imagemOriginal; // Usa a imagem original
-                imagemForca.className = `erro-${jogo.erros}`; // Aplica a classe de erro
+                imagemForca.src = imagemOriginal;
+                imagemForca.className = `erro-${jogo.erros}`;
                 console.log(`Imagem atualizada: class=erro-${jogo.erros}, src=${imagemForca.src}`);
             }
+            const palavraOculta = (jogo.estado === 'vencido' || jogo.estado === 'perdido')
+                ? jogo.palavra
+                : jogo.palavra.split('').map((letra, i) => {
+                    const letraNormalizada = normalizarLetra(letra);
+                    return jogo.letrasAdivinhadas.some(l => normalizarLetra(l) === letraNormalizada) ? letra : '_';
+                }).join(' ');
+            document.getElementById('palavraTopo').textContent = (jogo.estado === 'vencido' || jogo.estado === 'perdido') ? `Palavra: ${jogo.palavra}` : '';
             if (papel === 'jogador1' && jogo.estado !== 'aguardando_palavra') {
                 console.log('Mostrando tela de observação (#jogador1View) para Jogador 1');
                 document.getElementById('jogador1View').style.display = 'block';
                 document.getElementById('jogador2View').style.display = 'none';
-                document.getElementById('palavraCompleta').textContent = jogo.palavra;
+                document.getElementById('palavraJogador1').textContent = palavraOculta;
                 document.getElementById('letrasAdivinhadasJogador1').textContent = jogo.letrasAdivinhadas.join(', ');
             } else {
                 console.log('Mostrando tela de adivinhação (#jogador2View) para Jogador 2');
                 document.getElementById('jogador1View').style.display = 'none';
                 document.getElementById('jogador2View').style.display = 'block';
-                const palavraOculta = jogo.palavra.split('').map((letra, i) => {
-                    const letraNormalizada = normalizarLetra(letra);
-                    return jogo.letrasAdivinhadas.some(l => normalizarLetra(l) === letraNormalizada) ? letra : '_';
-                }).join(' ');
                 document.getElementById('palavra').textContent = palavraOculta;
+                if (papel === 'jogador2' && jogo.estado === 'em andamento') {
+                    document.getElementById('letraInput').focus();
+                    console.log('Foco definido em letraInput (exibirJogo)');
+                }
+            }
+            if (modo === 'solo') {
+                const vitoriasJogador = jogo.placar.jogador ? jogo.placar.jogador.vitorias : 0;
+                const vitoriasComputador = jogo.placar.computador ? jogo.placar.computador.vitorias : 0;
+                document.getElementById('nomeEsquerda').textContent = 'Jogador';
+                document.getElementById('pontosEsquerda').textContent = `Pontos: ${vitoriasJogador}`;
+                document.getElementById('nomeDireita').textContent = 'Computador';
+                document.getElementById('pontosDireita').textContent = `Pontos: ${vitoriasComputador}`;
+                document.getElementById('placar').textContent = (jogo.estado === 'vencido' || jogo.estado === 'perdido')
+                    ? `Placar: Jogador (${vitoriasJogador}) | Computador (${vitoriasComputador})`
+                    : '';
+            } else if (modo === 'multiplayer') {
+                const idJogador1 = jogo.jogador1Inicial || jogo.jogador1;
+                const idJogador2 = jogo.jogador2Inicial || jogo.jogador2;
+                const vitoriasJ1 = jogo.placar[idJogador1] ? jogo.placar[idJogador1].vitorias : 0;
+                const vitoriasJ2 = jogo.placar[idJogador2] ? jogo.placar[idJogador2].vitorias : 0;
+                if (!chatAberto) {
+                    document.getElementById('nomeEsquerda').textContent = 'Jogador 1';
+                    document.getElementById('pontosEsquerda').textContent = `Pontos: ${vitoriasJ1}`;
+                    document.getElementById('nomeDireita').textContent = 'Jogador 2';
+                    document.getElementById('pontosDireita').textContent = `Pontos: ${vitoriasJ2}`;
+                    document.getElementById('placar').textContent = (jogo.estado === 'vencido' || jogo.estado === 'perdido')
+                        ? `Placar: Jogador 1 (${vitoriasJ1}) | Jogador 2 (${vitoriasJ2})`
+                        : '';
+                } else {
+                    document.getElementById('nomeEsquerda').textContent = '';
+                    document.getElementById('pontosEsquerda').textContent = '';
+                    document.getElementById('nomeDireita').textContent = '';
+                    document.getElementById('pontosDireita').textContent = '';
+                    document.getElementById('placar').textContent = '';
+                }
+            } else {
+                document.getElementById('nomeEsquerda').textContent = '';
+                document.getElementById('pontosEsquerda').textContent = '';
+                document.getElementById('nomeDireita').textContent = '';
+                document.getElementById('pontosDireita').textContent = '';
+                document.getElementById('placar').textContent = '';
             }
             const botoesFimJogo = document.getElementById('botoesFimJogo');
             const botoesHTML = `
@@ -739,33 +884,13 @@
                 <button onclick="window.open('https://www.youtube.com/watch?v=BIAITFJ8uTI&t=82s', '_blank')">Vídeo Teacher Carlos</button>
             `;
             if (jogo.estado === 'vencido' || jogo.estado === 'perdido') {
-                if (modo === 'solo') {
-                    document.getElementById('mensagem').textContent = jogo.estado === 'vencido' ? 'VOCÊ VENCEU!' : `VOCÊ PERDEU! A palavra era: ${jogo.palavra}`;
-                    botoesFimJogo.innerHTML = botoesHTML;
-                    document.getElementById('placar').textContent = '';
-                } else {
-                    if (papel === 'jogador2') {
-                        document.getElementById('mensagem').textContent = jogo.estado === 'vencido' ? 'VOCÊ VENCEU!' : `VOCÊ PERDEU! A palavra era: ${jogo.palavra}`;
-                    } else {
-                        document.getElementById('mensagem').textContent = jogo.estado === 'vencido' ? `VOCÊ PERDEU! A palavra era: ${jogo.palavra}` : 'VOCÊ VENCEU!';
-                    }
-                    botoesFimJogo.innerHTML = botoesHTML;
-                    const idJogador1 = jogo.jogador1Inicial || jogo.jogador1;
-                    const idJogador2 = jogo.jogador2Inicial || jogo.jogador2;
-                    const vitoriasJ1 = jogo.placar[idJogador1] ? jogo.placar[idJogador1].vitorias : 0;
-                    const vitoriasJ2 = jogo.placar[idJogador2] ? jogo.placar[idJogador2].vitorias : 0;
-                    document.getElementById('placar').textContent = `Placar: Jogador 1 (Vitórias: ${vitoriasJ1}) | Jogador 2 (Vitórias: ${vitoriasJ2})`;
-                }
+                document.getElementById('mensagem').textContent = jogo.estado === 'vencido' ? 'VOCÊ VENCEU!' : `VOCÊ PERDEU! A palavra era: ${jogo.palavra}`;
+                botoesFimJogo.innerHTML = botoesHTML;
                 botoesFimJogo.style.display = 'grid';
                 document.getElementById('telaJogo').scrollIntoView({ behavior: 'smooth' });
             } else {
                 document.getElementById('mensagem').textContent = jogo.palavra ? '' : 'Aguardando palavra do Jogador 1...';
                 document.getElementById('exemploFrases').textContent = '';
-                const idJogador1 = jogo.jogador1Inicial || jogo.jogador1;
-                const idJogador2 = jogo.jogador2Inicial || jogo.jogador2;
-                const vitoriasJ1 = jogo.placar[idJogador1] ? jogo.placar[idJogador1].vitorias : 0;
-                const vitoriasJ2 = jogo.placar[idJogador2] ? jogo.placar[idJogador2].vitorias : 0;
-                document.getElementById('placar').textContent = modo === 'multiplayer' ? `Placar: Jogador 1 (Vitórias: ${vitoriasJ1}) | Jogador 2 (Vitórias: ${vitoriasJ2})` : '';
                 botoesFimJogo.style.display = 'none';
             }
         }
@@ -779,11 +904,20 @@
             const letra = document.getElementById('letraInput').value.trim().toLowerCase();
             if (!letra || letra.length !== 1 || !/[a-záéíóúâêîôûãõç]/.test(letra)) {
                 alert('Digite uma letra válida (a-z, acentos ou ç).');
+                document.getElementById('letraInput').value = '';
+                document.getElementById('letraInput').focus();
                 return;
             }
             const letraNormalizada = normalizarLetra(letra);
             if (jogo.letrasAdivinhadas.some(l => normalizarLetra(l) === letraNormalizada)) {
-                alert('Você já adivinhou essa letra.');
+                console.log(`Letra repetida: ${letra}`);
+                const mensagemRepetida = document.getElementById('mensagemLetraRepetida');
+                mensagemRepetida.style.display = 'block';
+                setTimeout(() => {
+                    mensagemRepetida.style.display = 'none';
+                }, 1000);
+                document.getElementById('letraInput').value = '';
+                document.getElementById('letraInput').focus();
                 return;
             }
             console.log(`Letra adivinhada: ${letra}, Normalizada: ${letraNormalizada}, Adivinhador: ${adivinhador}`);
@@ -799,18 +933,23 @@
             });
             exibirJogo();
             if (letrasFaltando.length === 0) {
-                if (modo === 'solo') {
-                    await new Promise(resolve => setTimeout(resolve, 100));
-                }
                 jogo.estado = 'vencido';
-                if (modo === 'multiplayer') {
+                if (modo === 'solo') {
+                    if (!jogo.placar.jogador) jogo.placar.jogador = { vitorias: 0 };
+                    jogo.placar.jogador.vitorias += 1;
+                    console.log(`Vitória do Jogador no modo Solo - Placar: Jogador (${jogo.placar.jogador.vitorias}) | Computador (${jogo.placar.computador?.vitorias || 0})`);
+                } else if (modo === 'multiplayer') {
                     if (!jogo.placar[jogadorId]) jogo.placar[jogadorId] = { vitorias: 0 };
                     jogo.placar[jogadorId].vitorias += 1;
                     console.log(`Vitória do Adivinhador (ID: ${jogadorId}) - Placar: J1 (${jogo.jogador1}): ${jogo.placar[jogo.jogador1]?.vitorias || 0}, J2 (${jogo.jogador2}): ${jogo.placar[jogo.jogador2]?.vitorias || 0}`);
                 }
             } else if (jogo.erros >= 6) {
                 jogo.estado = 'perdido';
-                if (modo === 'multiplayer') {
+                if (modo === 'solo') {
+                    if (!jogo.placar.computador) jogo.placar.computador = { vitorias: 0 };
+                    jogo.placar.computador.vitorias += 1;
+                    console.log(`Vitória do Computador no modo Solo - Placar: Jogador (${jogo.placar.jogador?.vitorias || 0}) | Computador (${jogo.placar.computador.vitorias})`);
+                } else if (modo === 'multiplayer') {
                     const idObservador = jogadorId === jogo.jogador1 ? jogo.jogador2 : jogo.jogador1;
                     if (idObservador) {
                         if (!jogo.placar[idObservador]) jogo.placar[idObservador] = { vitorias: 0 };
@@ -870,26 +1009,9 @@
             entrarJogo();
         });
 
-        document.getElementById('adivinharBtn').addEventListener('click', () => {
-            console.log('Botão Adivinhar clicado');
+        document.getElementById('letraInput').addEventListener('input', () => {
+            console.log('Evento input disparado no campo letraInput');
             adivinharLetra();
-        });
-
-        document.getElementById('chatBtn').addEventListener('click', () => {
-            console.log('Botão Abrir Chat clicado');
-            toggleChat();
-        });
-
-        document.getElementById('closeChatBtn').addEventListener('click', () => {
-            console.log('Botão Fechar Chat clicado');
-            toggleChat();
-        });
-
-        document.getElementById('letraInput').addEventListener('keypress', (event) => {
-            if (event.key === 'Enter') {
-                console.log('Tecla Enter pressionada no campo letraInput');
-                adivinharLetra();
-            }
         });
 
         document.getElementById('palavraInput').addEventListener('keypress', (event) => {
@@ -914,9 +1036,18 @@
             }
         });
 
+        document.getElementById('chatBtn').addEventListener('click', () => {
+            console.log('Botão Abrir Chat clicado');
+            toggleChat();
+        });
+
+        document.getElementById('closeChatBtn').addEventListener('click', () => {
+            console.log('Botão Fechar Chat clicado');
+            toggleChat();
+        });
+
         window.jogarNovamente = jogarNovamente;
 
-        // Log para verificar carregamento inicial da imagem
         const imagemForca = document.getElementById('forcaImagem');
         imagemForca.onload = () => console.log('Imagem carregada com sucesso:', imagemForca.src);
         imagemForca.onerror = () => console.error('Erro ao carregar imagem:', imagemForca.src);
