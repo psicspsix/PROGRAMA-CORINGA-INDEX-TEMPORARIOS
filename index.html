@@ -337,9 +337,11 @@
     </div>
 
     <script type="module">
+        // Importação dos módulos do Firebase necessários para interação com o banco de dados
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, set, get, update, onValue, push } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
+        // Configuração do Firebase com as credenciais do projeto
         const firebaseConfig = {
             apiKey: "AIzaSyDYju4ux-XrvEXaP2aSXbY2eJd_Qj4AKow",
             authDomain: "jogo-de-forca-b905b.firebaseapp.com",
@@ -351,13 +353,15 @@
             measurementId: "G-WMMXLXSY1R"
         };
 
+        // Inicialização do aplicativo Firebase e obtenção da referência ao banco de dados
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        let modo = '';
-        let papel = '';
-        let idJogo = '';
-        let jogadorId = Math.random().toString(36).substr(2, 9);
+        // Variáveis globais para gerenciar o estado do jogo
+        let modo = ''; // Modo do jogo ('solo' ou 'multiplayer')
+        let papel = ''; // Papel do jogador ('jogador1' ou 'jogador2')
+        let idJogo = ''; // ID único do jogo multiplayer
+        let jogadorId = Math.random().toString(36).substr(2, 9); // ID único do jogador
         let jogo = {
             palavra: '',
             letrasAdivinhadas: [],
@@ -369,13 +373,14 @@
             jogador2: '',
             jogador1Inicial: '',
             jogador2Inicial: '',
-            placar: {}
+            placar: {} // Objeto para armazenar as vitórias dos jogadores
         };
-        let unsubscribeJogo = null;
-        let unsubscribeChat = null;
+        let unsubscribeJogo = null; // Referência para desinscrever o listener do jogo
+        let unsubscribeChat = null; // Referência para desinscrever o listener do chat
         const imagemOriginal = 'https://raw.githubusercontent.com/psicspsix/Jogo-de-Forca/main/Lorca-Corpo-Completo.jpg';
         const imagemDerrota = 'https://raw.githubusercontent.com/psicspsix/Jogo-de-Forca/main/Lorca-Corpo-Completo-Enforcado.jpg';
 
+        // Função para normalizar letras, removendo acentos e convertendo para minúsculas
         function normalizarLetra(letra) {
             if (!letra) return letra;
             return letra.toLowerCase()
@@ -387,10 +392,12 @@
                 .replace(/[ç]/g, 'c');
         }
 
+        // Função para normalizar uma palavra inteira, aplicando normalizarLetra a cada caractere
         function normalizarPalavra(palavra) {
             return palavra.split('').map(normalizarLetra).join('');
         }
 
+        // Função para alternar entre telas (inicial ou jogo)
         function mostrarTela(tela) {
             const telaInicial = document.getElementById('telaInicial');
             const telaJogo = document.getElementById('telaJogo');
@@ -398,6 +405,7 @@
             const chatBtn = document.getElementById('chatBtn');
             const closeChatBtn = document.getElementById('closeChatBtn');
 
+            // Esconde todas as telas e botões inicialmente
             telaInicial.style.display = 'none';
             telaJogo.style.display = 'none';
             chatContainer.style.display = 'none';
@@ -405,10 +413,12 @@
             closeChatBtn.style.display = 'none';
 
             if (tela === 'inicial') {
+                // Exibe a tela inicial e esconde opções de multiplayer
                 telaInicial.style.display = 'flex';
                 document.getElementById('opcoesMultiplayer').style.display = 'none';
                 document.getElementById('criarJogo').style.display = 'none';
                 document.getElementById('entrarJogo').style.display = 'none';
+                // Cancela listeners do Firebase, se existirem
                 if (unsubscribeJogo) {
                     unsubscribeJogo();
                     unsubscribeJogo = null;
@@ -419,12 +429,14 @@
                 }
                 console.log('Tela inicial exibida: #telaInicial=flex, #chatBtn=none, #chatContainer=none, placar mantido:', jogo.placar);
             } else if (tela === 'jogo') {
+                // Exibe a tela do jogo e configura visibilidade do chat para multiplayer
                 telaJogo.style.display = 'block';
                 if (modo === 'multiplayer') {
                     chatBtn.style.display = jogo.chatAberto ? 'none' : 'block';
                     closeChatBtn.style.display = jogo.chatAberto ? 'block' : 'none';
                     chatContainer.style.display = jogo.chatAberto ? 'flex' : 'none';
                 }
+                // Define o foco no campo de entrada de letras para jogador2
                 if (papel === 'jogador2' && jogo.estado === 'em andamento') {
                     document.getElementById('letraInput').focus();
                     console.log('Foco definido em letraInput (mostrarTela)');
@@ -433,12 +445,14 @@
             }
         }
 
+        // Função para exibir opções de multiplayer (criar ou entrar em jogo)
         function mostrarOpcoesMultiplayer() {
             document.getElementById('opcoesMultiplayer').style.display = 'flex';
             document.getElementById('criarJogo').style.display = 'none';
             document.getElementById('entrarJogo').style.display = 'none';
         }
 
+        // Função para exibir a tela de criação de jogo
         function mostrarCriarJogo() {
             document.getElementById('opcoesMultiplayer').style.display = 'none';
             document.getElementById('criarJogo').style.display = 'block';
@@ -447,6 +461,7 @@
             document.getElementById('palavraInput').value = '';
         }
 
+        // Função para exibir a tela de entrada em um jogo
         function mostrarEntrarJogo() {
             document.getElementById('opcoesMultiplayer').style.display = 'none';
             document.getElementById('entrarJogo').style.display = 'block';
@@ -454,6 +469,7 @@
             document.getElementById('idJogoInput').focus();
         }
 
+        // Função para alternar a visibilidade do chat
         function toggleChat() {
             const newChatState = !jogo.chatAberto;
             const telaJogo = document.getElementById('telaJogo');
@@ -464,9 +480,11 @@
             const participanteDireita = document.getElementById('participanteDireita');
             const placar = document.getElementById('placar');
 
+            // Atualiza o estado do chat no Firebase
             update(ref(db, `jogos/${idJogo}`), { chatAberto: newChatState })
                 .then(() => {
                     if (newChatState) {
+                        // Abre o chat e ajusta a interface
                         telaJogo.classList.add('chat-aberto');
                         chatContainer.style.display = 'flex';
                         chatBtn.style.display = 'none';
@@ -479,6 +497,7 @@
                         document.getElementById('chatInput').focus();
                         console.log('Foco definido em chatInput (toggleChat, abrir chat)');
                     } else {
+                        // Fecha o chat e restaura a interface
                         document.getElementById('chatInput').blur();
                         console.log('Foco removido de chatInput (toggleChat, fechar chat)');
                         telaJogo.classList.remove('chat-aberto');
@@ -503,6 +522,7 @@
                 });
         }
 
+        // Função para enviar mensagens no chat
         async function enviarMensagem() {
             const mensagem = document.getElementById('chatInput').value.trim();
             if (!mensagem) return;
@@ -521,6 +541,7 @@
             }
         }
 
+        // Função para exibir mensagens do chat
         function exibirMensagens(snapshot) {
             const mensagens = snapshot.val();
             const chatMessages = document.getElementById('chatMessages');
@@ -538,6 +559,7 @@
             }
         }
 
+        // Função para iniciar o jogo no modo solo
         async function iniciarJogoSolo() {
             modo = 'solo';
             papel = 'jogador2';
@@ -549,11 +571,13 @@
             console.log('Foco definido em letraInput (iniciarJogoSolo), placar inicial:', jogo.placar);
         }
 
+        // Função para reiniciar o jogo
         async function jogarNovamente() {
             const imagemForca = document.getElementById('forcaImagem');
             imagemForca.src = imagemOriginal;
             imagemForca.className = 'erro-0';
             if (modo === 'solo') {
+                // No modo solo, carrega uma nova palavra e mantém o placar
                 await carregarNovaPalavra();
                 exibirJogo();
                 document.getElementById('letraInput').focus();
@@ -575,6 +599,7 @@
                     }
                     console.log('Placar antes de reiniciar:', jogo.placar);
                     await update(jogoRef, { estado: 'reiniciando' });
+                    // Troca os papéis dos jogadores
                     const novoJogador1 = jogo.jogador2;
                     const novoJogador2 = jogo.jogador1;
                     const placarAtual = jogo.placar;
@@ -614,6 +639,7 @@
             }
         }
 
+        // Função para carregar uma nova palavra no modo solo
         async function carregarNovaPalavra() {
             try {
                 const palavrasRef = ref(db, 'palavras');
@@ -651,6 +677,7 @@
             }
         }
 
+        // Função para criar um novo jogo multiplayer
         async function criarJogo() {
             const palavra = document.getElementById('palavraInput').value.trim().toLowerCase();
             if (!palavra.match(/^[a-záéíóúâêîôûãõç]+$/)) {
@@ -712,10 +739,12 @@
             }
         }
 
+        // Função para gerar um ID único para o jogo
         function generateUniqueId() {
             return Math.random().toString(36).substr(2, 9);
         }
 
+        // Função para validar os dados do jogo recebidos do Firebase
         function validateJogo(data) {
             const placar = data.placar || {};
             const j1Inicial = data.jogador1Inicial || data.jogador1 || '';
@@ -737,6 +766,7 @@
             };
         }
 
+        // Função para entrar em um jogo multiplayer existente
         async function entrarJogo() {
             const id = document.getElementById('idJogoInput').value.trim();
             if (!id) {
@@ -802,6 +832,7 @@
             }
         }
 
+        // Função para exibir o estado atual do jogo na interface
         function exibirJogo() {
             if (!jogo || typeof jogo !== 'object') {
                 document.getElementById('mensagem').textContent = 'Erro: Jogo inválido.';
@@ -897,6 +928,7 @@
             if (jogo.estado === 'vencido' || jogo.estado === 'perdido') {
                 let mensagem = '';
                 if (modo === 'multiplayer') {
+                    // Define mensagem de vitória/derrota com base no papel do jogador
                     if (papel === 'jogador1') {
                         mensagem = jogo.estado === 'perdido' ? 'VOCÊ VENCEU!' : `VOCÊ PERDEU! A palavra era: ${jogo.palavra}`;
                     } else if (papel === 'jogador2') {
@@ -916,6 +948,7 @@
             }
         }
 
+        // Função para processar a tentativa de adivinhar uma letra
         async function adivinharLetra() {
             const adivinhador = papel;
             if (adivinhador !== 'jogador2' || jogo.estado !== 'em andamento') {
@@ -1001,6 +1034,7 @@
             document.getElementById('letraInput').focus();
         }
 
+        // Listeners para os botões da interface
         document.getElementById('jogarSozinhoBtn').addEventListener('click', () => {
             console.log('Botão Jogar Sozinho clicado');
             iniciarJogoSolo();
@@ -1068,12 +1102,15 @@
             toggleChat();
         });
 
+        // Expor a função jogarNovamente globalmente para os botões HTML
         window.jogarNovamente = jogarNovamente;
 
+        // Listeners para eventos de carregamento e erro da imagem da forca
         const imagemForca = document.getElementById('forcaImagem');
         imagemForca.onload = () => console.log('Imagem carregada com sucesso:', imagemForca.src);
         imagemForca.onerror = () => console.error('Erro ao carregar imagem:', imagemForca.src);
 
+        // Inicia o jogo mostrando a tela inicial
         mostrarTela('inicial');
     </script>
 </body>
