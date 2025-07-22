@@ -417,8 +417,7 @@
                     unsubscribeChat();
                     unsubscribeChat = null;
                 }
-                jogo.placar = {};
-                console.log('Tela inicial exibida: #telaInicial=flex, #chatBtn=none, #chatContainer=none, placar reiniciado');
+                console.log('Tela inicial exibida: #telaInicial=flex, #chatBtn=none, #chatContainer=none, placar mantido:', jogo.placar);
             } else if (tela === 'jogo') {
                 telaJogo.style.display = 'block';
                 if (modo === 'multiplayer') {
