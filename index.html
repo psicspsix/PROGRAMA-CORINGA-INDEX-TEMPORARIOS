@@ -57,10 +57,6 @@
             font-size: 3em;
             margin-bottom: 20px;
         }
-        h3 {
-            font-size: 2em;
-            margin: 0;
-        }
         button {
             background-color: #333333;
             color: #ffffff;
@@ -146,13 +142,6 @@
             font-size: 24px;
             margin: 20px 0;
         }
-        #palavraTopo {
-            position: absolute;
-            top: 20px;
-            width: 100%;
-            text-align: center;
-            font-size: 24px;
-        }
         #mensagem {
             font-size: 18px;
             color: #ffff00;
@@ -181,26 +170,6 @@
         }
         #jogador1View, #jogador2View {
             margin-bottom: 20px;
-        }
-        #participanteEsquerda, #participanteDireita {
-            position: absolute;
-            top: 120px;
-            text-align: center;
-            z-index: 1000;
-        }
-        #participanteEsquerda {
-            left: -300px;
-        }
-        #participanteDireita {
-            right: -300px;
-        }
-        #participanteEsquerda h3, #participanteDireita h3 {
-            font-size: 2em;
-            margin-bottom: 10px;
-        }
-        #participanteEsquerda p, #participanteDireita p {
-            font-size: 1.5em;
-            margin: 0;
         }
         #chatContainer {
             display: none;
@@ -298,7 +267,6 @@
         </div>
     </div>
     <div id="telaJogo">
-        <p id="palavraTopo"></p>
         <div id="jogador1View" style="display: none;">
             <h2>Aguardando o amigo adivinhar...</h2>
             <p>Palavra: <span id="palavraJogador1"></span></p>
@@ -308,14 +276,6 @@
             <h2>Adivinhe a palavra</h2>
             <p id="palavra"></p>
             <input type="text" id="letraInput" maxlength="1" placeholder="Digite uma letra">
-        </div>
-        <div id="participanteEsquerda">
-            <h3 id="nomeEsquerda"></h3>
-            <p id="pontosEsquerda"></p>
-        </div>
-        <div id="participanteDireita">
-            <h3 id="nomeDireita"></h3>
-            <p id="pontosDireita"></p>
         </div>
         <div id="forcaContainer">
             <img id="forcaImagem" src="https://raw.githubusercontent.com/psicspsix/Jogo-de-Forca/main/Lorca-Corpo-Completo.jpg" alt="Imagem da forca" onload="console.log('Imagem carregada:', this.src); document.getElementById('erroImagem').style.display = 'none';" onerror="console.error('Erro ao carregar imagem:', this.src); document.getElementById('erroImagem').style.display = 'block';">
@@ -418,7 +378,7 @@
                     unsubscribeChat();
                     unsubscribeChat = null;
                 }
-                jogo.placar = {};
+                jogo.placar = {}; // Reinicia o placar ao voltar para a tela inicial
                 console.log('Tela inicial exibida: #telaInicial=flex, #chatBtn=none, #chatContainer=none, placar reiniciado');
             } else if (tela === 'jogo') {
                 telaJogo.style.display = 'block';
@@ -521,7 +481,7 @@
         async function iniciarJogoSolo() {
             modo = 'solo';
             papel = 'jogador2';
-            jogo.placar = { jogador: { vitorias: 0 }, computador: { vitorias: 0 } };
+            jogo.placar = { jogador: { vitorias: 0 }, computador: { vitorias: 0 } }; // Inicializa o placar
             await carregarNovaPalavra();
             mostrarTela('jogo');
             exibirJogo();
@@ -781,11 +741,6 @@
                 document.getElementById('mensagem').textContent = 'Erro: Jogo inválido.';
                 document.getElementById('botoesFimJogo').style.display = 'none';
                 document.getElementById('placar').textContent = '';
-                document.getElementById('palavraTopo').textContent = '';
-                document.getElementById('nomeEsquerda').textContent = '';
-                document.getElementById('pontosEsquerda').textContent = '';
-                document.getElementById('nomeDireita').textContent = '';
-                document.getElementById('pontosDireita').textContent = '';
                 return;
             }
             console.log(`Exibindo jogo: modo=${modo}, papel=${papel}, estado=${jogo.estado}, placar=`, jogo.placar);
@@ -844,16 +799,11 @@
                 document.getElementById('exemploFrases').textContent = '';
                 botoesFimJogo.style.display = 'none';
             }
+            // Exibir placar
             if (modo === 'solo') {
                 const vitoriasJogador = jogo.placar.jogador ? jogo.placar.jogador.vitorias : 0;
                 const vitoriasComputador = jogo.placar.computador ? jogo.placar.computador.vitorias : 0;
-                document.getElementById('nomeEsquerda').textContent = 'Jogador';
-                document.getElementById('pontosEsquerda').textContent = `Pontos: ${vitoriasJogador}`;
-                document.getElementById('nomeDireita').textContent = 'Computador';
-                document.getElementById('pontosDireita').textContent = `Pontos: ${vitoriasComputador}`;
-                document.getElementById('placar').textContent = (jogo.estado === 'vencido' || jogo.estado === 'perdido')
-                    ? `Placar: Jogador (${vitoriasJogador}) | Computador (${vitoriasComputador})`
-                    : '';
+                document.getElementById('placar').textContent = `Placar: Jogador (Vitórias: ${vitoriasJogador}) | Computador (Vitórias: ${vitoriasComputador})`;
             } else if (modo === 'multiplayer') {
                 const idJogador1 = jogo.jogador1Inicial || jogo.jogador1;
                 const idJogador2 = jogo.jogador2Inicial || jogo.jogador2;
