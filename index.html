@@ -477,7 +477,10 @@
                 }
                 document.getElementById('chatInput').focus();
                 update(ref(db, `jogos/${idJogo}`), { chatAberto: true });
+                console.log('Foco definido em chatInput (toggleChat, abrir chat)');
             } else {
+                document.getElementById('chatInput').blur();
+                console.log('Foco removido de chatInput (toggleChat, fechar chat)');
                 telaJogo.classList.remove('chat-aberto');
                 chatContainer.style.display = 'none';
                 chatBtn.style.display = 'block';
@@ -486,9 +489,12 @@
                     participanteEsquerda.style.display = 'block';
                     participanteDireita.style.display = 'block';
                     placar.style.display = 'block';
-                    document.getElementById('letraInput').focus();
-                    console.log('Foco definido em letraInput (toggleChat, fechar chat)');
+                    if (papel === 'jogador2') {
+                        document.getElementById('letraInput').focus();
+                        console.log('Foco definido em letraInput (toggleChat, jogador2)');
+                    }
                 }
+                update(ref(db, `jogos/${idJogo}`), { chatAberto: false });
             }
             console.log(`Chat toggled: chatAberto=${chatAberto}, #chatContainer=${chatContainer.style.display}`);
         }
@@ -1027,7 +1033,7 @@
 
         document.getElementById('chatInput').addEventListener('keypress', (event) => {
             if (event.key === 'Enter' && !event.shiftKey) {
-                event.preventDefault();
+                event.preventDefault;
                 console.log('Tecla Enter pressionada no campo chatInput');
                 enviarMensagem();
             }
