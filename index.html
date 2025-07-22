@@ -373,7 +373,6 @@
         };
         let unsubscribeJogo = null;
         let unsubscribeChat = null;
-        let chatAberto = false;
         const imagemOriginal = 'https://raw.githubusercontent.com/psicspsix/Jogo-de-Forca/main/Lorca-Corpo-Completo.jpg';
         const imagemDerrota = 'https://raw.githubusercontent.com/psicspsix/Jogo-de-Forca/main/Lorca-Corpo-Completo-Enforcado.jpg';
 
@@ -423,15 +422,15 @@
             } else if (tela === 'jogo') {
                 telaJogo.style.display = 'block';
                 if (modo === 'multiplayer') {
-                    chatBtn.style.display = chatAberto ? 'none' : 'block';
-                    closeChatBtn.style.display = chatAberto ? 'block' : 'none';
-                    chatContainer.style.display = chatAberto ? 'flex' : 'none';
+                    chatBtn.style.display = jogo.chatAberto ? 'none' : 'block';
+                    closeChatBtn.style.display = jogo.chatAberto ? 'block' : 'none';
+                    chatContainer.style.display = jogo.chatAberto ? 'flex' : 'none';
                 }
                 if (papel === 'jogador2' && jogo.estado === 'em andamento') {
                     document.getElementById('letraInput').focus();
                     console.log('Foco definido em letraInput (mostrarTela)');
                 }
-                console.log(`Tela jogo exibida: modo=${modo}, chatAberto=${chatAberto}, #chatBtn=${chatBtn.style.display}, #chatContainer=${chatContainer.style.display}`);
+                console.log(`Tela jogo exibida: modo=${modo}, chatAberto=${jogo.chatAberto}, #chatBtn=${chatBtn.style.display}, #chatContainer=${chatContainer.style.display}`);
             }
         }
 
@@ -457,7 +456,7 @@
         }
 
         function toggleChat() {
-            chatAberto = !chatAberto;
+            const newChatState = !jogo.chatAberto;
             const telaJogo = document.getElementById('telaJogo');
             const chatContainer = document.getElementById('chatContainer');
             const chatBtn = document.getElementById('chatBtn');
@@ -465,38 +464,44 @@
             const participanteEsquerda = document.getElementById('participanteEsquerda');
             const participanteDireita = document.getElementById('participanteDireita');
             const placar = document.getElementById('placar');
-            if (chatAberto) {
-                telaJogo.classList.add('chat-aberto');
-                chatContainer.style.display = 'flex';
-                chatBtn.style.display = 'none';
-                closeChatBtn.style.display = 'block';
-                if (modo === 'multiplayer') {
-                    participanteEsquerda.style.display = 'none';
-                    participanteDireita.style.display = 'none';
-                    placar.style.display = 'none';
-                }
-                document.getElementById('chatInput').focus();
-                update(ref(db, `jogos/${idJogo}`), { chatAberto: true });
-                console.log('Foco definido em chatInput (toggleChat, abrir chat)');
-            } else {
-                document.getElementById('chatInput').blur();
-                console.log('Foco removido de chatInput (toggleChat, fechar chat)');
-                telaJogo.classList.remove('chat-aberto');
-                chatContainer.style.display = 'none';
-                chatBtn.style.display = 'block';
-                closeChatBtn.style.display = 'none';
-                if (modo === 'multiplayer') {
-                    participanteEsquerda.style.display = 'block';
-                    participanteDireita.style.display = 'block';
-                    placar.style.display = 'block';
-                    if (papel === 'jogador2') {
-                        document.getElementById('letraInput').focus();
-                        console.log('Foco definido em letraInput (toggleChat, jogador2)');
+
+            update(ref(db, `jogos/${idJogo}`), { chatAberto: newChatState })
+                .then(() => {
+                    if (newChatState) {
+                        telaJogo.classList.add('chat-aberto');
+                        chatContainer.style.display = 'flex';
+                        chatBtn.style.display = 'none';
+                        closeChatBtn.style.display = 'block';
+                        if (modo === 'multiplayer') {
+                            participanteEsquerda.style.display = 'none';
+                            participanteDireita.style.display = 'none';
+                            placar.style.display = 'none';
+                        }
+                        document.getElementById('chatInput').focus();
+                        console.log('Foco definido em chatInput (toggleChat, abrir chat)');
+                    } else {
+                        document.getElementById('chatInput').blur();
+                        console.log('Foco removido de chatInput (toggleChat, fechar chat)');
+                        telaJogo.classList.remove('chat-aberto');
+                        chatContainer.style.display = 'none';
+                        chatBtn.style.display = 'block';
+                        closeChatBtn.style.display = 'none';
+                        if (modo === 'multiplayer') {
+                            participanteEsquerda.style.display = 'block';
+                            participanteDireita.style.display = 'block';
+                            placar.style.display = 'block';
+                            if (papel === 'jogador2') {
+                                document.getElementById('letraInput').focus();
+                                console.log('Foco definido em letraInput (toggleChat, jogador2)');
+                            }
+                        }
                     }
-                }
-                update(ref(db, `jogos/${idJogo}`), { chatAberto: false });
-            }
-            console.log(`Chat toggled: chatAberto=${chatAberto}, #chatContainer=${chatContainer.style.display}`);
+                    console.log(`Chat toggled: chatAberto=${newChatState}, #chatContainer=${chatContainer.style.display}`);
+                })
+                .catch(error => {
+                    console.error('Erro ao atualizar estado do chat:', error);
+                    alert('Erro ao atualizar estado do chat: ' + error.message);
+                });
         }
 
         async function enviarMensagem() {
@@ -569,6 +574,7 @@
                         console.log('Jogo já está sendo reiniciado por outro jogador.');
                         return;
                     }
+                    console.log('Placar antes de reiniciar:', jogo.placar);
                     await update(jogoRef, { estado: 'reiniciando' });
                     const novoJogador1 = jogo.jogador2;
                     const novoJogador2 = jogo.jogador1;
@@ -588,6 +594,7 @@
                     });
                     await set(jogoRef, jogo);
                     await set(ref(db, `jogos/${idJogo}/chat`), null);
+                    console.log('Placar após reiniciar:', jogo.placar);
                     papel = jogadorId === novoJogador1 ? 'jogador1' : 'jogador2';
                     console.log(`Papéis invertidos: jogadorId=${jogadorId}, novo papel=${papel}`);
                     if (papel === 'jogador1') {
@@ -692,8 +699,9 @@
                                 console.log('Foco definido em letraInput (onValue, jogador2)');
                             }
                         }
-                        if (jogo.chatAberto && !chatAberto) toggleChat();
-                        else if (!jogo.chatAberto && chatAberto) toggleChat();
+                    } else {
+                        alert('O jogo foi removido ou não existe.');
+                        mostrarTela('inicial');
                     }
                 });
                 unsubscribeChat = onValue(ref(db, `jogos/${idJogo}/chat`), exibirMensagens);
@@ -775,8 +783,6 @@
                                     console.log('Foco definido em letraInput (onValue, entrarJogo)');
                                 }
                             }
-                            if (jogo.chatAberto && !chatAberto) toggleChat();
-                            else if (!jogo.chatAberto && chatAberto) toggleChat();
                         } else {
                             alert('O jogo foi removido ou não existe.');
                             mostrarTela('inicial');
@@ -853,7 +859,7 @@
                 const idJogador2 = jogo.jogador2Inicial || jogo.jogador2;
                 const vitoriasJ1 = jogo.placar[idJogador1] ? jogo.placar[idJogador1].vitorias : 0;
                 const vitoriasJ2 = jogo.placar[idJogador2] ? jogo.placar[idJogador2].vitorias : 0;
-                if (!chatAberto) {
+                if (!jogo.chatAberto) {
                     document.getElementById('nomeEsquerda').textContent = 'Jogador 1';
                     document.getElementById('pontosEsquerda').textContent = `Pontos: ${vitoriasJ1}`;
                     document.getElementById('nomeDireita').textContent = 'Jogador 2';
@@ -1033,7 +1039,7 @@
 
         document.getElementById('chatInput').addEventListener('keypress', (event) => {
             if (event.key === 'Enter' && !event.shiftKey) {
-                event.preventDefault;
+                event.preventDefault();
                 console.log('Tecla Enter pressionada no campo chatInput');
                 enviarMensagem();
             }
