@@ -587,8 +587,8 @@
                         chatAberto: false,
                         jogador1: novoJogador1,
                         jogador2: novoJogador2,
-                        jogador1Inicial: jogo.jogador1Inicial || jogo.jogador1,
-                        jogador2Inicial: jogo.jogador2Inicial || jogo.jogador2,
+                        jogador1Inicial: jogo.jogador1Inicial,
+                        jogador2Inicial: jogo.jogador2Inicial,
                         placar: placarAtual
                     });
                     await set(jogoRef, jogo);
@@ -661,8 +661,10 @@
             papel = 'jogador1';
             idJogo = idJogo || generateUniqueId();
             const placarAtual = jogo.placar || {};
-            if (!placarAtual[jogadorId]) placarAtual[jogadorId] = { vitorias: 0 };
-            if (jogo.jogador2 && !placarAtual[jogo.jogador2]) placarAtual[jogo.jogador2] = { vitorias: 0 };
+            const j1Inicial = jogo.jogador1Inicial || jogadorId;
+            const j2Inicial = jogo.jogador2Inicial || jogo.jogador2 || '';
+            if (!placarAtual[j1Inicial]) placarAtual[j1Inicial] = { vitorias: 0 };
+            if (j2Inicial && !placarAtual[j2Inicial]) placarAtual[j2Inicial] = { vitorias: 0 };
             jogo = {
                 palavra: palavra,
                 letrasAdivinhadas: [],
@@ -672,8 +674,8 @@
                 chatAberto: false,
                 jogador1: jogadorId,
                 jogador2: jogo.jogador2 || '',
-                jogador1Inicial: jogo.jogador1Inicial || jogadorId,
-                jogador2Inicial: jogo.jogador2Inicial || jogo.jogador2,
+                jogador1Inicial: j1Inicial,
+                jogador2Inicial: j2Inicial,
                 placar: placarAtual
             };
             try {
@@ -716,8 +718,10 @@
 
         function validateJogo(data) {
             const placar = data.placar || {};
-            if (!placar[data.jogador1]) placar[data.jogador1] = { vitorias: 0 };
-            if (data.jogador2 && !placar[data.jogador2]) placar[data.jogador2] = { vitorias: 0 };
+            const j1Inicial = data.jogador1Inicial || data.jogador1 || '';
+            const j2Inicial = data.jogador2Inicial || data.jogador2 || '';
+            if (j1Inicial && !placar[j1Inicial]) placar[j1Inicial] = { vitorias: 0 };
+            if (j2Inicial && !placar[j2Inicial]) placar[j2Inicial] = { vitorias: 0 };
             return {
                 palavra: data.palavra || '',
                 letrasAdivinhadas: Array.isArray(data.letrasAdivinhadas) ? data.letrasAdivinhadas : [],
@@ -727,8 +731,8 @@
                 chatAberto: data.chatAberto || false,
                 jogador1: data.jogador1 || '',
                 jogador2: data.jogador2 || '',
-                jogador1Inicial: data.jogador1Inicial || data.jogador1,
-                jogador2Inicial: data.jogador2Inicial || data.jogador2,
+                jogador1Inicial: j1Inicial,
+                jogador2Inicial: j2Inicial,
                 placar: placar
             };
         }
@@ -747,13 +751,14 @@
                 const snapshot = await get(jogoRef);
                 if (snapshot.exists()) {
                     jogo = validateJogo(snapshot.val());
-                    if (!jogo.placar[jogadorId]) jogo.placar[jogadorId] = { vitorias: 0 };
+                    const j2Inicial = jogo.jogador2Inicial || jogadorId;
+                    if (!jogo.placar[j2Inicial]) jogo.placar[j2Inicial] = { vitorias: 0 };
                     if (!jogo.jogador2) {
                         jogo.jogador2 = jogadorId;
-                        jogo.jogador2Inicial = jogo.jogador2Inicial || jogadorId;
+                        jogo.jogador2Inicial = j2Inicial;
                         await update(jogoRef, {
                             jogador2: jogadorId,
-                            jogador2Inicial: jogo.jogador2Inicial,
+                            jogador2Inicial: j2Inicial,
                             placar: jogo.placar
                         });
                     }
@@ -863,9 +868,7 @@
                     document.getElementById('pontosEsquerda').textContent = `Pontos: ${vitoriasJ1}`;
                     document.getElementById('nomeDireita').textContent = 'Jogador 2';
                     document.getElementById('pontosDireita').textContent = `Pontos: ${vitoriasJ2}`;
-                    document.getElementById('placar').textContent = (jogo.estado === 'vencido' || jogo.estado === 'perdido')
-                        ? `Placar: Jogador 1 (${vitoriasJ1}) | Jogador 2 (${vitoriasJ2})`
-                        : '';
+                    document.getElementById('placar').textContent = `Placar: Jogador 1 (${vitoriasJ1}) | Jogador 2 (${vitoriasJ2})`;
                 } else {
                     document.getElementById('nomeEsquerda').textContent = '';
                     document.getElementById('pontosEsquerda').textContent = '';
@@ -892,7 +895,17 @@
                 <button onclick="window.open('https://www.youtube.com/watch?v=BIAITFJ8uTI&t=82s', '_blank')">Vídeo Teacher Carlos</button>
             `;
             if (jogo.estado === 'vencido' || jogo.estado === 'perdido') {
-                document.getElementById('mensagem').textContent = jogo.estado === 'vencido' ? 'VOCÊ VENCEU!' : `VOCÊ PERDEU! A palavra era: ${jogo.palavra}`;
+                let mensagem = '';
+                if (modo === 'multiplayer') {
+                    if (papel === 'jogador1') {
+                        mensagem = jogo.estado === 'perdido' ? 'VOCÊ VENCEU!' : `VOCÊ PERDEU! A palavra era: ${jogo.palavra}`;
+                    } else if (papel === 'jogador2') {
+                        mensagem = jogo.estado === 'vencido' ? 'VOCÊ VENCEU!' : `VOCÊ PERDEU! A palavra era: ${jogo.palavra}`;
+                    }
+                } else {
+                    mensagem = jogo.estado === 'vencido' ? 'VOCÊ VENCEU!' : `VOCÊ PERDEU! A palavra era: ${jogo.palavra}`;
+                }
+                document.getElementById('mensagem').textContent = mensagem;
                 botoesFimJogo.innerHTML = botoesHTML;
                 botoesFimJogo.style.display = 'grid';
                 document.getElementById('telaJogo').scrollIntoView({ behavior: 'smooth' });
@@ -905,7 +918,7 @@
 
         async function adivinharLetra() {
             const adivinhador = papel;
-            if (adivinhador !== papel || jogo.estado !== 'em andamento') {
+            if (adivinhador !== 'jogador2' || jogo.estado !== 'em andamento') {
                 console.log('Adivinhar letra bloqueado: papel=', papel, 'estado=', jogo.estado);
                 return;
             }
@@ -947,9 +960,10 @@
                     jogo.placar.jogador.vitorias += 1;
                     console.log(`Vitória do Jogador no modo Solo - Placar: Jogador (${jogo.placar.jogador.vitorias}) | Computador (${jogo.placar.computador?.vitorias || 0})`);
                 } else if (modo === 'multiplayer') {
-                    if (!jogo.placar[jogadorId]) jogo.placar[jogadorId] = { vitorias: 0 };
-                    jogo.placar[jogadorId].vitorias += 1;
-                    console.log(`Vitória do Adivinhador (ID: ${jogadorId}) - Placar: J1 (${jogo.jogador1}): ${jogo.placar[jogo.jogador1]?.vitorias || 0}, J2 (${jogo.jogador2}): ${jogo.placar[jogo.jogador2]?.vitorias || 0}`);
+                    const idAdivinhador = jogo.jogador2Inicial || jogo.jogador2;
+                    if (!jogo.placar[idAdivinhador]) jogo.placar[idAdivinhador] = { vitorias: 0 };
+                    jogo.placar[idAdivinhador].vitorias += 1;
+                    console.log(`Vitória do Adivinhador (ID: ${idAdivinhador}) - Placar: J1 (${jogo.jogador1Inicial}): ${jogo.placar[jogo.jogador1Inicial]?.vitorias || 0}, J2 (${jogo.jogador2Inicial}): ${jogo.placar[jogo.jogador2Inicial]?.vitorias || 0}`);
                 }
             } else if (jogo.erros >= 6) {
                 jogo.estado = 'perdido';
@@ -958,11 +972,11 @@
                     jogo.placar.computador.vitorias += 1;
                     console.log(`Vitória do Computador no modo Solo - Placar: Jogador (${jogo.placar.jogador?.vitorias || 0}) | Computador (${jogo.placar.computador.vitorias})`);
                 } else if (modo === 'multiplayer') {
-                    const idObservador = jogadorId === jogo.jogador1 ? jogo.jogador2 : jogo.jogador1;
+                    const idObservador = jogo.jogador1Inicial || jogo.jogador1;
                     if (idObservador) {
                         if (!jogo.placar[idObservador]) jogo.placar[idObservador] = { vitorias: 0 };
                         jogo.placar[idObservador].vitorias += 1;
-                        console.log(`Vitória do Observador (ID: ${idObservador}) - Placar: J1 (${jogo.jogador1}): ${jogo.placar[jogo.jogador1]?.vitorias || 0}, J2 (${jogo.jogador2}): ${jogo.placar[jogo.jogador2]?.vitorias || 0}`);
+                        console.log(`Vitória do Observador (ID: ${idObservador}) - Placar: J1 (${jogo.jogador1Inicial}): ${jogo.placar[jogo.jogador1Inicial]?.vitorias || 0}, J2 (${jogo.jogador2Inicial}): ${jogo.placar[jogo.jogador2Inicial]?.vitorias || 0}`);
                     }
                 }
             }
