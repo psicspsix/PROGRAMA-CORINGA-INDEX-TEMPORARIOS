@@ -184,15 +184,15 @@
         }
         #participanteEsquerda, #participanteDireita {
             position: absolute;
-            top: 120px;
+            top: 80px;
             text-align: center;
             z-index: 1000;
         }
         #participanteEsquerda {
-            left: -300px;
+            left: -260px;
         }
         #participanteDireita {
-            right: -300px;
+            right: -260px;
         }
         #participanteEsquerda h3, #participanteDireita h3 {
             font-size: 2em;
@@ -418,8 +418,12 @@
                     unsubscribeChat();
                     unsubscribeChat = null;
                 }
-                jogo.placar = {};
-                console.log('Tela inicial exibida: #telaInicial=flex, #chatBtn=none, #chatContainer=none, placar reiniciado');
+                if (modo !== 'multiplayer') {
+                    jogo.placar = {};
+                    console.log('Tela inicial exibida: #telaInicial=flex, #chatBtn=none, #chatContainer=none, placar reiniciado (modo solo)');
+                } else {
+                    console.log('Tela inicial exibida: #telaInicial=flex, #chatBtn=none, #chatContainer=none, placar mantido (modo multiplayer)', jogo.placar);
+                }
             } else if (tela === 'jogo') {
                 telaJogo.style.display = 'block';
                 if (modo === 'multiplayer') {
@@ -542,6 +546,7 @@
         }
 
         async function jogarNovamente() {
+            console.log('[jogarNovamente] Iniciando: modo=', modo, 'placar antes=', JSON.stringify(jogo.placar));
             const imagemForca = document.getElementById('forcaImagem');
             imagemForca.src = imagemOriginal;
             imagemForca.className = 'erro-0';
@@ -585,7 +590,7 @@
                     await set(jogoRef, jogo);
                     await set(ref(db, `jogos/${idJogo}/chat`), null);
                     papel = jogadorId === novoJogador1 ? 'jogador1' : 'jogador2';
-                    console.log(`Papéis invertidos: jogadorId=${jogadorId}, novo papel=${papel}`);
+                    console.log(`[jogarNovamente] Papéis invertidos: jogadorId=${jogadorId}, novo papel=${papel}, placar após reinício=`, JSON.stringify(jogo.placar));
                     if (papel === 'jogador1') {
                         mostrarTela('inicial');
                         mostrarCriarJogo();
@@ -642,430 +647,4 @@
         }
 
         async function criarJogo() {
-            const palavra = document.getElementById('palavraInput').value.trim().toLowerCase();
-            if (!palavra.match(/^[a-záéíóúâêîôûãõç]+$/)) {
-                alert('Digite uma palavra válida (apenas letras, incluindo acentos e ç).');
-                return;
-            }
-            modo = 'multiplayer';
-            papel = 'jogador1';
-            idJogo = idJogo || generateUniqueId();
-            const placarAtual = jogo.placar || {};
-            if (!placarAtual[jogadorId]) placarAtual[jogadorId] = { vitorias: 0 };
-            if (jogo.jogador2 && !placarAtual[jogo.jogador2]) placarAtual[jogo.jogador2] = { vitorias: 0 };
-            jogo = {
-                palavra: palavra,
-                letrasAdivinhadas: [],
-                erros: 0,
-                estado: 'em andamento',
-                frases: [`Você usou "${palavra}" em uma frase!`, `Ótimo, "${palavra}" foi escolhida!`],
-                chatAberto: false,
-                jogador1: jogadorId,
-                jogador2: jogo.jogador2 || '',
-                jogador1Inicial: jogo.jogador1Inicial || jogadorId,
-                jogador2Inicial: jogo.jogador2Inicial || jogo.jogador2,
-                placar: placarAtual
-            };
-            try {
-                const jogoRef = ref(db, `jogos/${idJogo}`);
-                await set(jogoRef, jogo);
-                alert(`Jogo criado! Compartilhe este ID com seu amigo: ${idJogo}`);
-                mostrarTela('jogo');
-                exibirJogo();
-                unsubscribeJogo = onValue(jogoRef, (snapshot) => {
-                    if (snapshot.exists()) {
-                        jogo = validateJogo(snapshot.val());
-                        papel = jogadorId === jogo.jogador1 ? 'jogador1' : 'jogador2';
-                        console.log(`Snapshot recebido: papel=${papel}, estado=${jogo.estado}, placar=`, jogo.placar);
-                        if (jogo.estado === 'aguardando_palavra' && papel === 'jogador1') {
-                            mostrarTela('inicial');
-                            mostrarCriarJogo();
-                        } else {
-                            mostrarTela('jogo');
-                            exibirJogo();
-                            if (papel === 'jogador2' && jogo.estado === 'em andamento') {
-                                document.getElementById('letraInput').focus();
-                                console.log('Foco definido em letraInput (onValue, jogador2)');
-                            }
-                        }
-                        if (jogo.chatAberto && !chatAberto) toggleChat();
-                        else if (!jogo.chatAberto && chatAberto) toggleChat();
-                    }
-                });
-                unsubscribeChat = onValue(ref(db, `jogos/${idJogo}/chat`), exibirMensagens);
-            } catch (error) {
-                console.error('Erro ao criar jogo:', error);
-                alert('Erro ao criar o jogo: ' + error.message);
-            }
-        }
-
-        function generateUniqueId() {
-            return Math.random().toString(36).substr(2, 9);
-        }
-
-        function validateJogo(data) {
-            const placar = data.placar || {};
-            if (!placar[data.jogador1]) placar[data.jogador1] = { vitorias: 0 };
-            if (data.jogador2 && !placar[data.jogador2]) placar[data.jogador2] = { vitorias: 0 };
-            return {
-                palavra: data.palavra || '',
-                letrasAdivinhadas: Array.isArray(data.letrasAdivinhadas) ? data.letrasAdivinhadas : [],
-                erros: Number.isInteger(data.erros) ? data.erros : 0,
-                estado: data.estado || 'em andamento',
-                frases: Array.isArray(data.frases) ? data.frases : [`Jogo com ID ${idJogo}`],
-                chatAberto: data.chatAberto || false,
-                jogador1: data.jogador1 || '',
-                jogador2: data.jogador2 || '',
-                jogador1Inicial: data.jogador1Inicial || data.jogador1,
-                jogador2Inicial: data.jogador2Inicial || data.jogador2,
-                placar: placar
-            };
-        }
-
-        async function entrarJogo() {
-            const id = document.getElementById('idJogoInput').value.trim();
-            if (!id) {
-                alert('Digite um ID de jogo válido.');
-                return;
-            }
-            modo = 'multiplayer';
-            papel = 'jogador2';
-            idJogo = id;
-            try {
-                const jogoRef = ref(db, `jogos/${idJogo}`);
-                const snapshot = await get(jogoRef);
-                if (snapshot.exists()) {
-                    jogo = validateJogo(snapshot.val());
-                    if (!jogo.placar[jogadorId]) jogo.placar[jogadorId] = { vitorias: 0 };
-                    if (!jogo.jogador2) {
-                        jogo.jogador2 = jogadorId;
-                        jogo.jogador2Inicial = jogo.jogador2Inicial || jogadorId;
-                        await update(jogoRef, {
-                            jogador2: jogadorId,
-                            jogador2Inicial: jogo.jogador2Inicial,
-                            placar: jogo.placar
-                        });
-                    }
-                    if (!jogo.palavra && jogo.estado === 'aguardando_palavra') {
-                        alert('Aguardando o Jogador 1 escolher uma palavra.');
-                    }
-                    mostrarTela('jogo');
-                    exibirJogo();
-                    if (jogo.estado === 'em andamento') {
-                        document.getElementById('letraInput').focus();
-                        console.log('Foco definido em letraInput (entrarJogo)');
-                    }
-                    unsubscribeJogo = onValue(jogoRef, (snapshot) => {
-                        if (snapshot.exists()) {
-                            jogo = validateJogo(snapshot.val());
-                            papel = jogadorId === jogo.jogador1 ? 'jogador1' : 'jogador2';
-                            console.log(`Snapshot recebido: papel=${papel}, estado=${jogo.estado}, placar=`, jogo.placar);
-                            if (jogo.estado === 'aguardando_palavra' && papel === 'jogador1') {
-                                mostrarTela('inicial');
-                                mostrarCriarJogo();
-                            } else {
-                                mostrarTela('jogo');
-                                exibirJogo();
-                                if (papel === 'jogador2' && jogo.estado === 'em andamento') {
-                                    document.getElementById('letraInput').focus();
-                                    console.log('Foco definido em letraInput (onValue, entrarJogo)');
-                                }
-                            }
-                            if (jogo.chatAberto && !chatAberto) toggleChat();
-                            else if (!jogo.chatAberto && chatAberto) toggleChat();
-                        } else {
-                            alert('O jogo foi removido ou não existe.');
-                            mostrarTela('inicial');
-                        }
-                    });
-                    unsubscribeChat = onValue(ref(db, `jogos/${idJogo}/chat`), exibirMensagens);
-                } else {
-                    alert('Jogo não encontrado.');
-                }
-            } catch (error) {
-                console.error('Erro ao entrar no jogo:', error);
-                alert('Erro ao entrar no jogo: ' + error.message);
-            }
-        }
-
-        function exibirJogo() {
-            if (!jogo || typeof jogo !== 'object') {
-                console.error('[exibirJogo] Erro: Jogo inválido, objeto jogo não definido ou inválido');
-                document.getElementById('mensagem').textContent = 'Erro: Jogo inválido.';
-                document.getElementById('botoesFimJogo').style.display = 'none';
-                document.getElementById('palavraTopo').textContent = '';
-                document.getElementById('placar').textContent = '';
-                document.getElementById('nomeEsquerda').textContent = '';
-                document.getElementById('pontosEsquerda').textContent = '';
-                document.getElementById('nomeDireita').textContent = '';
-                document.getElementById('pontosDireita').textContent = '';
-                return;
-            }
-            console.log(`[exibirJogo] Iniciando exibição: modo=${modo}, papel=${papel}, estado=${jogo.estado}, placar=`, jogo.placar);
-            const imagemForca = document.getElementById('forcaImagem');
-            if (jogo.estado === 'perdido') {
-                imagemForca.src = imagemDerrota;
-                imagemForca.className = '';
-                console.log(`[exibirJogo] Imagem de derrota exibida: src=${imagemForca.src}`);
-            } else {
-                imagemForca.src = imagemOriginal;
-                imagemForca.className = `erro-${jogo.erros}`;
-                console.log(`[exibirJogo] Imagem atualizada: class=erro-${jogo.erros}, src=${imagemForca.src}`);
-            }
-            const palavraOculta = (jogo.estado === 'vencido' || jogo.estado === 'perdido')
-                ? jogo.palavra
-                : jogo.palavra.split('').map((letra, i) => {
-                    const letraNormalizada = normalizarLetra(letra);
-                    return jogo.letrasAdivinhadas.some(l => normalizarLetra(l) === letraNormalizada) ? letra : '_';
-                }).join(' ');
-            document.getElementById('palavraTopo').textContent = (jogo.estado === 'vencido' || jogo.estado === 'perdido') ? `Palavra: ${jogo.palavra}` : '';
-            console.log(`[exibirJogo] Palavra topo definida: ${document.getElementById('palavraTopo').textContent}`);
-            if (papel === 'jogador1' && jogo.estado !== 'aguardando_palavra') {
-                console.log('[exibirJogo] Mostrando tela de observação (#jogador1View) para Jogador 1');
-                document.getElementById('jogador1View').style.display = 'block';
-                document.getElementById('jogador2View').style.display = 'none';
-                document.getElementById('palavraJogador1').textContent = palavraOculta;
-                document.getElementById('letrasAdivinhadasJogador1').textContent = jogo.letrasAdivinhadas.join(', ');
-                console.log(`[exibirJogo] Jogador 1: palavra=${palavraOculta}, letras adivinhadas=${jogo.letrasAdivinhadas.join(', ')}`);
-            } else {
-                console.log('[exibirJogo] Mostrando tela de adivinhação (#jogador2View) para Jogador 2');
-                document.getElementById('jogador1View').style.display = 'none';
-                document.getElementById('jogador2View').style.display = 'block';
-                document.getElementById('palavra').textContent = palavraOculta;
-                console.log(`[exibirJogo] Jogador 2: palavra=${palavraOculta}`);
-                if (papel === 'jogador2' && jogo.estado === 'em andamento') {
-                    document.getElementById('letraInput').focus();
-                    console.log('[exibirJogo] Foco definido em letraInput para Jogador 2');
-                }
-            }
-            const nomeEsquerda = document.getElementById('nomeEsquerda');
-            const pontosEsquerda = document.getElementById('pontosEsquerda');
-            const nomeDireita = document.getElementById('nomeDireita');
-            const pontosDireita = document.getElementById('pontosDireita');
-            const placar = document.getElementById('placar');
-            if (modo === 'solo') {
-                const vitoriasJogador = jogo.placar.jogador ? jogo.placar.jogador.vitorias : 0;
-                const vitoriasComputador = jogo.placar.computador ? jogo.placar.computador.vitorias : 0;
-                nomeEsquerda.textContent = 'Jogador';
-                pontosEsquerda.textContent = `Pontos: ${vitoriasJogador}`;
-                nomeDireita.textContent = 'Computador';
-                pontosDireita.textContent = `Pontos: ${vitoriasComputador}`;
-                placar.textContent = (jogo.estado === 'vencido' || jogo.estado === 'perdido')
-                    ? `Placar: Jogador (${vitoriasJogador}) | Computador (${vitoriasComputador})`
-                    : '';
-                console.log(`[exibirJogo] Solo - Placar: Jogador=${vitoriasJogador}, Computador=${vitoriasComputador}`);
-            } else if (modo === 'multiplayer') {
-                const idJogador1 = jogo.jogador1Inicial || jogo.jogador1;
-                const idJogador2 = jogo.jogador2Inicial || jogo.jogador2;
-                const vitoriasJ1 = jogo.placar[idJogador1] ? jogo.placar[idJogador1].vitorias : 0;
-                const vitoriasJ2 = jogo.placar[idJogador2] ? jogo.placar[idJogador2].vitorias : 0;
-                nomeEsquerda.textContent = 'Jogador 1';
-                pontosEsquerda.textContent = `Pontos: ${vitoriasJ1}`;
-                nomeDireita.textContent = 'Jogador 2';
-                pontosDireita.textContent = `Pontos: ${vitoriasJ2}`;
-                placar.textContent = `Placar: Jogador 1 (${vitoriasJ1}) | Jogador 2 (${vitoriasJ2})`;
-                console.log(`[exibirJogo] Multiplayer - Placar: J1 (${idJogador1})=${vitoriasJ1}, J2 (${idJogador2})=${vitoriasJ2}, chatAberto=${chatAberto}`);
-            } else {
-                nomeEsquerda.textContent = '';
-                pontosEsquerda.textContent = '';
-                nomeDireita.textContent = '';
-                pontosDireita.textContent = '';
-                placar.textContent = '';
-                console.log('[exibirJogo] Modo indefinido, placar e nomes limpos');
-            }
-            const botoesFimJogo = document.getElementById('botoesFimJogo');
-            const botoesHTML = `
-                <button onclick="jogarNovamente()">Jogar Novamente</button>
-                <button onclick="window.open('https://translate.google.com.br/?sl=auto&tl=pt&text=${encodeURIComponent(jogo.palavra)}%0A&op=translate', '_blank')">Mostrar Tradução da Palavra</button>
-                <button onclick="window.open('https://www.reverso.net/tradu%C3%A7%C3%A3o-texto#sl=eng&tl=por&text=${encodeURIComponent(jogo.palavra)}%250A', '_blank')">Mostrar Palavra em Frases</button>
-                <button onclick="window.open('https://www.ccaa.com.br/blog/expressoes-em-ingles/', '_blank')">35 Expressões CCAA</button>
-                <button onclick="window.open('https://www.wizard.com.br/idiomas/20-expressoes-em-ingles-mais-usadas-em-uma-conversa/', '_blank')">20 Expressões Wizard</button>
-                <button onclick="window.open('https://fisk.com.br/blog/20-expressoes-idiomaticas-em-ingles', '_blank')">20 Expressões Fisk</button>
-                <button onclick="window.open('https://www.ef.com.br/guia-de-ingles/expressoes-idiomaticas-em-ingles/', '_blank')">Expressões EF Brasil</button>
-                <button onclick="window.open('https://www.youtube.com/watch?v=BIAITFJ8uTI&t=82s', '_blank')">Vídeo Teacher Carlos</button>
-            `;
-            if (jogo.estado === 'vencido' || jogo.estado === 'perdido') {
-                let mensagemFinal = '';
-                if (modo === 'multiplayer') {
-                    if (jogo.estado === 'vencido') {
-                        mensagemFinal = papel === 'jogador2' ? 'VOCÊ VENCEU!' : `VOCÊ PERDEU! A palavra era: ${jogo.palavra}`;
-                    } else if (jogo.estado === 'perdido') {
-                        mensagemFinal = papel === 'jogador1' ? 'VOCÊ VENCEU!' : `VOCÊ PERDEU! A palavra era: ${jogo.palavra}`;
-                    }
-                } else {
-                    mensagemFinal = jogo.estado === 'vencido' ? 'VOCÊ VENCEU!' : `VOCÊ PERDEU! A palavra era: ${jogo.palavra}`;
-                }
-                document.getElementById('mensagem').textContent = mensagemFinal;
-                botoesFimJogo.innerHTML = botoesHTML;
-                botoesFimJogo.style.display = 'grid';
-                document.getElementById('telaJogo').scrollIntoView({ behavior: 'smooth' });
-                console.log(`[exibirJogo] Fim de jogo: estado=${jogo.estado}, mensagem=${mensagemFinal}, botoesFimJogo=grid`);
-            } else {
-                document.getElementById('mensagem').textContent = jogo.palavra ? '' : 'Aguardando palavra do Jogador 1...';
-                document.getElementById('exemploFrases').textContent = jogo.frases.join(' ');
-                botoesFimJogo.style.display = 'none';
-                console.log(`[exibirJogo] Jogo em andamento: mensagem=${document.getElementById('mensagem').textContent}, frases=${jogo.frases.join(' ')}`);
-            }
-        }
-
-        async function adivinharLetra() {
-            const adivinhador = papel;
-            if (adivinhador !== papel || jogo.estado !== 'em andamento') {
-                console.log('[adivinharLetra] Adivinhar letra bloqueado: papel=', papel, 'estado=', jogo.estado);
-                return;
-            }
-            const letra = document.getElementById('letraInput').value.trim().toLowerCase();
-            if (!letra || letra.length !== 1 || !/[a-záéíóúâêîôûãõç]/.test(letra)) {
-                alert('Digite uma letra válida (a-z, acentos ou ç).');
-                document.getElementById('letraInput').value = '';
-                document.getElementById('letraInput').focus();
-                return;
-            }
-            const letraNormalizada = normalizarLetra(letra);
-            if (jogo.letrasAdivinhadas.some(l => normalizarLetra(l) === letraNormalizada)) {
-                console.log(`[adivinharLetra] Letra repetida: ${letra}`);
-                const mensagemRepetida = document.getElementById('mensagemLetraRepetida');
-                mensagemRepetida.style.display = 'block';
-                setTimeout(() => {
-                    mensagemRepetida.style.display = 'none';
-                }, 1000);
-                document.getElementById('letraInput').value = '';
-                document.getElementById('letraInput').focus();
-                return;
-            }
-            console.log(`[adivinharLetra] Letra adivinhada: ${letra}, Normalizada: ${letraNormalizada}, Adivinhador: ${adivinhador}`);
-            jogo.letrasAdivinhadas.push(letra);
-            const palavraNormalizada = normalizarPalavra(jogo.palavra);
-            if (!palavraNormalizada.includes(letraNormalizada)) {
-                jogo.erros += 1;
-                console.log(`[adivinharLetra] Erro cometido. Total de erros: ${jogo.erros}`);
-            }
-            const letrasFaltando = palavraNormalizada.split('').filter((l, i) => {
-                const letraOriginalNormalizada = normalizarLetra(jogo.palavra[i]);
-                return !jogo.letrasAdivinhadas.some(la => normalizarLetra(la) === letraOriginalNormalizada);
-            });
-            exibirJogo();
-            if (letrasFaltando.length === 0) {
-                jogo.estado = 'vencido';
-                if (modo === 'solo') {
-                    if (!jogo.placar.jogador) jogo.placar.jogador = { vitorias: 0 };
-                    jogo.placar.jogador.vitorias += 1;
-                    console.log(`[adivinharLetra] Vitória do Jogador no modo Solo - Placar: Jogador (${jogo.placar.jogador.vitorias}) | Computador (${jogo.placar.computador?.vitorias || 0})`);
-                } else if (modo === 'multiplayer') {
-                    if (!jogo.placar[jogadorId]) jogo.placar[jogadorId] = { vitorias: 0 };
-                    jogo.placar[jogadorId].vitorias += 1;
-                    console.log(`[adivinharLetra] Vitória do Adivinhador (ID: ${jogadorId}) - Placar: J1 (${jogo.jogador1}): ${jogo.placar[jogo.jogador1]?.vitorias || 0}, J2 (${jogo.jogador2}): ${jogo.placar[jogo.jogador2]?.vitorias || 0}`);
-                }
-            } else if (jogo.erros >= 6) {
-                jogo.estado = 'perdido';
-                if (modo === 'solo') {
-                    if (!jogo.placar.computador) jogo.placar.computador = { vitorias: 0 };
-                    jogo.placar.computador.vitorias += 1;
-                    console.log(`[adivinharLetra] Vitória do Computador no modo Solo - Placar: Jogador (${jogo.placar.jogador?.vitorias || 0}) | Computador (${jogo.placar.computador.vitorias})`);
-                } else if (modo === 'multiplayer') {
-                    const idObservador = jogadorId === jogo.jogador1 ? jogo.jogador2 : jogo.jogador1;
-                    if (idObservador) {
-                        if (!jogo.placar[idObservador]) jogo.placar[idObservador] = { vitorias: 0 };
-                        jogo.placar[idObservador].vitorias += 1;
-                        console.log(`[adivinharLetra] Vitória do Observador (ID: ${idObservador}) - Placar: J1 (${jogo.jogador1}): ${jogo.placar[jogo.jogador1]?.vitorias || 0}, J2 (${jogo.jogador2}): ${jogo.placar[jogo.jogador2]?.vitorias || 0}`);
-                    }
-                }
-            }
-            if (modo === 'multiplayer') {
-                try {
-                    const jogoRef = ref(db, `jogos/${idJogo}`);
-                    await new Promise(resolve => setTimeout(resolve, 100));
-                    await update(jogoRef, {
-                        letrasAdivinhadas: jogo.letrasAdivinhadas,
-                        erros: jogo.erros,
-                        estado: jogo.estado,
-                        placar: jogo.placar
-                    });
-                    console.log('[adivinharLetra] Jogo atualizado no Firebase:', jogo);
-                } catch (error) {
-                    console.error('[adivinharLetra] Erro ao atualizar jogo:', error);
-                    alert('Erro ao atualizar o jogo: ' + error.message);
-                }
-            }
-            exibirJogo();
-            document.getElementById('letraInput').value = '';
-            document.getElementById('letraInput').focus();
-        }
-
-        document.getElementById('jogarSozinhoBtn').addEventListener('click', () => {
-            console.log('Botão Jogar Sozinho clicado');
-            iniciarJogoSolo();
-        });
-
-        document.getElementById('jogarComAmigoBtn').addEventListener('click', () => {
-            console.log('Botão Jogar com Amigo clicado');
-            mostrarOpcoesMultiplayer();
-        });
-
-        document.getElementById('criarJogoBtn').addEventListener('click', () => {
-            console.log('Botão Criar Jogo clicado');
-            mostrarCriarJogo();
-        });
-
-        document.getElementById('entrarJogoBtn').addEventListener('click', () => {
-            console.log('Botão Entrar Jogo clicado');
-            mostrarEntrarJogo();
-        });
-
-        document.getElementById('criarJogoSubmitBtn').addEventListener('click', () => {
-            console.log('Botão Criar clicado');
-            criarJogo();
-        });
-
-        document.getElementById('entrarJogoSubmitBtn').addEventListener('click', () => {
-            console.log('Botão Entrar clicado');
-            entrarJogo();
-        });
-
-        document.getElementById('letraInput').addEventListener('input', () => {
-            console.log('Evento input disparado no campo letraInput');
-            adivinharLetra();
-        });
-
-        document.getElementById('palavraInput').addEventListener('keypress', (event) => {
-            if (event.key === 'Enter') {
-                console.log('Tecla Enter pressionada no campo palavraInput');
-                criarJogo();
-            }
-        });
-
-        document.getElementById('idJogoInput').addEventListener('keypress', (event) => {
-            if (event.key === 'Enter') {
-                console.log('Tecla Enter pressionada no campo idJogoInput');
-                entrarJogo();
-            }
-        });
-
-        document.getElementById('chatInput').addEventListener('keypress', (event) => {
-            if (event.key === 'Enter' && !event.shiftKey) {
-                event.preventDefault();
-                console.log('Tecla Enter pressionada no campo chatInput');
-                enviarMensagem();
-            }
-        });
-
-        document.getElementById('chatBtn').addEventListener('click', () => {
-            console.log('Botão Abrir Chat clicado');
-            toggleChat();
-        });
-
-        document.getElementById('closeChatBtn').addEventListener('click', () => {
-            console.log('Botão Fechar Chat clicado');
-            toggleChat();
-        });
-
-        window.jogarNovamente = jogarNovamente;
-
-        const imagemForca = document.getElementById('forcaImagem');
-        imagemForca.onload = () => console.log('Imagem carregada com sucesso:', imagemForca.src);
-        imagemForca.onerror = () => console.error('Erro ao carregar imagem:', imagemForca.src);
-
-        mostrarTela('inicial');
-    </script>
-</body>
-</html>
+            const palavra = document.getElementById('palavraInput
