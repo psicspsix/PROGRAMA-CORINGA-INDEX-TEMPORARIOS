@@ -418,8 +418,7 @@
                     unsubscribeChat();
                     unsubscribeChat = null;
                 }
-                jogo.placar = {};
-                console.log('Tela inicial exibida: #telaInicial=flex, #chatBtn=none, #chatContainer=none, placar reiniciado');
+                console.log('Tela inicial exibida: #telaInicial=flex, #chatBtn=none, #chatContainer=none');
             } else if (tela === 'jogo') {
                 telaJogo.style.display = 'block';
                 if (modo === 'multiplayer') {
@@ -883,7 +882,13 @@
                 <button onclick="window.open('https://www.youtube.com/watch?v=BIAITFJ8uTI&t=82s', '_blank')">Vídeo Teacher Carlos</button>
             `;
             if (jogo.estado === 'vencido' || jogo.estado === 'perdido') {
-                document.getElementById('mensagem').textContent = jogo.estado === 'vencido' ? 'VOCÊ VENCEU!' : `VOCÊ PERDEU! A palavra era: ${jogo.palavra}`;
+                let mensagem = '';
+                if (jogo.estado === 'vencido') {
+                    mensagem = (papel === 'jogador2') ? 'VOCÊ VENCEU!' : `VOCÊ PERDEU! A palavra era: ${jogo.palavra}`;
+                } else if (jogo.estado === 'perdido') {
+                    mensagem = (papel === 'jogador2') ? `VOCÊ PERDEU! A palavra era: ${jogo.palavra}` : 'VOCÊ VENCEU!';
+                }
+                document.getElementById('mensagem').textContent = mensagem;
                 botoesFimJogo.innerHTML = botoesHTML;
                 botoesFimJogo.style.display = 'grid';
                 document.getElementById('telaJogo').scrollIntoView({ behavior: 'smooth' });
