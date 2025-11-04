@@ -646,6 +646,7 @@
                 alert('Digite uma palavra válida (apenas letras, incluindo acentos e ç).');
                 return;
             }
+            const isNewGame = !idJogo;
             modo = 'multiplayer';
             papel = 'jogador1';
             idJogo = idJogo || generateUniqueId();
@@ -668,7 +669,9 @@
             try {
                 const jogoRef = ref(db, `jogos/${idJogo}`);
                 await set(jogoRef, jogo);
-                alert(`Jogo criado! Compartilhe este ID com seu amigo: ${idJogo}`);
+                if (isNewGame) {
+                    alert(`Jogo criado! Compartilhe este ID com seu amigo: ${idJogo}`);
+                }
                 mostrarTela('jogo');
                 exibirJogo();
                 unsubscribeJogo = onValue(jogoRef, (snapshot) => {
