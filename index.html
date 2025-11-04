@@ -577,8 +577,8 @@
                         chatAberto: false,
                         jogador1: novoJogador1,
                         jogador2: novoJogador2,
-                        jogador1Inicial: jogo.jogador1Inicial || jogo.jogador1,
-                        jogador2Inicial: jogo.jogador2Inicial || jogo.jogador2,
+                        jogador1Inicial: jogo.jogador1Inicial,
+                        jogador2Inicial: jogo.jogador2Inicial,
                         placar: placarAtual
                     });
                     await set(jogoRef, jogo);
@@ -847,8 +847,8 @@
                     ? `Placar: Jogador (${vitoriasJogador}) | Computador (${vitoriasComputador})`
                     : '';
             } else if (modo === 'multiplayer') {
-                const idJogador1 = jogo.jogador1;
-                const idJogador2 = jogo.jogador2;
+                const idJogador1 = jogo.jogador1Inicial;
+                const idJogador2 = jogo.jogador2Inicial;
                 const vitoriasJ1 = jogo.placar[idJogador1] ? jogo.placar[idJogador1].vitorias : 0;
                 const vitoriasJ2 = jogo.placar[idJogador2] ? jogo.placar[idJogador2].vitorias : 0;
                 if (!chatAberto) {
