@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Análise Mega-Sena - Sugestões Inteligentes</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 900px; margin: 40px auto; padding: 20px; background: #e0e0e0; color: #333; }
+        h1, h2, h3 { text-align: center; }
+        .sugestoes, .gerar, .aleatorias, .probabilidades, .tabela { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); margin: 30px 0; }
+        .jogo { font-size: 24px; font-weight: bold; margin: 20px 0; text-align: center; }
+        .numeros { display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; margin: 15px 0; }
+        .numero { background: #0066cc; color: white; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+        input, button, select { padding: 10px; font-size: 16px; margin: 10px 5px; }
+        button { background: #0066cc; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #0055aa; }
+        .loading { text-align: center; color: #666; font-size: 18px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { border: 1px solid #ccc; padding: 10px; text-align: center; }
+        th { background: #f0f0f0; }
+        .probabilidades { font-size: 20px; text-align: center; }
+    </style>
+</head>
+<body>
+    <h1>Mega-Sena - Sugestões Baseadas em Histórico</h1>
+    <p style="text-align:center;">Análise automática dos sorteios a partir de 2015 com peso maior para resultados recentes.</p>
+
+    <div id="loading" class="loading">Carregando dados da planilha e calculando estatísticas...</div>
+
+    <div id="content" style="display:none;">
+        <div class="sugestoes">
+            <h2>Sugestões Inteligentes (baseadas na análise da planilha)</h2>
+            
+            <h3>Apostas de 6 dezenas</h3>
+            <div class="jogo">Jogo 1: <div class="numeros" id="jogo6-1"></div></div>
+            <div class="jogo">Jogo 2: <div class="numeros" id="jogo6-2"></div></div>
+            
+            <h3>Apostas de 7 dezenas</h3>
+            <div class="jogo">Jogo 1: <div class="numeros" id="jogo7-1"></div></div>
+            <div class="jogo">Jogo 2: <div class="numeros" id="jogo7-2"></div></div>
+        </div>
+
+        <div class="aleatorias">
+            <h2>Deseja gerar apostas aleatórias adicionais?</h2>
+            <label>Quantas apostas aleatórias quer gerar?</label><br>
+            <input type="number" id="qtdApostas" min="0" value="0"><br>
+            <label>Quantas dezenas em cada aposta? (ex: 7)</label><br>
+            <input type="number" id="dezenasPorAposta" min="6" max="20" value="7"><br>
+            <button onclick="gerarAleatorias()">Gerar Apostas Aleatórias</button>
+            <div id="apostasGeradas"></div>
+        </div>
+
+        <div class="probabilidades" id="probabilidades" style="display:none;">
+            <h2>Sua probabilidade de acerto com esse conjunto de apostas</h2>
+            <p>Quadra: <strong>1 em <span id="probQuadra"></span></strong></p>
+            <p>Quina: <strong>1 em <span id="probQuina"></span></strong></p>
+            <p>Sena: <strong>1 em <span id="probSena"></span></strong></p>
+        </div>
+
+        <div class="tabela">
+            <h2>Probabilidades por quantidade de dezenas (uma única cartela)</h2>
+            <table>
+                <tr><th>Dezenas</th><th>Quadra (1 em)</th><th>Quina (1 em)</th><th>Sena (1 em)</th></tr>
+                <tr><td>6</td><td>2.332</td><td>154.518</td><td>50.063.860</td></tr>
+                <tr><td>7</td><td>1.038</td><td>44.981</td><td>7.151.980</td></tr>
+                <tr><td>8</td><td>539</td><td>17.192</td><td>1.787.995</td></tr>
+                <tr><td>9</td><td>311</td><td>7.790</td><td>595.998</td></tr>
+                <tr><td>10</td><td>194</td><td>3.973</td><td>238.399</td></tr>
+                <tr><td>11</td><td>129</td><td>2.211</td><td>108.363</td></tr>
+                <tr><td>12</td><td>89</td><td>1.316</td><td>54.181</td></tr>
+                <tr><td>13</td><td>64</td><td>827</td><td>29.174</td></tr>
+                <tr><td>14</td><td>48</td><td>543</td><td>16.671</td></tr>
+                <tr><td>15</td><td>37</td><td>370</td><td>10.002</td></tr>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const urlExcel = 'https://raw.githubusercontent.com/psicspsix/LerPDFemLinksFixos/main/PDFs/Sorteios%20at%C3%A9%20a%20presente%20data.xlsx';
+        let numerosQuentes = [];
+
+        // Sugestões fixas (baseadas na análise anterior)
+        const sugestoesFixas = [
+            [4, 8, 27, 30, 33, 37],      // 6
+            [5, 10, 17, 35, 43, 53],     // 6
+            [4, 8, 27, 30, 33, 37, 53],  // 7
+            [5, 10, 17, 35, 43, 46, 60]  // 7
+        ];
+
+        let todasApostas = []; // Vai guardar fixas + aleatórias geradas
+
+        async function carregarDados() {
+            try {
+                const response = await fetch(urlExcel);
+                const arrayBuffer = await response.arrayBuffer();
+                const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+                const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                const data = XLSX.utils.sheet_to_json(sheet, { header: 1, range: 7 });
+
+                const sorteios = [];
+                const dataCorte = new Date('2015-01-01');
+                let indiceRecente = 0;
+
+                for (let row of data) {
+                    if (!row || row.length < 8) continue;
+                    const dataStr = row[1];
+                    if (!dataStr) continue;
+                    const dataParts = dataStr.toString().split('/');
+                    const dataSorteio = new Date(`${dataParts[2]}-${dataParts[1]}-${dataParts[0]}`);
+                    if (dataSorteio >= dataCorte) {
+                        const bolas = [row[2], row[3], row[4], row[5], row[6], row[7]].map(n => parseInt(n)).filter(n => n >= 1 && n <= 60);
+                        if (bolas.length === 6) {
+                            sorteios.push({ bolas, peso: ++indiceRecente });
+                        }
+                    }
+                }
+
+                const freq = Array(61).fill(0);
+                sorteios.forEach(s => {
+                    s.bolas.forEach(num => freq[num] += s.peso);
+                });
+
+                const indices = Array.from({length: 60}, (_, i) => i+1);
+                indices.sort((a,b) => freq[b] - freq[a]);
+                numerosQuentes = indices.slice(0, 30);
+
+                // Exibir sugestões fixas
+                document.getElementById('jogo6-1').innerHTML = ''; exibirNumeros(document.getElementById('jogo6-1'), sugestoesFixas[0]);
+                document.getElementById('jogo6-2').innerHTML = ''; exibirNumeros(document.getElementById('jogo6-2'), sugestoesFixas[1]);
+                document.getElementById('jogo7-1').innerHTML = ''; exibirNumeros(document.getElementById('jogo7-1'), sugestoesFixas[2]);
+                document.getElementById('jogo7-2').innerHTML = ''; exibirNumeros(document.getElementById('jogo7-2'), sugestoesFixas[3]);
+
+                // Iniciar com as fixas
+                todasApostas = sugestoesFixas.map(a => [...a]);
+                calcularProbabilidades();
+
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('content').style.display = 'block';
+            } catch (err) {
+                document.getElementById('loading').innerHTML = 'Erro ao carregar a planilha. Verifique o link.';
+                console.error(err);
+            }
+        }
+
+        function exibirNumeros(container, nums) {
+            container.innerHTML = '';
+            nums.sort((a,b) => a-b).forEach(n => {
+                const div = document.createElement('div');
+                div.className = 'numero';
+                div.textContent = n.toString().padStart(2, '0');
+                container.appendChild(div);
+            });
+        }
+
+        function gerarAleatorias() {
+            const qtd = parseInt(document.getElementById('qtdApostas').value) || 0;
+            const dezenas = parseInt(document.getElementById('dezenasPorAposta').value) || 7;
+            if (qtd <= 0 || dezenas < 6 || dezenas > 20) {
+                alert('Verifique os valores inseridos.');
+                return;
+            }
+
+            const geradas = [];
+            const divGeradas = document.getElementById('apostasGeradas');
+            divGeradas.innerHTML = '<h3>Apostas aleatórias geradas:</h3>';
+
+            for (let i = 0; i < qtd; i++) {
+                let aposta = [];
+                const pool = [...numerosQuentes];
+                while (aposta.length < dezenas && pool.length > 0) {
+                    const idx = Math.floor(Math.random() * pool.length);
+                    aposta.push(pool.splice(idx, 1)[0]);
+                }
+                // Completar com aleatórios puros se faltar
+                while (aposta.length < dezenas) {
+                    const num = Math.floor(Math.random() * 60) + 1;
+                    if (!aposta.includes(num)) aposta.push(num);
+                }
+                aposta.sort((a,b) => a-b);
+                geradas.push(aposta);
+
+                const jogoDiv = document.createElement('div');
+                jogoDiv.className = 'jogo';
+                jogoDiv.innerHTML = `Aposta ${i+1} (${dezenas} dezenas): `;
+                const numsDiv = document.createElement('div');
+                numsDiv.className = 'numeros';
+                exibirNumeros(numsDiv, aposta);
+                jogoDiv.appendChild(numsDiv);
+                divGeradas.appendChild(jogoDiv);
+            }
+
+            // Atualizar lista total
+            todasApostas = [...sugestoesFixas.map(a => [...a]), ...geradas];
+            calcularProbabilidades();
+        }
+
+        function calcularProbabilidades() {
+            const totalComb = 50063860;
+            let quadraComb = 0, quinaComb = 0, senaComb = 0;
+
+            todasApostas.forEach(aposta => {
+                const n = aposta.length;
+                if (n >= 6) senaComb += mathComb(n, 6);
+                if (n >= 5) quinaComb += mathComb(n, 5) * mathComb(60 - n, 1);
+                if (n >= 4) quadraComb += mathComb(n, 4) * mathComb(60 - n, 2);
+            });
+
+            const formatar = x => x > 0 ? x.toLocaleString('pt-BR') : 'impossível';
+
+            document.getElementById('probQuadra').textContent = formatar(Math.round(totalComb / quadraComb));
+            document.getElementById('probQuina').textContent = formatar(Math.round(totalComb / quinaComb));
+            document.getElementById('probSena').textContent = formatar(Math.round(totalComb / senaComb));
+            document.getElementById('probabilidades').style.display = 'block';
+        }
+
+        // Função auxiliar de combinação (C(n,k))
+        function mathComb(n, k) {
+            if (k < 0 || k > n) return 0;
+            if (k === 0 || k === n) return 1;
+            k = Math.min(k, n - k);
+            let res = 1;
+            for (let i = 0; i < k; i++) {
+                res *= (n - i);
+                res /= (i + 1);
+            }
+            return Math.round(res);
+        }
+
+        carregarDados();
+    </script>
+</body>
+</html>
