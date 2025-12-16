@@ -67,7 +67,7 @@
         </div>
 
         <div class="probabilidades" id="probabilidades" style="display:none;">
-            <h2>Sua probabilidade de acerto com o conjunto total de apostas</h2>
+            <h2>Sua probabilidade de acerto com o conjunto gerado (personalizada + aleatórias)</h2>
             <p>Quadra: <strong>1 em <span id="probQuadra"></span></strong></p>
             <p>Quina: <strong>1 em <span id="probQuina"></span></strong></p>
             <p>Sena: <strong>1 em <span id="probSena"></span></strong></p>
@@ -102,7 +102,7 @@
             [4, 10, 17, 27, 33, 35, 60]
         ];
 
-        let todasApostas = sugestoesFixas.map(a => [...a]);
+        let geradasApostas = []; // Só personalizada + aleatórias
 
         async function carregarDados() {
             try {
@@ -178,8 +178,8 @@
             div.innerHTML = `<h3>Aposta personalizada determinística (${qtd} dezenas):</h3><div class="numeros"></div>`;
             exibirNumeros(div.querySelector('.numeros'), aposta);
 
-            todasApostas = [...sugestoesFixas.map(a => [...a]), aposta];
-            document.getElementById('apostasAleatorias').innerHTML = '';
+            geradasApostas = [aposta]; // Reseta e adiciona apenas personalizada
+            document.getElementById('apostasAleatorias').innerHTML = ''; // Limpa aleatórias
             calcularProbabilidades();
         }
 
@@ -219,7 +219,8 @@
                 div.appendChild(jogoDiv);
             });
 
-            todasApostas = [...sugestoesFixas.map(a => [...a]), ...geradas];
+            // Adiciona às geradas (incluindo personalizada se existir)
+            geradasApostas = (geradasApostas[0] && geradasApostas[0].length > 0 ? geradasApostas : []).concat(geradas);
             calcularProbabilidades();
         }
 
@@ -233,35 +234,32 @@
         function calcularProbabilidades() {
             const total = 50063860;
 
-            // Cálculo para as apostas fixas (inicial)
+            // Prob inicial (só fixas)
             let quadraFixas = 0, quinaFixas = 0, senaFixas = 0;
             sugestoesFixas.forEach(aposta => {
                 const n = aposta.length;
-                if (n >= 6) senaFixas += comb(n, 6);
-                if (n >= 5) quinaFixas += comb(n, 5) * comb(60 - n, 1);
-                if (n >= 4) quadraFixas += comb(n, 4) * comb(60 - n, 2);
+                senaFixas += comb(n, 6);
+                quinaFixas += comb(n, 5) * comb(60 - n, 1);
+                quadraFixas += comb(n, 4) * comb(60 - n, 2);
             });
-            document.getElementById('initQuadra').textContent = quadraFixas > 0 ? Math.round(total / quadraFixas).toLocaleString('pt-BR') : '—';
-            document.getElementById('initQuina').textContent = quinaFixas > 0 ? Math.round(total / quinaFixas).toLocaleString('pt-BR') : '—';
-            document.getElementById('initSena').textContent = senaFixas > 0 ? Math.round(total / senaFixas).toLocaleString('pt-BR') : '—';
-
-            // Cálculo para o conjunto total
-            let quadraTotal = 0, quinaTotal = 0, senaTotal = 0;
-            todasApostas.forEach(aposta => {
-                const n = aposta.length;
-                if (n >= 6) senaTotal += comb(n, 6);
-                if (n >= 5) quinaTotal += comb(n, 5) * comb(60 - n, 1);
-                if (n >= 4) quadraTotal += comb(n, 4) * comb(60 - n, 2);
-            });
-
             const format = x => x > 0 ? Math.round(total / x).toLocaleString('pt-BR') : '—';
-            document.getElementById('probQuadra').textContent = format(quadraTotal);
-            document.getElementById('probQuina').textContent = format(quinaTotal);
-            document.getElementById('probSena').textContent = format(senaTotal);
+            document.getElementById('initQuadra').textContent = format(quadraFixas);
+            document.getElementById('initQuina').textContent = format(quinaFixas);
+            document.getElementById('initSena').textContent = format(senaFixas);
 
-            if (todasApostas.length > sugestoesFixas.length) {
-                document.getElementById('probabilidades').style.display = 'block';
-            }
+            // Prob total geradas (personalizada + aleatórias)
+            let quadraGeradas = 0, quinaGeradas = 0, senaGeradas = 0;
+            geradasApostas.forEach(aposta => {
+                const n = aposta.length;
+                senaGeradas += comb(n, 6);
+                quinaGeradas += comb(n, 5) * comb(60 - n, 1);
+                quadraGeradas += comb(n, 4) * comb(60 - n, 2);
+            });
+            document.getElementById('probQuadra').textContent = format(quadraGeradas);
+            document.getElementById('probQuina').textContent = format(quinaGeradas);
+            document.getElementById('probSena').textContent = format(senaGeradas);
+
+            document.getElementById('probabilidades').style.display = geradasApostas.length > 0 ? 'block' : 'none';
         }
 
         carregarDados();
