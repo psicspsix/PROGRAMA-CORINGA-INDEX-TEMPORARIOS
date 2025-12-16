@@ -66,7 +66,7 @@
             <div id="apostasAleatorias"></div>
         </div>
 
-        <div class="probabilidades" id="probabilidades">
+        <div class="probabilidades" id="probabilidades" style="display:none;">
             <h2>Sua probabilidade de acerto com o conjunto total de apostas</h2>
             <p>Quadra: <strong>1 em <span id="probQuadra"></span></strong></p>
             <p>Quina: <strong>1 em <span id="probQuina"></span></strong></p>
@@ -93,13 +93,13 @@
 
     <script>
         const urlExcel = 'https://raw.githubusercontent.com/psicspsix/LerPDFemLinksFixos/main/PDFs/Sorteios%20at%C3%A9%20a%20presente%20data.xlsx';
-        let numerosQuentes = []; // Top ponderados
+        let numerosQuentes = [];
 
         const sugestoesFixas = [
-            [5, 8, 30, 31, 37, 45],      // 6 atualizado
-            [4, 10, 17, 27, 35, 53],     // 6
-            [5, 8, 30, 31, 37, 45, 53],  // 7
-            [4, 10, 17, 27, 33, 35, 60]  // 7
+            [5, 8, 30, 31, 37, 45],
+            [4, 10, 17, 27, 35, 53],
+            [5, 8, 30, 31, 37, 45, 53],
+            [4, 10, 17, 27, 33, 35, 60]
         ];
 
         let todasApostas = sugestoesFixas.map(a => [...a]);
@@ -122,7 +122,7 @@
                     if (!dataStr) continue;
                     const parts = dataStr.toString().split('/');
                     if (parts.length !== 3) continue;
-                    const d = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
+                    const d = new Date(`${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}`);
                     if (isNaN(d) || d < dataCorte) continue;
 
                     const bolas = [row[2], row[3], row[4], row[5], row[6], row[7]].map(Number).filter(n => n >= 1 && n <= 60);
@@ -137,9 +137,9 @@
 
                 const indices = Array.from({length: 60}, (_, i) => i + 1);
                 indices.sort((a, b) => freq[b] - freq[a]);
-                numerosQuentes = indices.slice(0, 40); // Mais para seleção balanceada
+                numerosQuentes = indices.slice(0, 40);
 
-                // Exibir fixas
+                // Exibir sugestões fixas
                 exibirNumeros(document.getElementById('jogo6-1'), sugestoesFixas[0]);
                 exibirNumeros(document.getElementById('jogo6-2'), sugestoesFixas[1]);
                 exibirNumeros(document.getElementById('jogo7-1'), sugestoesFixas[2]);
@@ -149,7 +149,7 @@
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('content').style.display = 'block';
             } catch (err) {
-                document.getElementById('loading').innerHTML = 'Erro ao carregar a planilha.';
+                document.getElementById('loading').innerHTML = 'Erro ao carregar a planilha. Verifique a conexão.';
                 console.error(err);
             }
         }
@@ -168,31 +168,10 @@
             const qtd = parseInt(document.getElementById('qtdPersonalizada').value) || 7;
             if (qtd < 6 || qtd > 20) return alert('Escolha entre 6 e 20 dezenas.');
 
-            // Seleção determinística: top quentes com equilíbrio (baixes/altos, pares/ímpares)
-            const baixos = numerosQuentes.filter(n => n <= 30);
-            const altos = numerosQuentes.filter(n => n > 30);
-            const pares = numerosQuentes.filter(n => n % 2 === 0);
-            const impares = numerosQuentes.filter(n => n % 2 === 1);
-
+            const baixos = numerosQuentes.filter(n => n <= 30).slice(0, 20);
+            const altos = numerosQuentes.filter(n => n > 30).slice(0, 20);
             const metade = Math.ceil(qtd / 2);
-            let aposta = [
-                ...baixos.slice(0, metade),
-                ...altos.slice(0, qtd - metade)
-            ];
-            // Ajuste para equilíbrio pares/ímpares
-            let countPar = aposta.filter(n => n % 2 === 0).length;
-            if (countPar > qtd / 2 + 1) {
-                // Trocar alguns pares por ímpares
-                for (let i = 0; i < aposta.length && countPar > qtd / 2 + 1; i++) {
-                    if (aposta[i] % 2 === 0) {
-                        const imp = impares.find(x => !aposta.includes(x));
-                        if (imp) {
-                            aposta[i] = imp;
-                            countPar--;
-                        }
-                    }
-                }
-            }
+            let aposta = [...baixos.slice(0, metade), ...altos.slice(0, qtd - metade)];
             aposta = aposta.slice(0, qtd).sort((a,b) => a-b);
 
             const div = document.getElementById('apostaPersonalizada');
@@ -200,24 +179,90 @@
             exibirNumeros(div.querySelector('.numeros'), aposta);
 
             todasApostas = [...sugestoesFixas.map(a => [...a]), aposta];
+            document.getElementById('apostasAleatorias').innerHTML = '';
             calcularProbabilidades();
         }
 
-        // O resto do código (gerarAleatorias, calcularProbabilidades, comb) permanece igual ao anterior
-
         function gerarAleatorias() {
-            // ... (mesmo código anterior)
-        }
+            const qtdApostas = parseInt(document.getElementById('qtdAleatorias').value) || 0;
+            if (qtdApostas <= 0) return;
 
-        function calcularProbabilidades() {
-            // ... (mesmo código anterior)
+            const strDezenas = document.getElementById('dezenasAleatorias').value.trim();
+            const dezenasLista = strDezenas.split(',').map(n => parseInt(n.trim())).filter(n => n >= 6 && n <= 20);
+            if (dezenasLista.length !== qtdApostas) return alert(`Forneça exatamente ${qtdApostas} valores separados por vírgula.`);
+
+            const geradas = [];
+            const div = document.getElementById('apostasAleatorias');
+            div.innerHTML = '<h3>Apostas aleatórias geradas:</h3>';
+
+            dezenasLista.forEach((qtd, i) => {
+                let pool = [...numerosQuentes];
+                let aposta = [];
+                while (aposta.length < qtd && pool.length > 0) {
+                    const idx = Math.floor(Math.random() * pool.length);
+                    aposta.push(pool.splice(idx, 1)[0]);
+                }
+                while (aposta.length < qtd) {
+                    const num = Math.floor(Math.random() * 60) + 1;
+                    if (!aposta.includes(num)) aposta.push(num);
+                }
+                aposta.sort((a,b) => a-b);
+                geradas.push(aposta);
+
+                const jogoDiv = document.createElement('div');
+                jogoDiv.className = 'jogo';
+                jogoDiv.innerHTML = `Aposta ${i+1} (${qtd} dezenas): `;
+                const numsDiv = document.createElement('div');
+                numsDiv.className = 'numeros';
+                exibirNumeros(numsDiv, aposta);
+                jogoDiv.appendChild(numsDiv);
+                div.appendChild(jogoDiv);
+            });
+
+            todasApostas = [...sugestoesFixas.map(a => [...a]), ...geradas];
+            calcularProbabilidades();
         }
 
         function comb(n, k) {
-            // ... (mesmo)
+            if (k < 0 || k > n) return 0;
+            let res = 1;
+            for (let i = 0; i < k; ++i) res = res * (n - i) / (i + 1);
+            return Math.round(res);
         }
 
-        // Funções auxiliares combTotal... permanecem
+        function calcularProbabilidades() {
+            const total = 50063860;
+
+            // Cálculo para as apostas fixas (inicial)
+            let quadraFixas = 0, quinaFixas = 0, senaFixas = 0;
+            sugestoesFixas.forEach(aposta => {
+                const n = aposta.length;
+                if (n >= 6) senaFixas += comb(n, 6);
+                if (n >= 5) quinaFixas += comb(n, 5) * comb(60 - n, 1);
+                if (n >= 4) quadraFixas += comb(n, 4) * comb(60 - n, 2);
+            });
+            document.getElementById('initQuadra').textContent = quadraFixas > 0 ? Math.round(total / quadraFixas).toLocaleString('pt-BR') : '—';
+            document.getElementById('initQuina').textContent = quinaFixas > 0 ? Math.round(total / quinaFixas).toLocaleString('pt-BR') : '—';
+            document.getElementById('initSena').textContent = senaFixas > 0 ? Math.round(total / senaFixas).toLocaleString('pt-BR') : '—';
+
+            // Cálculo para o conjunto total
+            let quadraTotal = 0, quinaTotal = 0, senaTotal = 0;
+            todasApostas.forEach(aposta => {
+                const n = aposta.length;
+                if (n >= 6) senaTotal += comb(n, 6);
+                if (n >= 5) quinaTotal += comb(n, 5) * comb(60 - n, 1);
+                if (n >= 4) quadraTotal += comb(n, 4) * comb(60 - n, 2);
+            });
+
+            const format = x => x > 0 ? Math.round(total / x).toLocaleString('pt-BR') : '—';
+            document.getElementById('probQuadra').textContent = format(quadraTotal);
+            document.getElementById('probQuina').textContent = format(quinaTotal);
+            document.getElementById('probSena').textContent = format(senaTotal);
+
+            if (todasApostas.length > sugestoesFixas.length) {
+                document.getElementById('probabilidades').style.display = 'block';
+            }
+        }
 
         carregarDados();
     </script>
