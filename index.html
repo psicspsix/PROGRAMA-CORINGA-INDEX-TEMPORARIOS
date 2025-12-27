@@ -109,39 +109,37 @@
             setTimeout(() => {
                 const url = `https://store.steampowered.com/genre/Free%20to%20Play?offset=${numero}`;
                 
-                // Abre em nova aba
+                // Abre em nova aba normalmente (funciona sempre com ação do usuário)
                 const novaAba = window.open(url, '_blank');
-                
+
                 if (novaAba) {
-                    // Script que rola a página após carregamento
-                    const scriptRolar = `
-                        window.onload = function() {
-                            setTimeout(() => {
-                                window.scrollBy(0, window.innerHeight * 2); // Rola duas telas cheias
-                            }, 1500); // Espera 1.5s após o load (ajuste se necessário)
-                        };
-                    `;
-                    
-                    // Injeta o script na nova aba
-                    novaAba.document.write(`
-                        <!DOCTYPE html>
-                        <html>
-                        <head><title>Carregando...</title></head>
-                        <body>
-                            <script>
-                                window.location.href = "${url}";
-                                ${scriptRolar}
-                            </script>
-                        </body>
-                        </html>
-                    `);
-                    novaAba.document.close();
+                    // Usa postMessage para pedir rolagem (seguro e compatível)
+                    const tentarRolar = setInterval(() => {
+                        if (novaAba.document && novaAba.document.readyState === 'complete') {
+                            clearInterval(tentarRolar);
+                            novaAba.postMessage({acao: 'rolar', altura: window.innerHeight * 2}, '*');
+                        }
+                    }, 500);
+
+                    // Listener para receber confirmação (opcional)
+                    window.addEventListener('message', (event) => {
+                        if (event.data && event.data.acao === 'rolado') {
+                            console.log('Página rolada com sucesso');
+                        }
+                    });
                 } else {
-                    alert('Permita pop-ups para este site para que o sorteio funcione corretamente.');
-                    window.open(url, '_blank'); // Tenta abrir normalmente
+                    alert('Por favor, permita pop-ups para este site.');
                 }
             }, 1000);
         }
+
+        // Listener na página principal para rolar quando receber mensagem (não necessário aqui, mas completo)
+        window.addEventListener('message', (event) => {
+            if (event.data && event.data.acao === 'rolar') {
+                window.scrollBy(0, event.data.altura);
+                event.source.postMessage({acao: 'rolado'}, '*');
+            }
+        });
 
         botao.addEventListener('click', sortearNumero);
         atualizarContador();
