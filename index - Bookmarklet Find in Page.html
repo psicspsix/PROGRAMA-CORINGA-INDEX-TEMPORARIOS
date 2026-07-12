@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instalar Bookmarklet "Find in Page"</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            max-width: 800px;
+            margin: 30px auto;
+            padding: 20px;
+            background: #f5f7fa;
+            color: #1e293b;
+            line-height: 1.6;
+        }
+        h1 {
+            font-size: 1.8rem;
+            margin-top: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        h2 {
+            font-size: 1.3rem;
+            margin-top: 2rem;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 6px;
+        }
+        .card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .bookmarklet-link {
+            display: inline-block;
+            padding: 14px 28px;
+            background: #2563eb;
+            color: #fff;
+            border-radius: 40px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+            transition: background 0.2s;
+            border: none;
+            cursor: pointer;
+            user-select: none;
+        }
+        .bookmarklet-link:hover {
+            background: #1d4ed8;
+        }
+        .code-box {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 16px;
+            border-radius: 10px;
+            overflow-x: auto;
+            font-family: "SF Mono", "Fira Code", monospace;
+            font-size: 0.85rem;
+            white-space: nowrap;
+            margin: 12px 0;
+        }
+        .btn-copy {
+            background: #22c55e;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-size: 0.95rem;
+        }
+        .btn-copy:hover {
+            background: #16a34a;
+        }
+        .step {
+            background: #f8fafc;
+            border-left: 4px solid #2563eb;
+            padding: 12px 18px;
+            margin: 16px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        .step h3 {
+            margin: 0 0 4px 0;
+            font-size: 1.05rem;
+        }
+        .step p {
+            margin: 4px 0;
+        }
+        .note {
+            background: #fef9c3;
+            padding: 12px 18px;
+            border-radius: 8px;
+            border: 1px solid #facc15;
+        }
+        hr {
+            border: none;
+            border-top: 2px solid #e2e8f0;
+            margin: 30px 0;
+        }
+        .footer {
+            margin-top: 30px;
+            font-size: 0.9rem;
+            color: #64748b;
+            text-align: center;
+        }
+        @media (max-width: 600px) {
+            body { padding: 12px; }
+            .code-box { font-size: 0.7rem; }
+            .bookmarklet-link { font-size: 1rem; padding: 12px 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>🔍 Instalar "Find in Page"</h1>
+    <p>Este bookmarklet permite pesquisar qualquer texto na página atual com uma interface simples e interativa, ideal para o navegador Silk do Echo Show.</p>
+
+    <div class="card">
+        <h2 style="margin-top:0;">📎 Link para arrastar (desktop)</h2>
+        <p>Se estiver usando um computador, arraste o botão abaixo para a barra de favoritos:</p>
+        <a href="javascript:eval(atob('KGZ1bmN0aW9uKCl7dmFyIGRhdGUgPSAobmV3IERhdGUoKSAtIDApO3ZhciBuYW1lID0gImZpbmRpbmciICsgZGF0ZTt2YXIgd3JhcCA9ICJ3cmFwcGVyIiArIGRhdGU7dmFyIGZpbmQgPSBmdW5jdGlvbihzKXtzID0gKHByb21wdCgiXHUyNjA1IEZpbmQgSW4gUGFnZSBcdTI2MDUiLCBzIHx8ICIiKSB8fCAiIikucmVwbGFjZSgvXlxzKihcUyooXHMrXFMrKSopXHMqJC8sICIkMSIpO2lmICghcykgcmV0dXJuO2lmIChzLmxlbmd0aCA9PSAxICYmICFjb25maXJtKCJcIiIgKyBzICsgIlwiIGlzIHRvbyBzaG9ydCAtIGl0IG1heSB0YWtlIHRvbyBsb25nIGFuZCBmaW5kIHRvbyBtYW55IG1hdGNoZXMuIEFyZSB5b3Ugc3VyZT8iKSl7ZmluZChzKTsgcmV0dXJuO31maW5kLnMgPSBzO2luaXQoKTt2YXIgciA9IG5ldyBSZWdFeHAoIigiK3Muc3BsaXQoIiIpLm1hcChmdW5jdGlvbihjKXtyZXR1cm4gIlxcdSIrKCIwMDAwIitjLmNoYXJDb2RlQXQoMCkudG9TdHJpbmcoMTYpKS5zbGljZSgtNCk7fSkuam9pbigiIikrIikiLCAiZ2kiKTt2YXIgcCA9ICc8JyArIG5hbWUgKyAnIHN0eWxlPSJiYWNrZ3JvdW5kLWNvbG9yOnllbGxvdzsiPiQxPC8nICsgbmFtZSArICc+Jzt2YXIgeCA9IGRvY3VtZW50LmV2YWx1YXRlKCcuLy90ZXh0KClbbm9ybWFsaXplLXNwYWNlKC4pICE9ICIiXScsIGRvY3VtZW50LmJvZHksIG51bGwsIFhQYXRoUmVzdWx0Lk9SREVSRURfTk9ERV9TTkFQU0hPVF9UWVBFLCBudWxsKTtmb3IgKHZhciBpID0gMCwgbiA9IHguc25hcHNob3RMZW5ndGg7IGkgPCBuOyBpKyspe3ZhciB0ID0geC5zbmFwc2hvdEl0ZW0oaSk7aWYgKHQuZGF0YS5zZWFyY2gocikgPT0gLTEpIGNvbnRpbnVlO3ZhciBlID0gZG9jdW1lbnQuY3JlYXRlRWxlbWVudCh3cmFwKTtlLmlubmVySFRNTCA9IHQuZGF0YS5yZXBsYWNlKHIsIHApO3QucGFyZW50Tm9kZS5yZXBsYWNlQ2hpbGQoZSwgdCk7fXZhciBwbiwgX3BuLCBfaXY7Zm9yICh2YXIgeSA9IGRvY3VtZW50LmdldEVsZW1lbnRzQnlUYWdOYW1lKG5hbWUpLCBpID0gMCwgbiA9IHkubGVuZ3RoOyBpIDwgbjsgaSsrKSB7dmFyIGUgPSB5Lml0ZW0oaSk7aWYgKCFlKSBjb250aW51ZTtwbiA9IGUucGFyZW50Tm9kZTtpZiAoIShfcG4gJiYgX3BuLmlzU2FtZU5vZGUocG4pKSkge19wbiA9IHBuO19pdiA9ICghcG4ub2Zmc2V0V2lkdGggfHwgIXBuLm9mZnNldEhlaWdodCB8fCB3aW5kb3cuZ2V0Q29tcHV0ZWRTdHlsZShwbiwgbnVsbCkudmlzaWJpbGl0eSA9PSAiaGlkZGVuIik7fWlmICghX2l2KSBmaW5kLmEucHVzaChlKTt9aWYgKGZpbmQuYS5sZW5ndGggPT09IDApIHtpZiAoY29uZmlybSgiTm8gbWF0Y2hlcyBmb3VuZCBmb3IgXCIiICsgcyArICJcIi5cblRyeSBhZ2Fpbj8iKSkgZmluZChzKTt9IGVsc2Uge2FsZXJ0KCJGb3VuZCAiICsgZmluZC5hLmxlbmd0aCArICIgbWF0Y2giICsgKGZpbmQuYS5sZW5ndGggPT0gMSA/ICIiIDogImVzIikgKyAiIGZvciBcIiIgKyBzICsgIlwiIik7bW92ZSgpO319O2ZpbmQucyA9ICIiO2ZpbmQuYSA9IFtdO2ZpbmQuaSA9IDA7dmFyIGluaXQgPSBmdW5jdGlvbigpe3ZhciBhID0gW107Zm9yICh2YXIgeSA9IGRvY3VtZW50LmdldEVsZW1lbnRzQnlUYWdOYW1lKHdyYXApLCBpID0gMCwgbiA9IHkubGVuZ3RoOyBpIDwgbjsgaSsrKSB7dmFyIGUgPSB5Lml0ZW0oaSk7IGlmIChlKSBhLnB1c2goZSk7fWZvciAodmFyIGkgPSAwLCBuID0gYS5sZW5ndGg7IGkgPCBuOyBpKyspIGFbaV0ucGFyZW50Tm9kZS5yZXBsYWNlQ2hpbGQoZG9jdW1lbnQuY3JlYXRlVGV4dE5vZGUoYVtpXS50ZXh0Q29udGVudCksIGFbaV0pO2ZpbmQuYSA9IFtdO2ZpbmQuaSA9IDA7fTt2YXIgaW5mbyA9IGZ1bmN0aW9uKCl7aWYgKGZpbmQuYS5sZW5ndGggPT09IDApIHtmaW5kKCk7IHJldHVybjt9YWxlcnQoIlxuTWF0Y2ggIiArIChmaW5kLmkgKyAxKSArICIgb2YgIiArIGZpbmQuYS5sZW5ndGggKyAiIGZvciBcIiIgKyBmaW5kLnMgKyAiXCJcblxuXHUyNjA1IEZpbmQgSW4gUGFnZSBcdTI2MDVcblx1MDBBOTIwMTAgVmFpcyBTYWxpa2hvdiwgdjIuMCIpO307dmFyIG1vdmUgPSBmdW5jdGlvbigpe3ZhciBlID0gZmluZC5hW2ZpbmQuaV07ZS5zY3JvbGxJbnRvVmlldyh0cnVlKTtlLnN0eWxlLmJhY2tncm91bmRDb2xvciA9ICJvcmFuZ2UiO3N0YWxrKCk7fTt2YXIgbmV4dCA9IGZ1bmN0aW9uKCl7aWYgKGZpbmQuYS5sZW5ndGggPT09IDApIHtmaW5kKCk7IHJldHVybjt9ZmluZC5hW2ZpbmQuaV0uc3R5bGUuYmFja2dyb3VuZENvbG9yID0gInllbGxvdyI7aWYgKGZpbmQuaSArIDEgPT0gZmluZC5hLmxlbmd0aCkge2lmIChjb25maXJtKCJSZWFjaGVkIHRoZSBib3R0b20gb2YgcGFnZS5cbkNvbnRpbnVlIGZyb20gdG9wPyIpKSBmaW5kLmkgPSAwO30gZWxzZSB7ZmluZC5pKys7fW1vdmUoKTt9O3ZhciBwcmV2ID0gZnVuY3Rpb24oKXtpZiAoZmluZC5hLmxlbmd0aCA9PT0gMCkge2ZpbmQoKTsgcmV0dXJuO31maW5kLmFbZmluZC5pXS5zdHlsZS5iYWNrZ3JvdW5kQ29sb3IgPSAieWVsbG93IjtpZiAoZmluZC5pID09PSAwKSB7aWYgKGNvbmZpcm0oIlJlYWNoZWQgdGhlIHRvcCBvZiBwYWdlLlxuQ29udGludWUgZnJvbSBib3R0b20/IikpIGZpbmQuaSA9IGZpbmQuYS5sZW5ndGggLSAxO30gZWxzZSB7ZmluZC5pLS07fW1vdmUoKTt9O3ZhciBzdGFsazsoZnVuY3Rpb24oKXt2YXIgVyA9IHdpbmRvdy5zY3JlZW4ud2lkdGg7dmFyIEggPSA1MDt2YXIgYiA9IGRvY3VtZW50LmNyZWF0ZUVsZW1lbnQoImNhbnZhcyIpO3ZhciBzID0gYi5zdHlsZTtzLm1hcmdpbiA9IDA7cy5wYWRkaW5nID0gMDtzLmJvcmRlciA9ICJub25lIjtzLmJhY2tncm91bmQgPSAibm9uZSI7cy5kaXNwbGF5ID0gImJsb2NrIjtzLnZpc2liaWxpdHkgPSAidmlzaWJsZSI7cy5vcGFjaXR5ID0gMTtzLnBvc2l0aW9uID0gImFic29sdXRlIjtzLnpJbmRleCA9IDIxNDc0ODM2NDc7cy5sZWZ0ID0gcy50b3AgPSAwO3Mud2lkdGggID0gVyArICJweCI7cy5oZWlnaHQgPSBIICsgInB4IjtiLndpZHRoICA9IFc7Yi5oZWlnaHQgPSBIO3Mud2Via2l0VHJhbnNpdGlvblByb3BlcnR5ID0gIi13ZWJraXQtdHJhbnNmb3JtLCBvcGFjaXR5IjtzLndlYmtpdFRyYW5zaXRpb25EdXJhdGlvbiA9ICIwLjNzLCAxcyI7cy53ZWJraXRUcmFuc2Zvcm1PcmlnaW4gPSAiMCUgMCUiO3Mud2Via2l0VGFwSGlnaGxpZ2h0Q29sb3IgPSAicmdiYSgwLDAsMCwwKSI7KGZ1bmN0aW9uKCl7dmFyIGMgPSBiLmdldENvbnRleHQoIjJkIik7Yy5maWxsU3R5bGUgPSAicmdiYSgwLDAsMCwwLjUpIjtjLmZpbGxSZWN0KDAsMCxXLEgpO3ZhciBnID0gYy5jcmVhdGVMaW5lYXJHcmFkaWVudCgwLDEwLDAsNDApO2cuYWRkQ29sb3JTdG9wKDAsIiNmZmYiKTtnLmFkZENvbG9yU3RvcCgxLCIjYmJiIik7Yy5maWxsU3R5bGUgPSBnO2Muc3Ryb2tlU3R5bGUgPSAicmdiYSgwLDAsMCwwLjMpIjtjLmxpbmVXaWR0aCA9IDE7dmFyIHcgPSBXLzU7KFtmdW5jdGlvbih4LHkpe2MubW92ZVRvKHgrMTAseSsxMCk7Yy5saW5lVG8oeCsyMCx5KzIwKTtjLm1vdmVUbyh4KzIwLHkrMTApO2MubGluZVRvKHgrMTAseSsyMCk7Yy5zdHJva2UoKTt9LGZ1bmN0aW9uKHgseSl7Yy5hcmMoeCsxMyx5KzEzLDUsMCxNYXRoLlBJKjIsdHJ1ZSk7Yy5tb3ZlVG8oeCsyMSx5KzIxKTtjLmxpbmVUbyh4KzE3LHkrMTcpO2Muc3Ryb2tlKCk7fSxmdW5jdGlvbih4LHkpe2MuYXJjKHgrMTUseSs4LDEsMCxNYXRoLlBJKjIsdHJ1ZSk7Yy5tb3ZlVG8oeCsxNCx5KzE0KTtjLmxpbmVUbyh4KzE2LHkrMTQpO2MubW92ZVRvKHgrMTUseSsxNCk7Yy5saW5lVG8oeCsxNSx5KzIyKTtjLm1vdmVUbyh4KzEzLHkrMjIpO2MubGluZVRvKHgrMTcseSsyMik7Yy5zdHJva2UoKTt9LGZ1bmN0aW9uKHgseSl7Yy5tb3ZlVG8oeCsyMCx5KzEwKTtjLmxpbmVUbyh4KzYseSsxNSk7Yy5saW5lVG8oeCsyMCx5KzIwKTtjLmZpbGwoKTt9LGZ1bmN0aW9uKHgseSl7Yy5tb3ZlVG8oeCsxMCx5KzEwKTtjLmxpbmVUbyh4KzEwLHkrMjApO2MubGluZVRvKHgrMjQseSsxNSk7Yy5maWxsKCk7fV0pLmZvckVhY2goZnVuY3Rpb24oZixpKXtjLmJlZ2luUGF0aCgpO2MuYXJjKHcqaSt3LzIsSC8yLDE1LDAsTWF0aC5QSSoyLHRydWUpO2MuZmlsbCgpO2Muc3Ryb2tlKCk7Yy5zYXZlKCk7Yy5maWxsU3R5bGUgPSBjLnN0cm9rZVN0eWxlID0gInJnYmEoMCwwLDAsMC41KSI7Yy5iZWdpblBhdGgoKTtjLmxpbmVXaWR0aCA9IDM7Yy5saW5lQ2FwID0gInJvdW5kIjtmKHcqaSt3LzItMTUsMTApO2MucmVzdG9yZSgpO30pO30pKCk7dmFyIHcgPSB3aW5kb3cuaW5uZXJXaWR0aDt2YXIgaCA9IE1hdGguZmxvb3IoSCAqICh3IC8gVykpO3ZhciB4ID0gd2luZG93LnNjcm9sbFg7dmFyIHkgPSAoKHdpbmRvdy5pbm5lckhlaWdodCArIHdpbmRvdy5zY3JvbGxZKSAtIGgpO3Mud2Via2l0VHJhbnNmb3JtID0gInRyYW5zbGF0ZSgiICsgeCArICJweCwgIiArIHkgKyAicHgpIHNjYWxlKCIgKyAodyAvIFcpICArICIpIjtkb2N1bWVudC5ib2R5LmFwcGVuZENoaWxkKGIpO2IuYWRkRXZlbnRMaXN0ZW5lcigiY2xpY2siLCBmdW5jdGlvbihlKSB7dmFyIHggPSBlLmNsaWVudFggLSB3aW5kb3cuc2Nyb2xsWDt2YXIgVyA9IHdpbmRvdy5pbm5lcldpZHRoO3ZhciB3ID0gVy81O2lmICh4ID4gdyo0KSBuZXh0KCk7ZWxzZSBpZiAoeCA+IHcqMykgcHJldigpO2Vsc2UgaWYgKHggPiB3KjIpIGluZm8oKTtlbHNlIGlmICh4ID4gdykgZmluZCgpO2Vsc2Uge2lmICghY29uZmlybSgiQ2xvc2UgRmluZCBJbiBQYWdlPyIpKSByZXR1cm47cy5vcGFjaXR5ID0gMDtpbml0KCk7d2luZG93LnJlbW92ZUV2ZW50TGlzdGVuZXIoInNjcm9sbCIsIHN0YWxrLCB0cnVlKTt3aW5kb3cuc2V0VGltZW91dChmdW5jdGlvbigpe2IucGFyZW50Tm9kZS5yZW1vdmVDaGlsZChiKTt9LCAxMTAwKTt9fSwgdHJ1ZSk7c3RhbGsgPSBmdW5jdGlvbigpe3ZhciB3ID0gd2luZG93LmlubmVyV2lkdGg7dmFyIGggPSBNYXRoLmZsb29yKEggKiAodyAvIFcpKTt2YXIgeCA9IHdpbmRvdy5zY3JvbGxYO3ZhciB5ID0gKCh3aW5kb3cuaW5uZXJIZWlnaHQgKyB3aW5kb3cuc2Nyb2xsWSkgLSBoKTtzLndlYmtpdFRyYW5zZm9ybSA9ICJ0cmFuc2xhdGUoIiArICh4IC0gYi5vZmZzZXRMZWZ0KSArICJweCwgIiArICh5IC0gYi5vZmZzZXRUb3ApICsgInB4KSBzY2FsZSgiICsgKHcgLyBiLm9mZnNldFdpZHRoKSAgKyAiKSI7fTt3aW5kb3cuYWRkRXZlbnRMaXN0ZW5lcigic2Nyb2xsIiwgc3RhbGssIHRydWUpO30pKCk7ZmluZCgpO30pKCk7'))" class="bookmarklet-link" draggable="true">⭐ Find in Page</a>
+        <p style="margin-top: 12px; font-size: 0.9rem; color: #64748b;">(Arraste para a barra de favoritos do seu navegador.)</p>
+    </div>
+
+    <div class="card">
+        <h2 style="margin-top:0;">📋 Copiar código para criar manualmente</h2>
+        <p>Se estiver no Echo Show ou em qualquer dispositivo, copie o código abaixo e cole no campo <strong>URL</strong> ao criar um novo favorito.</p>
+        <div class="code-box" id="bookmarklet-code">javascript:eval(atob('KGZ1bmN0aW9uKCl7dmFyIGRhdGUgPSAobmV3IERhdGUoKSAtIDApO3ZhciBuYW1lID0gImZpbmRpbmciICsgZGF0ZTt2YXIgd3JhcCA9ICJ3cmFwcGVyIiArIGRhdGU7dmFyIGZpbmQgPSBmdW5jdGlvbihzKXtzID0gKHByb21wdCgiXHUyNjA1IEZpbmQgSW4gUGFnZSBcdTI2MDUiLCBzIHx8ICIiKSB8fCAiIikucmVwbGFjZSgvXlxzKihcUyooXHMrXFMrKSopXHMqJC8sICIkMSIpO2lmICghcykgcmV0dXJuO2lmIChzLmxlbmd0aCA9PSAxICYmICFjb25maXJtKCJcIiIgKyBzICsgIlwiIGlzIHRvbyBzaG9ydCAtIGl0IG1heSB0YWtlIHRvbyBsb25nIGFuZCBmaW5kIHRvbyBtYW55IG1hdGNoZXMuIEFyZSB5b3Ugc3VyZT8iKSl7ZmluZChzKTsgcmV0dXJuO31maW5kLnMgPSBzO2luaXQoKTt2YXIgciA9IG5ldyBSZWdFeHAoIigiK3Muc3BsaXQoIiIpLm1hcChmdW5jdGlvbihjKXtyZXR1cm4gIlxcdSIrKCIwMDAwIitjLmNoYXJDb2RlQXQoMCkudG9TdHJpbmcoMTYpKS5zbGljZSgtNCk7fSkuam9pbigiIikrIikiLCAiZ2kiKTt2YXIgcCA9ICc8JyArIG5hbWUgKyAnIHN0eWxlPSJiYWNrZ3JvdW5kLWNvbG9yOnllbGxvdzsiPiQxPC8nICsgbmFtZSArICc+Jzt2YXIgeCA9IGRvY3VtZW50LmV2YWx1YXRlKCcuLy90ZXh0KClbbm9ybWFsaXplLXNwYWNlKC4pICE9ICIiXScsIGRvY3VtZW50LmJvZHksIG51bGwsIFhQYXRoUmVzdWx0Lk9SREVSRURfTk9ERV9TTkFQU0hPVF9UWVBFLCBudWxsKTtmb3IgKHZhciBpID0gMCwgbiA9IHguc25hcHNob3RMZW5ndGg7IGkgPCBuOyBpKyspe3ZhciB0ID0geC5zbmFwc2hvdEl0ZW0oaSk7aWYgKHQuZGF0YS5zZWFyY2gocikgPT0gLTEpIGNvbnRpbnVlO3ZhciBlID0gZG9jdW1lbnQuY3JlYXRlRWxlbWVudCh3cmFwKTtlLmlubmVySFRNTCA9IHQuZGF0YS5yZXBsYWNlKHIsIHApO3QucGFyZW50Tm9kZS5yZXBsYWNlQ2hpbGQoZSwgdCk7fXZhciBwbiwgX3BuLCBfaXY7Zm9yICh2YXIgeSA9IGRvY3VtZW50LmdldEVsZW1lbnRzQnlUYWdOYW1lKG5hbWUpLCBpID0gMCwgbiA9IHkubGVuZ3RoOyBpIDwgbjsgaSsrKSB7dmFyIGUgPSB5Lml0ZW0oaSk7aWYgKCFlKSBjb250aW51ZTtwbiA9IGUucGFyZW50Tm9kZTtpZiAoIShfcG4gJiYgX3BuLmlzU2FtZU5vZGUocG4pKSkge19wbiA9IHBuO19pdiA9ICghcG4ub2Zmc2V0V2lkdGggfHwgIXBuLm9mZnNldEhlaWdodCB8fCB3aW5kb3cuZ2V0Q29tcHV0ZWRTdHlsZShwbiwgbnVsbCkudmlzaWJpbGl0eSA9PSAiaGlkZGVuIik7fWlmICghX2l2KSBmaW5kLmEucHVzaChlKTt9aWYgKGZpbmQuYS5sZW5ndGggPT09IDApIHtpZiAoY29uZmlybSgiTm8gbWF0Y2hlcyBmb3VuZCBmb3IgXCIiICsgcyArICJcIi5cblRyeSBhZ2Fpbj8iKSkgZmluZChzKTt9IGVsc2Uge2FsZXJ0KCJGb3VuZCAiICsgZmluZC5hLmxlbmd0aCArICIgbWF0Y2giICsgKGZpbmQuYS5sZW5ndGggPT0gMSA/ICIiIDogImVzIikgKyAiIGZvciBcIiIgKyBzICsgIlwiIik7bW92ZSgpO319O2ZpbmQucyA9ICIiO2ZpbmQuYSA9IFtdO2ZpbmQuaSA9IDA7dmFyIGluaXQgPSBmdW5jdGlvbigpe3ZhciBhID0gW107Zm9yICh2YXIgeSA9IGRvY3VtZW50LmdldEVsZW1lbnRzQnlUYWdOYW1lKHdyYXApLCBpID0gMCwgbiA9IHkubGVuZ3RoOyBpIDwgbjsgaSsrKSB7dmFyIGUgPSB5Lml0ZW0oaSk7IGlmIChlKSBhLnB1c2goZSk7fWZvciAodmFyIGkgPSAwLCBuID0gYS5sZW5ndGg7IGkgPCBuOyBpKyspIGFbaV0ucGFyZW50Tm9kZS5yZXBsYWNlQ2hpbGQoZG9jdW1lbnQuY3JlYXRlVGV4dE5vZGUoYVtpXS50ZXh0Q29udGVudCksIGFbaV0pO2ZpbmQuYSA9IFtdO2ZpbmQuaSA9IDA7fTt2YXIgaW5mbyA9IGZ1bmN0aW9uKCl7aWYgKGZpbmQuYS5sZW5ndGggPT09IDApIHtmaW5kKCk7IHJldHVybjt9YWxlcnQoIlxuTWF0Y2ggIiArIChmaW5kLmkgKyAxKSArICIgb2YgIiArIGZpbmQuYS5sZW5ndGggKyAiIGZvciBcIiIgKyBmaW5kLnMgKyAiXCJcblxuXHUyNjA1IEZpbmQgSW4gUGFnZSBcdTI2MDVcblx1MDBBOTIwMTAgVmFpcyBTYWxpa2hvdiwgdjIuMCIpO307dmFyIG1vdmUgPSBmdW5jdGlvbigpe3ZhciBlID0gZmluZC5hW2ZpbmQuaV07ZS5zY3JvbGxJbnRvVmlldyh0cnVlKTtlLnN0eWxlLmJhY2tncm91bmRDb2xvciA9ICJvcmFuZ2UiO3N0YWxrKCk7fTt2YXIgbmV4dCA9IGZ1bmN0aW9uKCl7aWYgKGZpbmQuYS5sZW5ndGggPT09IDApIHtmaW5kKCk7IHJldHVybjt9ZmluZC5hW2ZpbmQuaV0uc3R5bGUuYmFja2dyb3VuZENvbG9yID0gInllbGxvdyI7aWYgKGZpbmQuaSArIDEgPT0gZmluZC5hLmxlbmd0aCkge2lmIChjb25maXJtKCJSZWFjaGVkIHRoZSBib3R0b20gb2YgcGFnZS5cbkNvbnRpbnVlIGZyb20gdG9wPyIpKSBmaW5kLmkgPSAwO30gZWxzZSB7ZmluZC5pKys7fW1vdmUoKTt9O3ZhciBwcmV2ID0gZnVuY3Rpb24oKXtpZiAoZmluZC5hLmxlbmd0aCA9PT0gMCkge2ZpbmQoKTsgcmV0dXJuO31maW5kLmFbZmluZC5pXS5zdHlsZS5iYWNrZ3JvdW5kQ29sb3IgPSAieWVsbG93IjtpZiAoZmluZC5pID09PSAwKSB7aWYgKGNvbmZpcm0oIlJlYWNoZWQgdGhlIHRvcCBvZiBwYWdlLlxuQ29udGludWUgZnJvbSBib3R0b20/IikpIGZpbmQuaSA9IGZpbmQuYS5sZW5ndGggLSAxO30gZWxzZSB7ZmluZC5pLS07fW1vdmUoKTt9O3ZhciBzdGFsazsoZnVuY3Rpb24oKXt2YXIgVyA9IHdpbmRvdy5zY3JlZW4ud2lkdGg7dmFyIEggPSA1MDt2YXIgYiA9IGRvY3VtZW50LmNyZWF0ZUVsZW1lbnQoImNhbnZhcyIpO3ZhciBzID0gYi5zdHlsZTtzLm1hcmdpbiA9IDA7cy5wYWRkaW5nID0gMDtzLmJvcmRlciA9ICJub25lIjtzLmJhY2tncm91bmQgPSAibm9uZSI7cy5kaXNwbGF5ID0gImJsb2NrIjtzLnZpc2liaWxpdHkgPSAidmlzaWJsZSI7cy5vcGFjaXR5ID0gMTtzLnBvc2l0aW9uID0gImFic29sdXRlIjtzLnpJbmRleCA9IDIxNDc0ODM2NDc7cy5sZWZ0ID0gcy50b3AgPSAwO3Mud2lkdGggID0gVyArICJweCI7cy5oZWlnaHQgPSBIICsgInB4IjtiLndpZHRoICA9IFc7Yi5oZWlnaHQgPSBIO3Mud2Via2l0VHJhbnNpdGlvblByb3BlcnR5ID0gIi13ZWJraXQtdHJhbnNmb3JtLCBvcGFjaXR5IjtzLndlYmtpdFRyYW5zaXRpb25EdXJhdGlvbiA9ICIwLjNzLCAxcyI7cy53ZWJraXRUcmFuc2Zvcm1PcmlnaW4gPSAiMCUgMCUiO3Mud2Via2l0VGFwSGlnaGxpZ2h0Q29sb3IgPSAicmdiYSgwLDAsMCwwKSI7KGZ1bmN0aW9uKCl7dmFyIGMgPSBiLmdldENvbnRleHQoIjJkIik7Yy5maWxsU3R5bGUgPSAicmdiYSgwLDAsMCwwLjUpIjtjLmZpbGxSZWN0KDAsMCxXLEgpO3ZhciBnID0gYy5jcmVhdGVMaW5lYXJHcmFkaWVudCgwLDEwLDAsNDApO2cuYWRkQ29sb3JTdG9wKDAsIiNmZmYiKTtnLmFkZENvbG9yU3RvcCgxLCIjYmJiIik7Yy5maWxsU3R5bGUgPSBnO2Muc3Ryb2tlU3R5bGUgPSAicmdiYSgwLDAsMCwwLjMpIjtjLmxpbmVXaWR0aCA9IDE7dmFyIHcgPSBXLzU7KFtmdW5jdGlvbih4LHkpe2MubW92ZVRvKHgrMTAseSsxMCk7Yy5saW5lVG8oeCsyMCx5KzIwKTtjLm1vdmVUbyh4KzIwLHkrMTApO2MubGluZVRvKHgrMTAseSsyMCk7Yy5zdHJva2UoKTt9LGZ1bmN0aW9uKHgseSl7Yy5hcmMoeCsxMyx5KzEzLDUsMCxNYXRoLlBJKjIsdHJ1ZSk7Yy5tb3ZlVG8oeCsyMSx5KzIxKTtjLmxpbmVUbyh4KzE3LHkrMTcpO2Muc3Ryb2tlKCk7fSxmdW5jdGlvbih4LHkpe2MuYXJjKHgrMTUseSs4LDEsMCxNYXRoLlBJKjIsdHJ1ZSk7Yy5tb3ZlVG8oeCsxNCx5KzE0KTtjLmxpbmVUbyh4KzE2LHkrMTQpO2MubW92ZVRvKHgrMTUseSsxNCk7Yy5saW5lVG8oeCsxNSx5KzIyKTtjLm1vdmVUbyh4KzEzLHkrMjIpO2MubGluZVRvKHgrMTcseSsyMik7Yy5zdHJva2UoKTt9LGZ1bmN0aW9uKHgseSl7Yy5tb3ZlVG8oeCsyMCx5KzEwKTtjLmxpbmVUbyh4KzYseSsxNSk7Yy5saW5lVG8oeCsyMCx5KzIwKTtjLmZpbGwoKTt9LGZ1bmN0aW9uKHgseSl7Yy5tb3ZlVG8oeCsxMCx5KzEwKTtjLmxpbmVUbyh4KzEwLHkrMjApO2MubGluZVRvKHgrMjQseSsxNSk7Yy5maWxsKCk7fV0pLmZvckVhY2goZnVuY3Rpb24oZixpKXtjLmJlZ2luUGF0aCgpO2MuYXJjKHcqaSt3LzIsSC8yLDE1LDAsTWF0aC5QSSoyLHRydWUpO2MuZmlsbCgpO2Muc3Ryb2tlKCk7Yy5zYXZlKCk7Yy5maWxsU3R5bGUgPSBjLnN0cm9rZVN0eWxlID0gInJnYmEoMCwwLDAsMC41KSI7Yy5iZWdpblBhdGgoKTtjLmxpbmVXaWR0aCA9IDM7Yy5saW5lQ2FwID0gInJvdW5kIjtmKHcqaSt3LzItMTUsMTApO2MucmVzdG9yZSgpO30pO30pKCk7dmFyIHcgPSB3aW5kb3cuaW5uZXJXaWR0aDt2YXIgaCA9IE1hdGguZmxvb3IoSCAqICh3IC8gVykpO3ZhciB4ID0gd2luZG93LnNjcm9sbFg7dmFyIHkgPSAoKHdpbmRvdy5pbm5lckhlaWdodCArIHdpbmRvdy5zY3JvbGxZKSAtIGgpO3Mud2Via2l0VHJhbnNmb3JtID0gInRyYW5zbGF0ZSgiICsgeCArICJweCwgIiArIHkgKyAicHgpIHNjYWxlKCIgKyAodyAvIFcpICArICIpIjtkb2N1bWVudC5ib2R5LmFwcGVuZENoaWxkKGIpO2IuYWRkRXZlbnRMaXN0ZW5lcigiY2xpY2siLCBmdW5jdGlvbihlKSB7dmFyIHggPSBlLmNsaWVudFggLSB3aW5kb3cuc2Nyb2xsWDt2YXIgVyA9IHdpbmRvdy5pbm5lcldpZHRoO3ZhciB3ID0gVy81O2lmICh4ID4gdyo0KSBuZXh0KCk7ZWxzZSBpZiAoeCA+IHcqMykgcHJldigpO2Vsc2UgaWYgKHggPiB3KjIpIGluZm8oKTtlbHNlIGlmICh4ID4gdykgZmluZCgpO2Vsc2Uge2lmICghY29uZmlybSgiQ2xvc2UgRmluZCBJbiBQYWdlPyIpKSByZXR1cm47cy5vcGFjaXR5ID0gMDtpbml0KCk7d2luZG93LnJlbW92ZUV2ZW50TGlzdGVuZXIoInNjcm9sbCIsIHN0YWxrLCB0cnVlKTt3aW5kb3cuc2V0VGltZW91dChmdW5jdGlvbigpe2IucGFyZW50Tm9kZS5yZW1vdmVDaGlsZChiKTt9LCAxMTAwKTt9fSwgdHJ1ZSk7c3RhbGsgPSBmdW5jdGlvbigpe3ZhciB3ID0gd2luZG93LmlubmVyV2lkdGg7dmFyIGggPSBNYXRoLmZsb29yKEggKiAodyAvIFcpKTt2YXIgeCA9IHdpbmRvdy5zY3JvbGxYO3ZhciB5ID0gKCh3aW5kb3cuaW5uZXJIZWlnaHQgKyB3aW5kb3cuc2Nyb2xsWSkgLSBoKTtzLndlYmtpdFRyYW5zZm9ybSA9ICJ0cmFuc2xhdGUoIiArICh4IC0gYi5vZmZzZXRMZWZ0KSArICJweCwgIiArICh5IC0gYi5vZmZzZXRUb3ApICsgInB4KSBzY2FsZSgiICsgKHcgLyBiLm9mZnNldFdpZHRoKSAgKyAiKSI7fTt3aW5kb3cuYWRkRXZlbnRMaXN0ZW5lcigic2Nyb2xsIiwgc3RhbGssIHRydWUpO30pKCk7ZmluZCgpO30pKCk7'))</div>
+        <button class="btn-copy" onclick="copyCode()">📄 Copiar código</button>
+    </div>
+
+    <div class="card">
+        <h2 style="margin-top:0;">📱 Instruções para o Echo Show (Silk)</h2>
+        <div class="step">
+            <h3>1️⃣ Abra o navegador Silk</h3>
+            <p>No Echo Show, toque no ícone do navegador Silk para abri-lo.</p>
+        </div>
+        <div class="step">
+            <h3>2️⃣ Acesse o menu de favoritos</h3>
+            <p>Toque no ícone de <strong>estrela</strong> (★) ou no menu de três pontos (⋮) e selecione <strong>"Favoritos"</strong>.</p>
+        </div>
+        <div class="step">
+            <h3>3️⃣ Adicione um novo favorito</h3>
+            <p>Toque em <strong>"Adicionar favorito"</strong> ou no botão <strong>"+"</strong>.</p>
+        </div>
+        <div class="step">
+            <h3>4️⃣ Preencha os campos</h3>
+            <p><strong>Nome:</strong> <code>Find in Page</code></p>
+            <p><strong>URL:</strong> Cole o código copiado (clique no campo e segure para colar).</p>
+        </div>
+        <div class="step">
+            <h3>5️⃣ Salve</h3>
+            <p>Toque em <strong>"Salvar"</strong> ou <strong>"OK"</strong>.</p>
+        </div>
+        <div class="note">
+            ✅ Pronto! Agora você pode usar o bookmarklet a qualquer momento acessando seus favoritos e tocando em <strong>"Find in Page"</strong>.
+        </div>
+    </div>
+
+    <hr>
+
+    <div class="footer">
+        <p>O bookmarklet original foi desenvolvido por <strong>Vais Salikhov</strong> (v2.0). Esta página apenas facilita a instalação.</p>
+    </div>
+
+    <script>
+        function copyCode() {
+            const code = document.getElementById('bookmarklet-code').textContent;
+            // Usa a API de clipboard se disponível, senão fallback
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(code).then(() => {
+                    alert('✅ Código copiado para a área de transferência!');
+                }).catch(() => {
+                    fallbackCopy(code);
+                });
+            } else {
+                fallbackCopy(code);
+            }
+        }
+
+        function fallbackCopy(text) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                alert('✅ Código copiado para a área de transferência!');
+            } catch (e) {
+                alert('❌ Não foi possível copiar. Copie manualmente selecionando o texto.');
+            }
+            document.body.removeChild(textarea);
+        }
+    </script>
+</body>
+</html>
