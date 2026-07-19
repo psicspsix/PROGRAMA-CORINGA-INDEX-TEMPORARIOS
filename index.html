@@ -6,7 +6,7 @@
     <title>Lista de Atalhos de Voz para Alexa</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700&family=Montserrat:wght@400;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Montserrat:wght@400;700&display=swap" rel="stylesheet" />
     <style>
         * {
             margin: 0;
@@ -14,193 +14,320 @@
             box-sizing: border-box;
         }
 
+        /* ===== CSS Variables (Temas) ===== */
+        :root {
+            /* Tema Escuro (padrão) */
+            --bg-body: #0b1120;
+            --bg-container: #1e293b;
+            --text-primary: #e2e8f0;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --border-color: #334155;
+            --link-color: #b9d0f0;
+            --link-hover: #7aa9f0;
+            --btn-bg: #334155;
+            --btn-border: #475569;
+            --btn-color: #cbd5e1;
+            --btn-hover-bg: #475569;
+            --highlight-bg: #fef08a;
+            --highlight-color: #0b1120;
+            --info-bg: #0f172a;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+        }
+
+        body.light-theme {
+            /* Tema Claro */
+            --bg-body: #f1f5f9;
+            --bg-container: #ffffff;
+            --text-primary: #0f172a;
+            --text-secondary: #334155;
+            --text-muted: #64748b;
+            --border-color: #cbd5e1;
+            --link-color: #1d4ed8;
+            --link-hover: #2563eb;
+            --btn-bg: #e2e8f0;
+            --btn-border: #cbd5e1;
+            --btn-color: #1e293b;
+            --btn-hover-bg: #cbd5e1;
+            --highlight-bg: #fef08a;
+            --highlight-color: #0b1120;
+            --info-bg: #e2e8f0;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
         body {
             font-family: 'Open Sans', sans-serif;
-            background: #f5f7fa;
-            color: #1e293b;
+            background: var(--bg-body);
+            color: var(--text-primary);
             line-height: 1.6;
             padding: 20px;
+            min-height: 100vh;
+            transition: background 0.3s ease, color 0.3s ease;
         }
 
         .container {
-            max-width: 1000px;
+            max-width: 900px;
             margin: 0 auto;
-            background: #ffffff;
-            border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            background: var(--bg-container);
+            border-radius: 24px;
             padding: 30px 40px;
+            box-shadow: var(--shadow);
+            transition: background 0.3s ease, box-shadow 0.3s ease;
         }
 
-        /* Cabeçalho */
+        /* ===== Cabeçalho ===== */
         .header {
-            text-align: center;
-            padding: 20px 0 30px;
-            border-bottom: 2px solid #e9edf2;
-            margin-bottom: 30px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            text-align: left;
+            padding: 10px 0 20px;
+            border-bottom: 2px solid var(--border-color);
+            margin-bottom: 25px;
+            transition: border-color 0.3s ease;
         }
 
-        .header h1 {
+        .header-left h1 {
             font-family: 'Montserrat', sans-serif;
             font-size: 2.2rem;
             font-weight: 700;
             letter-spacing: -0.5px;
-            color: #0b2a4a;
+            color: var(--text-primary);
+            transition: color 0.3s ease;
         }
-
-        .header p {
+        .header-left p {
             font-size: 1.1rem;
-            color: #475569;
-            margin-top: 8px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+            transition: color 0.3s ease;
+        }
+        .header-left .update {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            margin-top: 2px;
         }
 
-        .header .update {
-            font-size: 0.9rem;
-            color: #94a3b8;
-            margin-top: 4px;
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
         }
 
-        /* Botão Find in Page */
+        /* ===== Botão de Alternância de Tema ===== */
+        .theme-toggle {
+            background: var(--btn-bg);
+            border: 1px solid var(--btn-border);
+            border-radius: 40px;
+            padding: 10px 18px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--btn-color);
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s, border-color 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'Open Sans', sans-serif;
+        }
+        .theme-toggle:hover {
+            background: var(--btn-hover-bg);
+            color: var(--text-primary);
+        }
+        .theme-toggle .icon {
+            font-size: 1.4rem;
+            line-height: 1;
+        }
+
+        /* ===== Botão Find in Page (discreto) ===== */
         .find-btn-wrapper {
             display: flex;
             justify-content: center;
-            margin: 10px 0 25px;
+            margin: 5px 0 20px;
         }
 
         .find-btn {
             display: inline-flex;
             align-items: center;
             gap: 10px;
-            padding: 16px 36px;
-            background: #2563eb;
-            color: #fff;
-            border: none;
-            border-radius: 60px;
-            font-size: 1.2rem;
+            padding: 12px 28px;
+            background: var(--btn-bg);
+            color: var(--btn-color);
+            border: 1px solid var(--btn-border);
+            border-radius: 40px;
+            font-size: 1rem;
             font-weight: 600;
             font-family: 'Open Sans', sans-serif;
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
             cursor: pointer;
-            transition: background 0.25s, transform 0.15s;
+            transition: background 0.2s, border-color 0.2s, color 0.2s;
+            box-shadow: none;
         }
-
         .find-btn:hover {
-            background: #1d4ed8;
-            transform: scale(1.02);
+            background: var(--btn-hover-bg);
+            border-color: var(--link-color);
+            color: var(--text-primary);
         }
-
         .find-btn:active {
             transform: scale(0.97);
         }
-
         .find-btn svg {
-            width: 24px;
-            height: 24px;
+            width: 22px;
+            height: 22px;
             fill: currentColor;
         }
 
-        /* Seção de instruções (opcional) */
+        /* ===== Dica rápida ===== */
         .info-box {
-            background: #f1f5f9;
+            background: var(--info-bg);
             border-radius: 12px;
-            padding: 16px 20px;
+            padding: 14px 20px;
             margin-bottom: 30px;
             display: flex;
             align-items: center;
             gap: 14px;
             flex-wrap: wrap;
             justify-content: center;
-            font-size: 0.95rem;
-            color: #1e293b;
+            font-size: 1rem;
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+            transition: background 0.3s, border-color 0.3s, color 0.3s;
         }
-
         .info-box strong {
-            color: #0b2a4a;
+            color: var(--text-primary);
         }
-
         .info-box code {
-            background: #e2e8f0;
-            padding: 4px 10px;
+            background: var(--bg-container);
+            padding: 4px 12px;
             border-radius: 20px;
-            font-size: 0.85rem;
+            font-size: 0.9rem;
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
         }
 
-        /* Lista de atalhos */
+        /* ===== Lista de Atalhos (uma coluna, fonte grande) ===== */
         .list-section h2 {
             font-family: 'Montserrat', sans-serif;
-            font-size: 1.8rem;
+            font-size: 2rem;
             font-weight: 700;
-            color: #0b2a4a;
+            color: var(--text-primary);
             margin: 30px 0 20px;
-            border-bottom: 2px solid #e9edf2;
-            padding-bottom: 10px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 12px;
+            transition: color 0.3s, border-color 0.3s;
         }
-
         .list-section h2 .highlight {
-            background: #fef08a;
-            padding: 0 8px;
-            border-radius: 6px;
+            background: var(--highlight-bg);
+            color: var(--highlight-color);
+            padding: 0 14px;
+            border-radius: 10px;
+            transition: background 0.3s, color 0.3s;
         }
 
         .site-list {
             list-style: none;
             padding: 0;
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 8px 20px;
+            grid-template-columns: 1fr; /* Única coluna */
+            gap: 4px 0;
         }
 
         .site-list li {
             display: flex;
             align-items: baseline;
-            padding: 6px 10px 6px 0;
-            border-bottom: 1px solid #f1f5f9;
-            font-size: 0.95rem;
+            padding: 10px 8px 10px 0;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 2rem; /* Fonte bem grande para desktop */
+            transition: border-color 0.3s;
+            gap: 12px;
         }
 
         .site-list li .num {
             font-weight: 700;
-            color: #64748b;
-            min-width: 38px;
-            font-size: 0.85rem;
+            color: var(--text-muted);
+            min-width: 60px;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+            transition: color 0.3s;
         }
 
         .site-list li a {
-            color: #1e293b;
+            color: var(--link-color);
             text-decoration: none;
             font-weight: 500;
             transition: color 0.15s;
             word-break: break-word;
+            /* Permite quebra de linha em telas muito pequenas para não cortar texto */
+            overflow-wrap: break-word;
         }
-
         .site-list li a:hover {
-            color: #2563eb;
+            color: var(--link-hover);
             text-decoration: underline;
         }
 
-        /* Rodapé */
+        /* ===== Rodapé ===== */
         .footer {
             margin-top: 40px;
             padding-top: 20px;
-            border-top: 2px solid #e9edf2;
+            border-top: 2px solid var(--border-color);
             text-align: center;
-            font-size: 0.85rem;
-            color: #94a3b8;
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            transition: border-color 0.3s, color 0.3s;
         }
 
-        /* Responsivo */
-        @media (max-width: 640px) {
+        /* ===== Responsivo ===== */
+        @media (max-width: 768px) {
             .container {
                 padding: 20px 16px;
             }
-            .header h1 {
-                font-size: 1.6rem;
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
             }
-            .find-btn {
-                padding: 14px 24px;
+            .header-left h1 {
+                font-size: 1.8rem;
+            }
+            .header-actions {
+                width: 100%;
+                justify-content: flex-start;
+            }
+            .site-list li {
+                font-size: 1.5rem; /* Ainda grande, mas ajustado para tablets */
+                padding: 8px 4px 8px 0;
+                gap: 8px;
+            }
+            .site-list li .num {
+                min-width: 48px;
                 font-size: 1rem;
             }
-            .site-list {
-                grid-template-columns: 1fr;
+            .find-btn {
+                padding: 10px 20px;
+                font-size: 0.95rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 16px 12px;
+            }
+            .header-left h1 {
+                font-size: 1.5rem;
+            }
+            .site-list li {
+                font-size: 1.2rem; /* Ainda legível em celular */
+                padding: 6px 0;
+            }
+            .site-list li .num {
+                min-width: 38px;
+                font-size: 0.85rem;
+            }
+            .theme-toggle {
+                padding: 6px 14px;
+                font-size: 0.9rem;
+            }
+            .theme-toggle .icon {
+                font-size: 1.2rem;
             }
         }
     </style>
@@ -209,14 +336,22 @@
 
 <div class="container">
 
-    <!-- Cabeçalho -->
+    <!-- ===== Cabeçalho com botão de tema ===== -->
     <div class="header">
-        <h1>🔍 Lista de Atalhos de Voz para Alexa</h1>
-        <p>Meus atalhos pessoais para dispositivos Alexa com tela</p>
-        <div class="update">Atualizado em 18/07/2026</div>
+        <div class="header-left">
+            <h1>🔍 Lista de Atalhos de Voz para Alexa</h1>
+            <p>Meus atalhos pessoais para dispositivos Alexa com tela</p>
+            <div class="update">Atualizado em 18/07/2026</div>
+        </div>
+        <div class="header-actions">
+            <button class="theme-toggle" onclick="toggleTheme()" aria-label="Alternar tema">
+                <span class="icon" id="themeIcon">🌙</span>
+                <span id="themeLabel">Escuro</span>
+            </button>
+        </div>
     </div>
 
-    <!-- Botão Find in Page -->
+    <!-- ===== Botão Find in Page ===== -->
     <div class="find-btn-wrapper">
         <button class="find-btn" onclick="eval(atob('KGZ1bmN0aW9uKCl7dmFyIGRhdGUgPSAobmV3IERhdGUoKSAtIDApO3ZhciBuYW1lID0gImZpbmRpbmciICsgZGF0ZTt2YXIgd3JhcCA9ICJ3cmFwcGVyIiArIGRhdGU7dmFyIGZpbmQgPSBmdW5jdGlvbihzKXtzID0gKHByb21wdCgiXHUyNjA1IEZpbmQgSW4gUGFnZSBcdTI2MDUiLCBzIHx8ICIiKSB8fCAiIikucmVwbGFjZSgvXlxzKihcUyooXHMrXFMrKSopXHMqJC8sICIkMSIpO2lmICghcykgcmV0dXJuO2lmIChzLmxlbmd0aCA9PSAxICYmICFjb25maXJtKCJcIiIgKyBzICsgIlwiIGlzIHRvbyBzaG9ydCAtIGl0IG1heSB0YWtlIHRvbyBsb25nIGFuZCBmaW5kIHRvbyBtYW55IG1hdGNoZXMuIEFyZSB5b3Ugc3VyZT8iKSl7ZmluZChzKTsgcmV0dXJuO31maW5kLnMgPSBzO2luaXQoKTt2YXIgciA9IG5ldyBSZWdFeHAoIigiK3Muc3BsaXQoIiIpLm1hcChmdW5jdGlvbihjKXtyZXR1cm4gIlxcdSIrKCIwMDAwIitjLmNoYXJDb2RlQXQoMCkudG9TdHJpbmcoMTYpKS5zbGljZSgtNCk7fSkuam9pbigiIikrIikiLCAiZ2kiKTt2YXIgcCA9ICc8JyArIG5hbWUgKyAnIHN0eWxlPSJiYWNrZ3JvdW5kLWNvbG9yOnllbGxvdzsiPiQxPC8nICsgbmFtZSArICc+Jzt2YXIgeCA9IGRvY3VtZW50LmV2YWx1YXRlKCcuLy90ZXh0KClbbm9ybWFsaXplLXNwYWNlKC4pICE9ICIiXScsIGRvY3VtZW50LmJvZHksIG51bGwsIFhQYXRoUmVzdWx0Lk9SREVSRURfTk9ERV9TTkFQU0hPVF9UWVBFLCBudWxsKTtmb3IgKHZhciBpID0gMCwgbiA9IHguc25hcHNob3RMZW5ndGg7IGkgPCBuOyBpKyspe3ZhciB0ID0geC5zbmFwc2hvdEl0ZW0oaSk7aWYgKHQuZGF0YS5zZWFyY2gocikgPT0gLTEpIGNvbnRpbnVlO3ZhciBlID0gZG9jdW1lbnQuY3JlYXRlRWxlbWVudCh3cmFwKTtlLmlubmVySFRNTCA9IHQuZGF0YS5yZXBsYWNlKHIsIHApO3QucGFyZW50Tm9kZS5yZXBsYWNlQ2hpbGQoZSwgdCk7fXZhciBwbiwgX3BuLCBfaXY7Zm9yICh2YXIgeSA9IGRvY3VtZW50LmdldEVsZW1lbnRzQnlUYWdOYW1lKG5hbWUpLCBpID0gMCwgbiA9IHkubGVuZ3RoOyBpIDwgbjsgaSsrKSB7dmFyIGUgPSB5Lml0ZW0oaSk7aWYgKCFlKSBjb250aW51ZTtwbiA9IGUucGFyZW50Tm9kZTtpZiAoIShfcG4gJiYgX3BuLmlzU2FtZU5vZGUocG4pKSkge19wbiA9IHBuO19pdiA9ICghcG4ub2Zmc2V0V2lkdGggfHwgIXBuLm9mZnNldEhlaWdodCB8fCB3aW5kb3cuZ2V0Q29tcHV0ZWRTdHlsZShwbiwgbnVsbCkudmlzaWJpbGl0eSA9PSAiaGlkZGVuIik7fWlmICghX2l2KSBmaW5kLmEucHVzaChlKTt9aWYgKGZpbmQuYS5sZW5ndGggPT09IDApIHtpZiAoY29uZmlybSgiTm8gbWF0Y2hlcyBmb3VuZCBmb3IgXCIiICsgcyArICJcIi5cblRyeSBhZ2Fpbj8iKSkgZmluZChzKTt9IGVsc2Uge2FsZXJ0KCJGb3VuZCAiICsgZmluZC5hLmxlbmd0aCArICIgbWF0Y2giICsgKGZpbmQuYS5sZW5ndGggPT0gMSA/ICIiIDogImVzIikgKyAiIGZvciBcIiIgKyBzICsgIlwiIik7bW92ZSgpO319O2ZpbmQucyA9ICIiO2ZpbmQuYSA9IFtdO2ZpbmQuaSA9IDA7dmFyIGluaXQgPSBmdW5jdGlvbigpe3ZhciBhID0gW107Zm9yICh2YXIgeSA9IGRvY3VtZW50LmdldEVsZW1lbnRzQnlUYWdOYW1lKHdyYXApLCBpID0gMCwgbiA9IHkubGVuZ3RoOyBpIDwgbjsgaSsrKSB7dmFyIGUgPSB5Lml0ZW0oaSk7IGlmIChlKSBhLnB1c2goZSk7fWZvciAodmFyIGkgPSAwLCBuID0gYS5sZW5ndGg7IGkgPCBuOyBpKyspIGFbaV0ucGFyZW50Tm9kZS5yZXBsYWNlQ2hpbGQoZG9jdW1lbnQuY3JlYXRlVGV4dE5vZGUoYVtpXS50ZXh0Q29udGVudCksIGFbaV0pO2ZpbmQuYSA9IFtdO2ZpbmQuaSA9IDA7fTt2YXIgaW5mbyA9IGZ1bmN0aW9uKCl7aWYgKGZpbmQuYS5sZW5ndGggPT09IDApIHtmaW5kKCk7IHJldHVybjt9YWxlcnQoIlxuTWF0Y2ggIiArIChmaW5kLmkgKyAxKSArICIgb2YgIiArIGZpbmQuYS5sZW5ndGggKyAiIGZvciBcIiIgKyBmaW5kLnMgKyAiXCJcblxuXHUyNjA1IEZpbmQgSW4gUGFnZSBcdTI2MDVcblx1MDBBOTIwMTAgVmFpcyBTYWxpa2hvdiwgdjIuMCIpO307dmFyIG1vdmUgPSBmdW5jdGlvbigpe3ZhciBlID0gZmluZC5hW2ZpbmQuaV07ZS5zY3JvbGxJbnRvVmlldyh0cnVlKTtlLnN0eWxlLmJhY2tncm91bmRDb2xvciA9ICJvcmFuZ2UiO3N0YWxrKCk7fTt2YXIgbmV4dCA9IGZ1bmN0aW9uKCl7aWYgKGZpbmQuYS5sZW5ndGggPT09IDApIHtmaW5kKCk7IHJldHVybjt9ZmluZC5hW2ZpbmQuaV0uc3R5bGUuYmFja2dyb3VuZENvbG9yID0gInllbGxvdyI7aWYgKGZpbmQuaSArIDEgPT0gZmluZC5hLmxlbmd0aCkge2lmIChjb25maXJtKCJSZWFjaGVkIHRoZSBib3R0b20gb2YgcGFnZS5cbkNvbnRpbnVlIGZyb20gdG9wPyIpKSBmaW5kLmkgPSAwO30gZWxzZSB7ZmluZC5pKys7fW1vdmUoKTt9O3ZhciBwcmV2ID0gZnVuY3Rpb24oKXtpZiAoZmluZC5hLmxlbmd0aCA9PT0gMCkge2ZpbmQoKTsgcmV0dXJuO31maW5kLmFbZmluZC5pXS5zdHlsZS5iYWNrZ3JvdW5kQ29sb3IgPSAieWVsbG93IjtpZiAoZmluZC5pID09PSAwKSB7aWYgKGNvbmZpcm0oIlJlYWNoZWQgdGhlIHRvcCBvZiBwYWdlLlxuQ29udGludWUgZnJvbSBib3R0b20/IikpIGZpbmQuaSA9IGZpbmQuYS5sZW5ndGggLSAxO30gZWxzZSB7ZmluZC5pLS07fW1vdmUoKTt9O3ZhciBzdGFsazsoZnVuY3Rpb24oKXt2YXIgVyA9IHdpbmRvdy5zY3JlZW4ud2lkdGg7dmFyIEggPSA1MDt2YXIgYiA9IGRvY3VtZW50LmNyZWF0ZUVsZW1lbnQoImNhbnZhcyIpO3ZhciBzID0gYi5zdHlsZTtzLm1hcmdpbiA9IDA7cy5wYWRkaW5nID0gMDtzLmJvcmRlciA9ICJub25lIjtzLmJhY2tncm91bmQgPSAibm9uZSI7cy5kaXNwbGF5ID0gImJsb2NrIjtzLnZpc2liaWxpdHkgPSAidmlzaWJsZSI7cy5vcGFjaXR5ID0gMTtzLnBvc2l0aW9uID0gImFic29sdXRlIjtzLnpJbmRleCA9IDIxNDc0ODM2NDc7cy5sZWZ0ID0gcy50b3AgPSAwO3Mud2lkdGggID0gVyArICJweCI7cy5oZWlnaHQgPSBIICsgInB4IjtiLndpZHRoICA9IFc7Yi5oZWlnaHQgPSBIO3Mud2Via2l0VHJhbnNpdGlvblByb3BlcnR5ID0gIi13ZWJraXQtdHJhbnNmb3JtLCBvcGFjaXR5IjtzLndlYmtpdFRyYW5zaXRpb25EdXJhdGlvbiA9ICIwLjNzLCAxcyI7cy53ZWJraXRUcmFuc2Zvcm1PcmlnaW4gPSAiMCUgMCUiO3Mud2Via2l0VGFwSGlnaGxpZ2h0Q29sb3IgPSAicmdiYSgwLDAsMCwwKSI7KGZ1bmN0aW9uKCl7dmFyIGMgPSBiLmdldENvbnRleHQoIjJkIik7Yy5maWxsU3R5bGUgPSAicmdiYSgwLDAsMCwwLjUpIjtjLmZpbGxSZWN0KDAsMCxXLEgpO3ZhciBnID0gYy5jcmVhdGVMaW5lYXJHcmFkaWVudCgwLDEwLDAsNDApO2cuYWRkQ29sb3JTdG9wKDAsIiNmZmYiKTtnLmFkZENvbG9yU3RvcCgxLCIjYmJiIik7Yy5maWxsU3R5bGUgPSBnO2Muc3Ryb2tlU3R5bGUgPSAicmdiYSgwLDAsMCwwLjMpIjtjLmxpbmVXaWR0aCA9IDE7dmFyIHcgPSBXLzU7KFtmdW5jdGlvbih4LHkpe2MubW92ZVRvKHgrMTAseSsxMCk7Yy5saW5lVG8oeCsyMCx5KzIwKTtjLm1vdmVUbyh4KzIwLHkrMTApO2MubGluZVRvKHgrMTAseSsyMCk7Yy5zdHJva2UoKTt9LGZ1bmN0aW9uKHgseSl7Yy5hcmMoeCsxMyx5KzEzLDUsMCxNYXRoLlBJKjIsdHJ1ZSk7Yy5tb3ZlVG8oeCsyMSx5KzIxKTtjLmxpbmVUbyh4KzE3LHkrMTcpO2Muc3Ryb2tlKCk7fSxmdW5jdGlvbih4LHkpe2MuYXJjKHgrMTUseSs4LDEsMCxNYXRoLlBJKjIsdHJ1ZSk7Yy5tb3ZlVG8oeCsxNCx5KzE0KTtjLmxpbmVUbyh4KzE2LHkrMTQpO2MubW92ZVRvKHgrMTUseSsxNCk7Yy5saW5lVG8oeCsxNSx5KzIyKTtjLm1vdmVUbyh4KzEzLHkrMjIpO2MubGluZVRvKHgrMTcseSsyMik7Yy5zdHJva2UoKTt9LGZ1bmN0aW9uKHgseSl7Yy5tb3ZlVG8oeCsyMCx5KzEwKTtjLmxpbmVUbyh4KzYseSsxNSk7Yy5saW5lVG8oeCsyMCx5KzIwKTtjLmZpbGwoKTt9LGZ1bmN0aW9uKHgseSl7Yy5tb3ZlVG8oeCsxMCx5KzEwKTtjLmxpbmVUbyh4KzEwLHkrMjApO2MubGluZVRvKHgrMjQseSsxNSk7Yy5maWxsKCk7fV0pLmZvckVhY2goZnVuY3Rpb24oZixpKXtjLmJlZ2luUGF0aCgpO2MuYXJjKHcqaSt3LzIsSC8yLDE1LDAsTWF0aC5QSSoyLHRydWUpO2MuZmlsbCgpO2Muc3Ryb2tlKCk7Yy5zYXZlKCk7Yy5maWxsU3R5bGUgPSBjLnN0cm9rZVN0eWxlID0gInJnYmEoMCwwLDAsMC41KSI7Yy5iZWdpblBhdGgoKTtjLmxpbmVXaWR0aCA9IDM7Yy5saW5lQ2FwID0gInJvdW5kIjtmKHcqaSt3LzItMTUsMTApO2MucmVzdG9yZSgpO30pO30pKCk7dmFyIHcgPSB3aW5kb3cuaW5uZXJXaWR0aDt2YXIgaCA9IE1hdGguZmxvb3IoSCAqICh3IC8gVykpO3ZhciB4ID0gd2luZG93LnNjcm9sbFg7dmFyIHkgPSAoKHdpbmRvdy5pbm5lckhlaWdodCArIHdpbmRvdy5zY3JvbGxZKSAtIGgpO3Mud2Via2l0VHJhbnNmb3JtID0gInRyYW5zbGF0ZSgiICsgeCArICJweCwgIiArIHkgKyAicHgpIHNjYWxlKCIgKyAodyAvIFcpICArICIpIjtkb2N1bWVudC5ib2R5LmFwcGVuZENoaWxkKGIpO2IuYWRkRXZlbnRMaXN0ZW5lcigiY2xpY2siLCBmdW5jdGlvbihlKSB7dmFyIHggPSBlLmNsaWVudFggLSB3aW5kb3cuc2Nyb2xsWDt2YXIgVyA9IHdpbmRvdy5pbm5lcldpZHRoO3ZhciB3ID0gVy81O2lmICh4ID4gdyo0KSBuZXh0KCk7ZWxzZSBpZiAoeCA+IHcqMykgcHJldigpO2Vsc2UgaWYgKHggPiB3KjIpIGluZm8oKTtlbHNlIGlmICh4ID4gdykgZmluZCgpO2Vsc2Uge2lmICghY29uZmlybSgiQ2xvc2UgRmluZCBJbiBQYWdlPyIpKSByZXR1cm47cy5vcGFjaXR5ID0gMDtpbml0KCk7d2luZG93LnJlbW92ZUV2ZW50TGlzdGVuZXIoInNjcm9sbCIsIHN0YWxrLCB0cnVlKTt3aW5kb3cuc2V0VGltZW91dChmdW5jdGlvbigpe2IucGFyZW50Tm9kZS5yZW1vdmVDaGlsZChiKTt9LCAxMTAwKTt9fSwgdHJ1ZSk7c3RhbGsgPSBmdW5jdGlvbigpe3ZhciB3ID0gd2luZG93LmlubmVyV2lkdGg7dmFyIGggPSBNYXRoLmZsb29yKEggKiAodyAvIFcpKTt2YXIgeCA9IHdpbmRvdy5zY3JvbGxYO3ZhciB5ID0gKCh3aW5kb3cuaW5uZXJIZWlnaHQgKyB3aW5kb3cuc2Nyb2xsWSkgLSBoKTtzLndlYmtpdFRyYW5zZm9ybSA9ICJ0cmFuc2xhdGUoIiArICh4IC0gYi5vZmZzZXRMZWZ0KSArICJweCwgIiArICh5IC0gYi5vZmZzZXRUb3ApICsgInB4KSBzY2FsZSgiICsgKHcgLyBiLm9mZnNldFdpZHRoKSAgKyAiKSI7fTt3aW5kb3cuYWRkRXZlbnRMaXN0ZW5lcigic2Nyb2xsIiwgc3RhbGssIHRydWUpO30pKCk7ZmluZCgpO30pKCk7'))">
             <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
@@ -224,19 +359,19 @@
         </button>
     </div>
 
-    <!-- Caixa de dica rápida -->
+    <!-- ===== Dica rápida ===== -->
     <div class="info-box">
-        <span>🔎 Clique no botão acima e digite o termo que deseja buscar na página.</span>
+        <span>🔎 Clique no botão e digite o termo desejado.</span>
         <span><strong>Dica:</strong> Use os botões na barra inferior para navegar pelos resultados.</span>
     </div>
 
-    <!-- Lista de atalhos -->
+    <!-- ===== Lista de Atalhos (Uma coluna, fonte grande) ===== -->
     <div class="list-section">
         <h2>
             <span class="highlight">Sites &amp; Atalhos</span>
         </h2>
         <ul class="site-list" id="siteList">
-            <!-- Os itens foram extraídos do HTML original e mantidos na íntegra -->
+            <!-- Lista completa (107 itens) -->
             <li><span class="num">01.</span><a href="https://posicionamentospolemicos.vercel.app/" target="_blank">P6</a></li>
             <li><span class="num">02.</span><a href="https://sites.google.com/view/concentrador/p%C3%A1gina-inicial" target="_blank">Concentrador</a></li>
             <li><span class="num">03.</span><a href="https://psicspsix.github.io/Gerenciador-de-Medicamentos/" target="_blank">Gerenciador de Medicamentos</a></li>
@@ -347,12 +482,45 @@
         </ul>
     </div>
 
-    <!-- Rodapé -->
+    <!-- ===== Rodapé ===== -->
     <div class="footer">
         &copy; 2026 &bull; Lista de Atalhos de Voz para Alexa &bull; Conteúdo pessoal
     </div>
 
 </div>
+
+<!-- ===== JavaScript para alternar tema ===== -->
+<script>
+    function toggleTheme() {
+        const body = document.body;
+        body.classList.toggle('light-theme');
+
+        const isLight = body.classList.contains('light-theme');
+        const icon = document.getElementById('themeIcon');
+        const label = document.getElementById('themeLabel');
+
+        if (isLight) {
+            icon.textContent = '☀️';
+            label.textContent = 'Claro';
+        } else {
+            icon.textContent = '🌙';
+            label.textContent = 'Escuro';
+        }
+
+        // Salva preferência no localStorage
+        localStorage.setItem('theme', isLight ? 'light' : 'dark');
+    }
+
+    // Carrega tema salvo ao iniciar
+    (function() {
+        const saved = localStorage.getItem('theme');
+        if (saved === 'light') {
+            document.body.classList.add('light-theme');
+            document.getElementById('themeIcon').textContent = '☀️';
+            document.getElementById('themeLabel').textContent = 'Claro';
+        }
+    })();
+</script>
 
 </body>
 </html>
