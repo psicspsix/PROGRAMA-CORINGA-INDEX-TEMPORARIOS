@@ -1,4 +1,358 @@
-<div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin: 0; padding: 0;">
-    <a href="javascript:eval(atob('...'))" style="display:inline-block; padding:8px 16px; background:#2563eb; color:#fff; border-radius:40px; text-decoration:none; font-weight:600; font-size:0.9rem; box-shadow:0 2px 8px rgba(37,99,235,0.3); transition:background 0.2s; border:none; cursor:pointer; user-select:none; font-family:inherit;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'">⭐ Find in Page</a>
-    <span class="C9DxTc" style="">Atualizado em 18/07/2026</span>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lista de Atalhos de Voz para Alexa</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700&family=Montserrat:wght@400;700&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Open Sans', sans-serif;
+            background: #f5f7fa;
+            color: #1e293b;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            padding: 30px 40px;
+        }
+
+        /* Cabeçalho */
+        .header {
+            text-align: center;
+            padding: 20px 0 30px;
+            border-bottom: 2px solid #e9edf2;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 2.2rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            color: #0b2a4a;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            color: #475569;
+            margin-top: 8px;
+        }
+
+        .header .update {
+            font-size: 0.9rem;
+            color: #94a3b8;
+            margin-top: 4px;
+        }
+
+        /* Botão Find in Page */
+        .find-btn-wrapper {
+            display: flex;
+            justify-content: center;
+            margin: 10px 0 25px;
+        }
+
+        .find-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 16px 36px;
+            background: #2563eb;
+            color: #fff;
+            border: none;
+            border-radius: 60px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            font-family: 'Open Sans', sans-serif;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+            cursor: pointer;
+            transition: background 0.25s, transform 0.15s;
+        }
+
+        .find-btn:hover {
+            background: #1d4ed8;
+            transform: scale(1.02);
+        }
+
+        .find-btn:active {
+            transform: scale(0.97);
+        }
+
+        .find-btn svg {
+            width: 24px;
+            height: 24px;
+            fill: currentColor;
+        }
+
+        /* Seção de instruções (opcional) */
+        .info-box {
+            background: #f1f5f9;
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+            justify-content: center;
+            font-size: 0.95rem;
+            color: #1e293b;
+        }
+
+        .info-box strong {
+            color: #0b2a4a;
+        }
+
+        .info-box code {
+            background: #e2e8f0;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+        }
+
+        /* Lista de atalhos */
+        .list-section h2 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #0b2a4a;
+            margin: 30px 0 20px;
+            border-bottom: 2px solid #e9edf2;
+            padding-bottom: 10px;
+        }
+
+        .list-section h2 .highlight {
+            background: #fef08a;
+            padding: 0 8px;
+            border-radius: 6px;
+        }
+
+        .site-list {
+            list-style: none;
+            padding: 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 8px 20px;
+        }
+
+        .site-list li {
+            display: flex;
+            align-items: baseline;
+            padding: 6px 10px 6px 0;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 0.95rem;
+        }
+
+        .site-list li .num {
+            font-weight: 700;
+            color: #64748b;
+            min-width: 38px;
+            font-size: 0.85rem;
+        }
+
+        .site-list li a {
+            color: #1e293b;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.15s;
+            word-break: break-word;
+        }
+
+        .site-list li a:hover {
+            color: #2563eb;
+            text-decoration: underline;
+        }
+
+        /* Rodapé */
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px solid #e9edf2;
+            text-align: center;
+            font-size: 0.85rem;
+            color: #94a3b8;
+        }
+
+        /* Responsivo */
+        @media (max-width: 640px) {
+            .container {
+                padding: 20px 16px;
+            }
+            .header h1 {
+                font-size: 1.6rem;
+            }
+            .find-btn {
+                padding: 14px 24px;
+                font-size: 1rem;
+            }
+            .site-list {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- Cabeçalho -->
+    <div class="header">
+        <h1>🔍 Lista de Atalhos de Voz para Alexa</h1>
+        <p>Meus atalhos pessoais para dispositivos Alexa com tela</p>
+        <div class="update">Atualizado em 18/07/2026</div>
+    </div>
+
+    <!-- Botão Find in Page -->
+    <div class="find-btn-wrapper">
+        <button class="find-btn" onclick="eval(atob('KGZ1bmN0aW9uKCl7dmFyIGRhdGUgPSAobmV3IERhdGUoKSAtIDApO3ZhciBuYW1lID0gImZpbmRpbmciICsgZGF0ZTt2YXIgd3JhcCA9ICJ3cmFwcGVyIiArIGRhdGU7dmFyIGZpbmQgPSBmdW5jdGlvbihzKXtzID0gKHByb21wdCgiXHUyNjA1IEZpbmQgSW4gUGFnZSBcdTI2MDUiLCBzIHx8ICIiKSB8fCAiIikucmVwbGFjZSgvXlxzKihcUyooXHMrXFMrKSopXHMqJC8sICIkMSIpO2lmICghcykgcmV0dXJuO2lmIChzLmxlbmd0aCA9PSAxICYmICFjb25maXJtKCJcIiIgKyBzICsgIlwiIGlzIHRvbyBzaG9ydCAtIGl0IG1heSB0YWtlIHRvbyBsb25nIGFuZCBmaW5kIHRvbyBtYW55IG1hdGNoZXMuIEFyZSB5b3Ugc3VyZT8iKSl7ZmluZChzKTsgcmV0dXJuO31maW5kLnMgPSBzO2luaXQoKTt2YXIgciA9IG5ldyBSZWdFeHAoIigiK3Muc3BsaXQoIiIpLm1hcChmdW5jdGlvbihjKXtyZXR1cm4gIlxcdSIrKCIwMDAwIitjLmNoYXJDb2RlQXQoMCkudG9TdHJpbmcoMTYpKS5zbGljZSgtNCk7fSkuam9pbigiIikrIikiLCAiZ2kiKTt2YXIgcCA9ICc8JyArIG5hbWUgKyAnIHN0eWxlPSJiYWNrZ3JvdW5kLWNvbG9yOnllbGxvdzsiPiQxPC8nICsgbmFtZSArICc+Jzt2YXIgeCA9IGRvY3VtZW50LmV2YWx1YXRlKCcuLy90ZXh0KClbbm9ybWFsaXplLXNwYWNlKC4pICE9ICIiXScsIGRvY3VtZW50LmJvZHksIG51bGwsIFhQYXRoUmVzdWx0Lk9SREVSRURfTk9ERV9TTkFQU0hPVF9UWVBFLCBudWxsKTtmb3IgKHZhciBpID0gMCwgbiA9IHguc25hcHNob3RMZW5ndGg7IGkgPCBuOyBpKyspe3ZhciB0ID0geC5zbmFwc2hvdEl0ZW0oaSk7aWYgKHQuZGF0YS5zZWFyY2gocikgPT0gLTEpIGNvbnRpbnVlO3ZhciBlID0gZG9jdW1lbnQuY3JlYXRlRWxlbWVudCh3cmFwKTtlLmlubmVySFRNTCA9IHQuZGF0YS5yZXBsYWNlKHIsIHApO3QucGFyZW50Tm9kZS5yZXBsYWNlQ2hpbGQoZSwgdCk7fXZhciBwbiwgX3BuLCBfaXY7Zm9yICh2YXIgeSA9IGRvY3VtZW50LmdldEVsZW1lbnRzQnlUYWdOYW1lKG5hbWUpLCBpID0gMCwgbiA9IHkubGVuZ3RoOyBpIDwgbjsgaSsrKSB7dmFyIGUgPSB5Lml0ZW0oaSk7aWYgKCFlKSBjb250aW51ZTtwbiA9IGUucGFyZW50Tm9kZTtpZiAoIShfcG4gJiYgX3BuLmlzU2FtZU5vZGUocG4pKSkge19wbiA9IHBuO19pdiA9ICghcG4ub2Zmc2V0V2lkdGggfHwgIXBuLm9mZnNldEhlaWdodCB8fCB3aW5kb3cuZ2V0Q29tcHV0ZWRTdHlsZShwbiwgbnVsbCkudmlzaWJpbGl0eSA9PSAiaGlkZGVuIik7fWlmICghX2l2KSBmaW5kLmEucHVzaChlKTt9aWYgKGZpbmQuYS5sZW5ndGggPT09IDApIHtpZiAoY29uZmlybSgiTm8gbWF0Y2hlcyBmb3VuZCBmb3IgXCIiICsgcyArICJcIi5cblRyeSBhZ2Fpbj8iKSkgZmluZChzKTt9IGVsc2Uge2FsZXJ0KCJGb3VuZCAiICsgZmluZC5hLmxlbmd0aCArICIgbWF0Y2giICsgKGZpbmQuYS5sZW5ndGggPT0gMSA/ICIiIDogImVzIikgKyAiIGZvciBcIiIgKyBzICsgIlwiIik7bW92ZSgpO319O2ZpbmQucyA9ICIiO2ZpbmQuYSA9IFtdO2ZpbmQuaSA9IDA7dmFyIGluaXQgPSBmdW5jdGlvbigpe3ZhciBhID0gW107Zm9yICh2YXIgeSA9IGRvY3VtZW50LmdldEVsZW1lbnRzQnlUYWdOYW1lKHdyYXApLCBpID0gMCwgbiA9IHkubGVuZ3RoOyBpIDwgbjsgaSsrKSB7dmFyIGUgPSB5Lml0ZW0oaSk7IGlmIChlKSBhLnB1c2goZSk7fWZvciAodmFyIGkgPSAwLCBuID0gYS5sZW5ndGg7IGkgPCBuOyBpKyspIGFbaV0ucGFyZW50Tm9kZS5yZXBsYWNlQ2hpbGQoZG9jdW1lbnQuY3JlYXRlVGV4dE5vZGUoYVtpXS50ZXh0Q29udGVudCksIGFbaV0pO2ZpbmQuYSA9IFtdO2ZpbmQuaSA9IDA7fTt2YXIgaW5mbyA9IGZ1bmN0aW9uKCl7aWYgKGZpbmQuYS5sZW5ndGggPT09IDApIHtmaW5kKCk7IHJldHVybjt9YWxlcnQoIlxuTWF0Y2ggIiArIChmaW5kLmkgKyAxKSArICIgb2YgIiArIGZpbmQuYS5sZW5ndGggKyAiIGZvciBcIiIgKyBmaW5kLnMgKyAiXCJcblxuXHUyNjA1IEZpbmQgSW4gUGFnZSBcdTI2MDVcblx1MDBBOTIwMTAgVmFpcyBTYWxpa2hvdiwgdjIuMCIpO307dmFyIG1vdmUgPSBmdW5jdGlvbigpe3ZhciBlID0gZmluZC5hW2ZpbmQuaV07ZS5zY3JvbGxJbnRvVmlldyh0cnVlKTtlLnN0eWxlLmJhY2tncm91bmRDb2xvciA9ICJvcmFuZ2UiO3N0YWxrKCk7fTt2YXIgbmV4dCA9IGZ1bmN0aW9uKCl7aWYgKGZpbmQuYS5sZW5ndGggPT09IDApIHtmaW5kKCk7IHJldHVybjt9ZmluZC5hW2ZpbmQuaV0uc3R5bGUuYmFja2dyb3VuZENvbG9yID0gInllbGxvdyI7aWYgKGZpbmQuaSArIDEgPT0gZmluZC5hLmxlbmd0aCkge2lmIChjb25maXJtKCJSZWFjaGVkIHRoZSBib3R0b20gb2YgcGFnZS5cbkNvbnRpbnVlIGZyb20gdG9wPyIpKSBmaW5kLmkgPSAwO30gZWxzZSB7ZmluZC5pKys7fW1vdmUoKTt9O3ZhciBwcmV2ID0gZnVuY3Rpb24oKXtpZiAoZmluZC5hLmxlbmd0aCA9PT0gMCkge2ZpbmQoKTsgcmV0dXJuO31maW5kLmFbZmluZC5pXS5zdHlsZS5iYWNrZ3JvdW5kQ29sb3IgPSAieWVsbG93IjtpZiAoZmluZC5pID09PSAwKSB7aWYgKGNvbmZpcm0oIlJlYWNoZWQgdGhlIHRvcCBvZiBwYWdlLlxuQ29udGludWUgZnJvbSBib3R0b20/IikpIGZpbmQuaSA9IGZpbmQuYS5sZW5ndGggLSAxO30gZWxzZSB7ZmluZC5pLS07fW1vdmUoKTt9O3ZhciBzdGFsazsoZnVuY3Rpb24oKXt2YXIgVyA9IHdpbmRvdy5zY3JlZW4ud2lkdGg7dmFyIEggPSA1MDt2YXIgYiA9IGRvY3VtZW50LmNyZWF0ZUVsZW1lbnQoImNhbnZhcyIpO3ZhciBzID0gYi5zdHlsZTtzLm1hcmdpbiA9IDA7cy5wYWRkaW5nID0gMDtzLmJvcmRlciA9ICJub25lIjtzLmJhY2tncm91bmQgPSAibm9uZSI7cy5kaXNwbGF5ID0gImJsb2NrIjtzLnZpc2liaWxpdHkgPSAidmlzaWJsZSI7cy5vcGFjaXR5ID0gMTtzLnBvc2l0aW9uID0gImFic29sdXRlIjtzLnpJbmRleCA9IDIxNDc0ODM2NDc7cy5sZWZ0ID0gcy50b3AgPSAwO3Mud2lkdGggID0gVyArICJweCI7cy5oZWlnaHQgPSBIICsgInB4IjtiLndpZHRoICA9IFc7Yi5oZWlnaHQgPSBIO3Mud2Via2l0VHJhbnNpdGlvblByb3BlcnR5ID0gIi13ZWJraXQtdHJhbnNmb3JtLCBvcGFjaXR5IjtzLndlYmtpdFRyYW5zaXRpb25EdXJhdGlvbiA9ICIwLjNzLCAxcyI7cy53ZWJraXRUcmFuc2Zvcm1PcmlnaW4gPSAiMCUgMCUiO3Mud2Via2l0VGFwSGlnaGxpZ2h0Q29sb3IgPSAicmdiYSgwLDAsMCwwKSI7KGZ1bmN0aW9uKCl7dmFyIGMgPSBiLmdldENvbnRleHQoIjJkIik7Yy5maWxsU3R5bGUgPSAicmdiYSgwLDAsMCwwLjUpIjtjLmZpbGxSZWN0KDAsMCxXLEgpO3ZhciBnID0gYy5jcmVhdGVMaW5lYXJHcmFkaWVudCgwLDEwLDAsNDApO2cuYWRkQ29sb3JTdG9wKDAsIiNmZmYiKTtnLmFkZENvbG9yU3RvcCgxLCIjYmJiIik7Yy5maWxsU3R5bGUgPSBnO2Muc3Ryb2tlU3R5bGUgPSAicmdiYSgwLDAsMCwwLjMpIjtjLmxpbmVXaWR0aCA9IDE7dmFyIHcgPSBXLzU7KFtmdW5jdGlvbih4LHkpe2MubW92ZVRvKHgrMTAseSsxMCk7Yy5saW5lVG8oeCsyMCx5KzIwKTtjLm1vdmVUbyh4KzIwLHkrMTApO2MubGluZVRvKHgrMTAseSsyMCk7Yy5zdHJva2UoKTt9LGZ1bmN0aW9uKHgseSl7Yy5hcmMoeCsxMyx5KzEzLDUsMCxNYXRoLlBJKjIsdHJ1ZSk7Yy5tb3ZlVG8oeCsyMSx5KzIxKTtjLmxpbmVUbyh4KzE3LHkrMTcpO2Muc3Ryb2tlKCk7fSxmdW5jdGlvbih4LHkpe2MuYXJjKHgrMTUseSs4LDEsMCxNYXRoLlBJKjIsdHJ1ZSk7Yy5tb3ZlVG8oeCsxNCx5KzE0KTtjLmxpbmVUbyh4KzE2LHkrMTQpO2MubW92ZVRvKHgrMTUseSsxNCk7Yy5saW5lVG8oeCsxNSx5KzIyKTtjLm1vdmVUbyh4KzEzLHkrMjIpO2MubGluZVRvKHgrMTcseSsyMik7Yy5zdHJva2UoKTt9LGZ1bmN0aW9uKHgseSl7Yy5tb3ZlVG8oeCsyMCx5KzEwKTtjLmxpbmVUbyh4KzYseSsxNSk7Yy5saW5lVG8oeCsyMCx5KzIwKTtjLmZpbGwoKTt9LGZ1bmN0aW9uKHgseSl7Yy5tb3ZlVG8oeCsxMCx5KzEwKTtjLmxpbmVUbyh4KzEwLHkrMjApO2MubGluZVRvKHgrMjQseSsxNSk7Yy5maWxsKCk7fV0pLmZvckVhY2goZnVuY3Rpb24oZixpKXtjLmJlZ2luUGF0aCgpO2MuYXJjKHcqaSt3LzIsSC8yLDE1LDAsTWF0aC5QSSoyLHRydWUpO2MuZmlsbCgpO2Muc3Ryb2tlKCk7Yy5zYXZlKCk7Yy5maWxsU3R5bGUgPSBjLnN0cm9rZVN0eWxlID0gInJnYmEoMCwwLDAsMC41KSI7Yy5iZWdpblBhdGgoKTtjLmxpbmVXaWR0aCA9IDM7Yy5saW5lQ2FwID0gInJvdW5kIjtmKHcqaSt3LzItMTUsMTApO2MucmVzdG9yZSgpO30pO30pKCk7dmFyIHcgPSB3aW5kb3cuaW5uZXJXaWR0aDt2YXIgaCA9IE1hdGguZmxvb3IoSCAqICh3IC8gVykpO3ZhciB4ID0gd2luZG93LnNjcm9sbFg7dmFyIHkgPSAoKHdpbmRvdy5pbm5lckhlaWdodCArIHdpbmRvdy5zY3JvbGxZKSAtIGgpO3Mud2Via2l0VHJhbnNmb3JtID0gInRyYW5zbGF0ZSgiICsgeCArICJweCwgIiArIHkgKyAicHgpIHNjYWxlKCIgKyAodyAvIFcpICArICIpIjtkb2N1bWVudC5ib2R5LmFwcGVuZENoaWxkKGIpO2IuYWRkRXZlbnRMaXN0ZW5lcigiY2xpY2siLCBmdW5jdGlvbihlKSB7dmFyIHggPSBlLmNsaWVudFggLSB3aW5kb3cuc2Nyb2xsWDt2YXIgVyA9IHdpbmRvdy5pbm5lcldpZHRoO3ZhciB3ID0gVy81O2lmICh4ID4gdyo0KSBuZXh0KCk7ZWxzZSBpZiAoeCA+IHcqMykgcHJldigpO2Vsc2UgaWYgKHggPiB3KjIpIGluZm8oKTtlbHNlIGlmICh4ID4gdykgZmluZCgpO2Vsc2Uge2lmICghY29uZmlybSgiQ2xvc2UgRmluZCBJbiBQYWdlPyIpKSByZXR1cm47cy5vcGFjaXR5ID0gMDtpbml0KCk7d2luZG93LnJlbW92ZUV2ZW50TGlzdGVuZXIoInNjcm9sbCIsIHN0YWxrLCB0cnVlKTt3aW5kb3cuc2V0VGltZW91dChmdW5jdGlvbigpe2IucGFyZW50Tm9kZS5yZW1vdmVDaGlsZChiKTt9LCAxMTAwKTt9fSwgdHJ1ZSk7c3RhbGsgPSBmdW5jdGlvbigpe3ZhciB3ID0gd2luZG93LmlubmVyV2lkdGg7dmFyIGggPSBNYXRoLmZsb29yKEggKiAodyAvIFcpKTt2YXIgeCA9IHdpbmRvdy5zY3JvbGxYO3ZhciB5ID0gKCh3aW5kb3cuaW5uZXJIZWlnaHQgKyB3aW5kb3cuc2Nyb2xsWSkgLSBoKTtzLndlYmtpdFRyYW5zZm9ybSA9ICJ0cmFuc2xhdGUoIiArICh4IC0gYi5vZmZzZXRMZWZ0KSArICJweCwgIiArICh5IC0gYi5vZmZzZXRUb3ApICsgInB4KSBzY2FsZSgiICsgKHcgLyBiLm9mZnNldFdpZHRoKSAgKyAiKSI7fTt3aW5kb3cuYWRkRXZlbnRMaXN0ZW5lcigic2Nyb2xsIiwgc3RhbGssIHRydWUpO30pKCk7ZmluZCgpO30pKCk7'))">
+            <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+            <span>Find in Page</span>
+        </button>
+    </div>
+
+    <!-- Caixa de dica rápida -->
+    <div class="info-box">
+        <span>🔎 Clique no botão acima e digite o termo que deseja buscar na página.</span>
+        <span><strong>Dica:</strong> Use os botões na barra inferior para navegar pelos resultados.</span>
+    </div>
+
+    <!-- Lista de atalhos -->
+    <div class="list-section">
+        <h2>
+            <span class="highlight">Sites &amp; Atalhos</span>
+        </h2>
+        <ul class="site-list" id="siteList">
+            <!-- Os itens foram extraídos do HTML original e mantidos na íntegra -->
+            <li><span class="num">01.</span><a href="https://posicionamentospolemicos.vercel.app/" target="_blank">P6</a></li>
+            <li><span class="num">02.</span><a href="https://sites.google.com/view/concentrador/p%C3%A1gina-inicial" target="_blank">Concentrador</a></li>
+            <li><span class="num">03.</span><a href="https://psicspsix.github.io/Gerenciador-de-Medicamentos/" target="_blank">Gerenciador de Medicamentos</a></li>
+            <li><span class="num">04.</span><a href="https://psicspsix.github.io/Tarefas-JPV/" target="_blank">Gerenciador de Tarefas</a></li>
+            <li><span class="num">05.</span><a href="https://psicspsix.github.io/Pagamentos-e-Projetos/" target="_blank">Gerenciador de Pagamentos [e Projetos]</a></li>
+            <li><span class="num">06.</span><a href="https://psicspsix.github.io/Projetos-Complexos/" target="_blank">Projetos Complexos</a></li>
+            <li><span class="num">07.</span><a href="https://psicspsix.github.io/Projetos-Complexos-Compartilhados/" target="_blank">Projetos Compartilhados</a></li>
+            <li><span class="num">08.</span><a href="https://psicspsix.github.io/Frases-e-Citacoes/" target="_blank">Frases</a></li>
+            <li><span class="num">09.</span><a href="https://psicspsix.github.io/Prompts-IAs/" target="_blank">Artificial (Prompts)</a></li>
+            <li><span class="num">10.</span><a href="https://psicspsix.github.io/LeitorPDFparaSmartTVs/" target="_blank">Visualizador de Contos</a></li>
+            <li><span class="num">11.</span><a href="https://psicspsix.github.io/LeituraPDFemVoz/" target="_blank">Leitor de PDF em Voz Alta</a></li>
+            <li><span class="num">12.</span><a href="https://psicspsix.github.io/LerPDFemLinksFixos/" target="_blank">Visualizador de Processos</a></li>
+            <li><span class="num">13.</span><a href="https://psicspsix.github.io/JogoLorca" target="_blank">Jogo de Forca</a></li>
+            <li><span class="num">14.</span><a href="https://psicspsix.github.io/PesquisaPlaylists/" target="_blank">Pesquisa de Minhas Músicas</a></li>
+            <li><span class="num">15.</span><a href="https://psicspsix.github.io/PROGRAMA-CORINGA-INDEX-TEMPORARIOS/" target="_blank">Programa Coringa</a></li>
+            <li><span class="num">16.</span><a href="https://sites.google.com/view/favoritos-dos-notes/p%C3%A1gina-inicial?pli=1&authuser=2" target="_blank">Favoritos dos Notes</a></li>
+            <li><span class="num">17.</span><a href="https://sites.google.com/view/favoritos-do-btv/p%C3%A1gina-inicial" target="_blank">Favoritos do BTV</a></li>
+            <li><span class="num">18.</span><a href="https://sites.google.com/view/linksparaalexitaianenadineeali/hist%C3%B3rias-e-novidades?authuser=0" target="_blank">Mangás</a></li>
+            <li><span class="num">19.</span><a href="https://sites.google.com/new?hl=pt-PT" target="_blank">Sítios do Google</a></li>
+            <li><span class="num">20.</span><a href="https://app.graphitewriter.com/" target="_blank">Grafite (Graphite Writer)</a></li>
+            <li><span class="num">21.</span><a href="https://sso.cloud.pje.jus.br/auth/realms/pje/protocol/openid-connect/auth?response_type=code&client_id=pje-tjdft-1g&redirect_uri=https%3A%2F%2Fpje.tjdft.jus.br%2Fpje%2Flogin.seam?cid%3D18596&state=8352d05a-729e-4fa9-8b07-36776676a32a&login=true&scope=openid" target="_blank">TJ 1</a></li>
+            <li><span class="num">22.</span><a href="https://sso.cloud.pje.jus.br/auth/realms/pje/protocol/openid-connect/auth?response_type=code&client_id=pje-tjdft-2g&redirect_uri=https%3A%2F%2Fpje2i.tjdft.jus.br%2Fpje%2Flogin.seam&state=52c6da9e-bddb-4dee-802c-344e55a4a059&login=true&scope=openid" target="_blank">TJ 2</a></li>
+            <li><span class="num">23.</span><a href="https://store.steampowered.com/wishlist/profiles/76561199221207046/" target="_blank">Lista de Desejos (Steam)</a></li>
+            <li><span class="num">24.</span><a href="https://app.raindrop.io/my/0" target="_blank">Gerenciador de Favoritos</a></li>
+            <li><span class="num">25.</span><a href="https://mail.google.com/mail/u/0/#sent" target="_blank">Correio (Gmail)</a></li>
+            <li><span class="num">26.</span><a href="https://chat.deepseek.com/" target="_blank">Inteligência (DeepSeek)</a></li>
+            <li><span class="num">27.</span><a href="https://www.amazon.com.br/" target="_blank">Amazon</a></li>
+            <li><span class="num">28.</span><a href="https://psicspsix.github.io/Sugestao-Mega-Sena/" target="_blank">Sugerir Aposta (Mega-Sena)</a></li>
+            <li><span class="num">29.</span><a href="https://noticias.uol.com.br/loterias/mega-sena/" target="_blank">Resultado da Loteria (Mega-Sena)</a></li>
+            <li><span class="num">30.</span><a href="https://www.sbt.com.br/ao-vivo" target="_blank">SBT</a></li>
+            <li><span class="num">31.</span><a href="https://www.youtube.com/watch?v=2h32rq1DxKg" target="_blank">Globo</a></li>
+            <li><span class="num">32.</span><a href="https://www.band.com.br/ao-vivo" target="_blank">Band</a></li>
+            <li><span class="num">33.</span><a href="https://descubra.recordplus.com/" target="_blank">Record</a></li>
+            <li><span class="num">34.</span><a href="https://www.redetv.uol.com.br/aovivo" target="_blank">Rede TV</a></li>
+            <li><span class="num">35.</span><a href="https://pluto.tv/br/live-tv/63eb9c5351f5d000085e8d7e?utm_source=google&utm_medium=pmax&utm_campaign=11598436797&utm_content=114752531924&utm_term=pluto+tv+ao+vivo&utm_creative=479260887812&device=c&gad_source=1&gad_campaignid=11598436797&gbraid=0AAAAAB3xGeB0fuQOtQi5k38irJymNU7Rp&gclid=Cj0KCQiAosrJBhD0ARIsAHebCNqVj9KrfGD2WnNy44ukjvNvRidGvOirdUeC0zsFr6TNrggaARKPlv8aAqutEALw_wcB" target="_blank">Pluto TV</a></li>
+            <li><span class="num">36.</span><a href="https://www.youtube.com/@AdrenalinaPuraTVBR" target="_blank">Adrenalina Pura TV</a></li>
+            <li><span class="num">37.</span><a href="https://www.calculadoraonline.com.br/basica" target="_blank">Calculadora</a></li>
+            <li><span class="num">38.</span><a href="https://www.chess.com/pt-BR/play/computer" target="_blank">Xadrez</a> / <a href="https://www.paciencia.co/damas" target="_blank">Damas</a></li>
+            <li><span class="num">39.</span><a href="https://www.topster.de/reversi/" target="_blank">Reverso (Othello ou Reversi)</a></li>
+            <li><span class="num">40.</span><a href="https://www.newsinlevels.com/" target="_blank">Notícias em Inglês</a></li>
+            <li><span class="num">41.</span><a href="https://pt.bab.la/verbo/ingles/" target="_blank">Verbos em Inglês</a></li>
+            <li><span class="num">42.</span><a href="https://www.flickr.com/photos/193387103@N04/with/54962557931" target="_blank">Galeria de Imagens (Flickr)</a></li>
+            <li><span class="num">43.</span><a href="https://www.letras.mus.br/" target="_blank">Letras (de músicas)</a></li>
+            <li><span class="num">44.</span><a href="https://www.imdb.com/pt/" target="_blank">IMDB</a></li>
+            <li><span class="num">45.</span><a href="https://pt.bab.la/verbo/ingles/" target="_blank">Tradutor</a></li>
+            <li><span class="num">46.</span><a href="https://play.mercadolivre.com.br/" target="_blank">Mercado Play</a></li>
+            <li><span class="num">47.</span><a href="https://www.pobreflix.gold/" target="_blank">Pobreflix</a></li>
+            <li><span class="num">48.</span><a href="https://watch.plex.tv/pt" target="_blank">Plex</a></li>
+            <li><span class="num">49.</span><a href="https://www.olhosnatv.com.br/" target="_blank">Canal 1</a> / <a href="https://www.filmelier.com/br/filmes-gratis-completos" target="_blank">2</a> / <a href="https://www.netmovies.com.br/" target="_blank">3</a> / <a href="https://www.modlist.in/" target="_blank">4</a> / <a href="https://www.cxtv.com.br/tv-ao-vivo/sony-one-cinema" target="_blank">5</a> / <a href="https://www.runtime.tv/pt-br/linear/moviesphere-brazil%22,%20//%20Existe%20esse%20link%20tamb%C3%A9m:%20%22https://www.cxtv.com.br/tv-ao-vivo/moviesphere-brazil" target="_blank">6</a> / <a href="https://www.runtime.tv/" target="_blank">7</a></li>
+            <li><span class="num">50.</span><a href="https://vespeiro.com/" target="_blank">Desmandos (Vespeiro)</a></li>
+            <li><span class="num">51.</span><a href="https://login.caixa.gov.br/auth/realms/internet/protocol/openid-connect/auth?client_id=cli-web-lce&redirect_uri=https%3A%2F%2Fwww.loteriasonline.caixa.gov.br%2Fsilce-web%2F%23%2Fhome&state=c1205691-9f3e-4264-98d7-89a6e4074755&response_mode=fragment&response_type=code&scope=openid&nonce=62aa861d-dcb9-4ad5-83bd-d01f6f7eb575" target="_blank">Loterias da Caixa</a></li>
+            <li><span class="num">52.</span><a href="https://psicspsix.github.io/Steam-Sorteio-Jogo/" target="_blank">Jogos Gratuitos</a></li>
+            <li><span class="num">53.</span><a href="https://docspace-qy8b82.onlyoffice.com/rooms/shared/filter?searchArea=Active&page=1&sortBy=DateAndTime&sortOrder=descending" target="_blank">Processador de Texto</a></li>
+            <li><span class="num">54.</span><a href="https://amazflix.lol/filmes/assistir-aniquilacao-online/" target="_blank">Rico Flix (Amazflix)</a></li>
+            <li><span class="num">55.</span><a href="https://psicspsix.github.io/Mostrador-de-Frases-com-Favoritos/" target="_blank">Mostrador de Frases</a></li>
+            <li><span class="num">56.</span><a href="https://redecanais.fm/#" target="_blank">Redecanais</a></li>
+            <li><span class="num">57.</span><a href="https://sites.google.com/view/listadeatalhosvocaisparaalexa/p%C3%A1gina-inicial" target="_blank">Lista de Atalhos</a></li>
+            <li><span class="num">58.</span><a href="https://www.dicio.com.br/" target="_blank">Dicionário</a></li>
+            <li><span class="num">59.</span><a href="https://meuguia.tv/%22" target="_blank">Grade de TV</a></li>
+            <li><span class="num">60.</span><a href="https://onedrive.live.com/?id=%2Fpersonal%2Fcd32580902c6c8b8%2FDocuments%2FPictures%2FSamsung%20Gallery%2FDCIM%2FCamera&viewid=b1d53ce3%2De5de%2D410e%2Da10b%2Dd90399f3478d&view=0" target="_blank">Armazenamento Samsung (Gallery)</a></li>
+            <li><span class="num">61.</span><a href="https://chatgpt.com/" target="_blank">GPT (ChatGPT)</a></li>
+            <li><span class="num">62.</span><a href="https://app.box.com/folder/0" target="_blank">Box</a></li>
+            <li><span class="num">63.</span><a href="https://www.dropbox.com/h" target="_blank">Dropbox</a></li>
+            <li><span class="num">64.</span><a href="https://my.pcloud.com/#/filemanager" target="_blank">Minha Nuvem (pCloud)</a></li>
+            <li><span class="num">65.</span><a href="https://ww1.receita.fazenda.df.gov.br/emissao-segunda-via/iptu" target="_blank">IPTU</a></li>
+            <li><span class="num">66.</span><a href="https://web.whatsapp.com/" target="_blank">Whatsapp</a></li>
+            <li><span class="num">67.</span><a href="https://chatgpt.com/g/g-6957cc170e7c8191a3ead4c1b5716492-estudo-por-meio-de-resolucoes-de-provas-reais" target="_blank">Provas de Concurso</a></li>
+            <li><span class="num">68.</span><a href="https://poki.com/br/flash?campaign=22676956962&adgroup=184667438761&extensionid=&targetid=dsa-2247543266044&location=9197471&matchtype=&network=g&device=c&devicemodel=&creative=758817306707&keyword=&placement=&target=&gad_source=1&gad_campaignid=22676956962&gbraid=0AAAAADlg9ZGOyvTCzAPTwGlpkUV2iCzdD&gclid=Cj0KCQjw_vnQBhCxARIsADcZyxKs3QBGuIPuk2lajK0_rlMMYVyjiYpciLYWY5BqMFFSzIks0bS7-TgaApyZEALw_wcB" target="_blank">Jogos Flash 1</a></li>
+            <li><span class="num">69.</span><a href="https://www.crazygames.com/br/t/flash" target="_blank">Jogos Flash 2</a></li>
+            <li><span class="num">70.</span><a href="https://www.guiadetv.com/categorias/tv-aberta.html" target="_blank">Guia de TV</a></li>
+            <li><span class="num">71.</span><a href="https://apps.correios.com.br/portalimportador/pages/pesquisarRemessaImportador/pesquisarRemessaImportador.jsf" target="_blank">Minhas Importações (Receita)</a></li>
+            <li><span class="num">72.</span><a href="https://www.animesonlinecc.to" target="_blank">Animes</a></li>
+            <li><span class="num">73.</span><a href="https://developer.amazon.com/alexa/console/ask/editor/amzn1.ask.skill.f54a1616-c47c-40ab-a36b-bd3a80caf6b3/development/pt_BR" target="_blank">Desenvolvedor (Alexa Skill Code)</a></li>
+            <li><span class="num">74.</span><a href="https://github.com/locale=pt-br" target="_blank">Plataforma (GitHub)</a></li>
+            <li><span class="num">75.</span><a href="https://www.drive.google.com/" target="_blank">Drive (Google)</a></li>
+            <li><span class="num">76.</span><a href="https://huggingface.co/join" target="_blank">Face (HuggingFace)</a></li>
+            <li><span class="num">77.</span><a href="https://www.pensador.com/" target="_blank">Pensador (Frases)</a></li>
+            <li><span class="num">78.</span><a href="https://passwords.google.com/" target="_blank">Gerenciador de Senhas (Google)</a></li>
+            <li><span class="num">79.</span><a href="https://www.protondb.com/" target="_blank">Próton (Steam Deck Compatible Games)</a></li>
+            <li><span class="num">80.</span><a href="https://www.carrefour.com.br/" target="_blank">Carrefour</a></li>
+            <li><span class="num">81.</span><a href="https://www.horariodebrasilia.org/" target="_blank">Horário (Horário de Brasília)</a></li>
+            <li><span class="num">82.</span><a href="https://www.relogioonline.com.br/cronometro" target="_blank">Cronômetro</a></li>
+            <li><span class="num">83.</span><a href="https://www.relogioonline.com.br/temporizador" target="_blank">Temporizador</a></li>
+            <li><span class="num">84.</span><a href="https://www.sinonimos.com.br/" target="_blank">Sinônimos</a></li>
+            <li><span class="num">85.</span><a href="https://www.antonimos.com.br/" target="_blank">Antônimos</a></li>
+            <li><span class="num">86.</span><a href="https://www.minhaconta.uscloser.com/" target="_blank">Compras nos Estados Unidos (USCLOSER)</a></li>
+            <li><span class="num">87.</span><a href="https://www.shopee.com.br/" target="_blank">Shopee</a></li>
+            <li><span class="num">88.</span><a href="https://www.ana.gov.br/sar/outros-sistemas-hidricos/df" target="_blank">Reservatórios</a></li>
+            <li><span class="num">89.</span><a href="https://www.magazineluiza.com.br/?partner_id=3440&promoter_id=5705906&gad_source=1" target="_blank">Magazine Luiza</a></li>
+            <li><span class="num">90.</span><a href="https://store.epicgames.com/free-games?lang=pt-BR" target="_blank">Epic Games</a></li>
+            <li><span class="num">91.</span><a href="https://www.mercadolivre.com.br/" target="_blank">Mercado Livre</a></li>
+            <li><span class="num">92.</span><a href="https://www.americanas.com.br/evento-casa-o2o?utm_source=YSMESP&utm_medium=buscappc&utm_campaign=tudo-em-casa-26&utm_content=bp_pl_gp_go_digital_ads_pmax_aberto_tudo-em-casa-26_na_ads26-00171&utm_term=pla_ads&gad_source=1&gad_campaignid=24025391968&gbraid=0AAAAAD37Vprc0qotxOqNGyTBKjNulRIho&gclid=CjwKCAjw08fSBhA7EiwAfbQTsMUKCTLouC4LT3t-8nb56eoLeDOV3LamnDNgIAHpF59czGEEo56N2hoCcLsQAvD_BwE" target="_blank">Lojas Americanas</a></li>
+            <li><span class="num">93.</span><a href="https://luna.amazon.com/claims/home" target="_blank">Luna (Amazon Luna)</a></li>
+            <li><span class="num">94.</span><a href="https://www.gog.com/en/" target="_blank">GOG</a></li>
+            <li><span class="num">95.</span><a href="https://pt.anotepad.com/" target="_blank">Bloco de Notas 1</a></li>
+            <li><span class="num">96.</span><a href="https://www.onlinenotepad.io" target="_blank">Bloco de Notas 2</a></li>
+            <li><span class="num">97.</span><a href="https://docs.google.com/document/d/1ECJLoxiOMFVbuARfy9n9LNo7mVn3f6hvz0dt5ldAFG0/edit?tab=t.0" target="_blank">Documento do Google</a></li>
+            <li><span class="num">98.</span><a href="https://github.com/psicspsix/programa-coringa-index-temporarios/settings/pages" target="_blank">Hospedagem para Testes (GitHub)</a></li>
+            <li><span class="num">99.</span><a href="https://jovemnerd.com.br/" target="_blank">Nerdcast</a></li>
+            <li><span class="num">100.</span><a href="https://psicspsix.github.io/Find-in-Page/" target="_blank">Encontrar na Página (Site)</a></li>
+            <li><span class="num">101.</span><a href="https://psicspsix.github.io/Meus-Atalhos-Sites-Local-Storage/" target="_blank">Meus Atalhos Locais</a></li>
+            <li><span class="num">102.</span><a href="https://www.aliexpress.com" target="_blank">AliExpress</a></li>
+            <li><span class="num">103.</span><a href="https://chatgpt.com/g/g-69628e7590e881919c03a8b7cbaee310-tradutor-linha-a-linha/c/6a5a5096-f270-83e9-983a-10208766cea1" target="_blank">Tradução de Livro</a></li>
+            <li><span class="num">104.</span><a href="https://chatgpt.com/g/g-69628e7590e881919c03a8b7cbaee310-tradutor-linha-a-linha/c/696d0b0e-96ac-8331-9be3-a31d95c89b26" target="_blank">Playlist Lentas (Tradução das Letras)</a></li>
+            <li><span class="num">105.</span><a href="https://chatgpt.com/g/g-69628e7590e881919c03a8b7cbaee310-tradutor-linha-a-linha/c/6a168717-3580-83e9-bd7f-bdcc2532d3af" target="_blank">Avulsas (Letras Avulsas)</a></li>
+            <li><span class="num">106.</span><a href="https://chatgpt.com/g/g-696c488c04cc819192e918b4804b2363-tradutor-literario-de-ficcao-cientifica/c/696c5353-db58-832d-8ade-8064bf0b3018" target="_blank">Tradução de Conto</a></li>
+            <li><span class="num">107.</span><a href="https://chatgpt.com/g/g-6957cc170e7c8191a3ead4c1b5716492-estudo-por-meio-de-resolucoes-de-provas-reais/c/695828cd-4b54-8333-a976-20178c2adab6" target="_blank">Prova de Analista</a></li>
+        </ul>
+    </div>
+
+    <!-- Rodapé -->
+    <div class="footer">
+        &copy; 2026 &bull; Lista de Atalhos de Voz para Alexa &bull; Conteúdo pessoal
+    </div>
+
 </div>
+
+</body>
+</html>
